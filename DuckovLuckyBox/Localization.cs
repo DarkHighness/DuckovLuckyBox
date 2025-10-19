@@ -11,12 +11,14 @@ namespace DuckovLuckyBox
         { SystemLanguage.English, new Dictionary<string, string> {
             { Constants.I18n.RefreshStockKey, "Refresh" },
             { Constants.I18n.PickOneKey, "Pick One" },
-            { Constants.I18n.PickOneNotificationFormatKey, "You picked one {itemDisplayName}." }
+            { Constants.I18n.PickOneNotificationFormatKey, "You picked one {itemDisplayName}." },
+            { Constants.I18n.BuyLuckyBoxText, "Buy one Lucky Box." }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { Constants.I18n.RefreshStockKey, "刷新" },
             { Constants.I18n.PickOneKey, "随便拾一个" },
-            { Constants.I18n.PickOneNotificationFormatKey, "俺拾到了 {itemDisplayName}。" }
+            { Constants.I18n.PickOneNotificationFormatKey, "俺拾到了 {itemDisplayName}" },
+            { Constants.I18n.BuyLuckyBoxText, "试试手气" }
         } },
     };
 

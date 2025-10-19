@@ -19,5 +19,9 @@
   <ItemGroup>
     <PackageReference Include="Lib.Harmony" Version="2.3.3" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\item_lucky_box.png" />
+    <EmbeddedResource Include="Resources\item_lucky_box.png" />
+  </ItemGroup>
 
 </Project>

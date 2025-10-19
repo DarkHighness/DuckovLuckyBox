@@ -12,6 +12,7 @@ using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using System;
 using ItemStatsSystem;
+using System.Linq;
 
 namespace DuckovLuckyBox
 {
@@ -23,8 +24,22 @@ namespace DuckovLuckyBox
     private static Button? _refreshStockButton;
     private static TextMeshProUGUI? _pickOneText;
     private static Button? _pickOneButton;
+    private static TextMeshProUGUI? _buyLuckyBoxText;
+    private static Button? _buyLuckyBoxButton;
     private static RectTransform? _actionsContainer;
     private static readonly string SFX_BUY = "UI/buy";
+    private static List<int>? _itemTypeIdsCache = null;
+    public static List<int> ItemTypeIdsCache
+    {
+      get
+      {
+        if (_itemTypeIdsCache == null)
+        {
+          _itemTypeIdsCache = ItemAssetsCollection.Instance.entries.Select(entry => entry.typeID).ToList();
+        }
+        return _itemTypeIdsCache;
+      }
+    }
 
 
     public static void Postfix(StockShopView __instance)
@@ -92,12 +107,15 @@ namespace DuckovLuckyBox
 
       _pickOneText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
       ConfigureActionLabel(_pickOneText, Constants.I18n.PickOneKey.ToPlainText());
+
+      _buyLuckyBoxText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
+      ConfigureActionLabel(_buyLuckyBoxText, Constants.I18n.BuyLuckyBoxText.ToPlainText());
     }
 
     private static void EnsureButtons(StockShopView view)
     {
-      if (_refreshStockButton != null || _pickOneButton != null) return;
-      if (_refreshStockText == null || _pickOneText == null) return;
+      if (_refreshStockButton != null || _pickOneButton != null || _buyLuckyBoxButton != null) return;
+      if (_refreshStockText == null || _pickOneText == null || _buyLuckyBoxText == null) return;
 
       _refreshStockButton = _refreshStockText.gameObject.AddComponent<Button>();
       ConfigureActionButton(_refreshStockButton, _refreshStockText);
@@ -105,8 +123,28 @@ namespace DuckovLuckyBox
       _pickOneButton = _pickOneText.gameObject.AddComponent<Button>();
       ConfigureActionButton(_pickOneButton, _pickOneText);
 
+      _buyLuckyBoxButton = _buyLuckyBoxText.gameObject.AddComponent<Button>();
+      ConfigureActionButton(_buyLuckyBoxButton, _buyLuckyBoxText);
+
       _refreshStockButton.onClick.AddListener(() => OnRefreshButtonClicked(view));
-      _pickOneButton.onClick.AddListener(() => OnPickOneClicked(view));
+      _pickOneButton.onClick.AddListener(() => OnPickOneClicked(view).Forget());
+      _buyLuckyBoxButton.onClick.AddListener(() => OnBuyLuckyBoxClicked().Forget());
+    }
+
+    private static async UniTask OnBuyLuckyBoxClicked()
+    {
+      var selectedIndex = UnityEngine.Random.Range(0, ItemTypeIdsCache.Count);
+      var selectedItemTypeId = ItemTypeIdsCache[selectedIndex];
+      Item obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
+      if (!ItemUtilities.SendToPlayerCharacterInventory(obj))
+      {
+        Log.Error($"Failed to send item to player inventory: {selectedItemTypeId}. Send to the player storage.");
+        ItemUtilities.SendToPlayerStorage(obj);
+      }
+      var messageTemplate = Constants.I18n.PickOneNotificationFormatKey.ToPlainText();
+      var message = messageTemplate.Replace("{itemDisplayName}", obj.DisplayName);
+      NotificationText.Push(message);
+      AudioManager.Post(SFX_BUY);
     }
 
     private static void OnRefreshButtonClicked(StockShopView stockShopView)
@@ -118,12 +156,12 @@ namespace DuckovLuckyBox
     }
 
 
-    private static async UniTask<bool> PickOneTask(StockShopView stockShopView)
+    private static async UniTask OnPickOneClicked(StockShopView stockShopView)
     {
-      if (!TryGetStockShop(stockShopView, out var stockShop)) return false;
-      if (stockShop == null) return false;
+      if (!TryGetStockShop(stockShopView, out var stockShop)) return;
+      if (stockShop == null) return;
 
-      if (stockShop.Busy) return false;
+      if (stockShop.Busy) return;
 
       var itemEntries = new List<StockShop.Entry>();
       foreach (var entry in stockShop.entries)
@@ -139,19 +177,19 @@ namespace DuckovLuckyBox
       if (itemEntries.Count == 0)
       {
         Log.Warning("No available items to pick");
-        return false;
+        return;
       }
 
       var randomIndex = UnityEngine.Random.Range(0, itemEntries.Count);
       var pickedItem = itemEntries[randomIndex];
 
-      if (!SetBuyingState(stockShop, true)) return false;
+      if (!SetBuyingState(stockShop, true)) return;
       Item item = stockShop.GetItemInstanceDirect(pickedItem.ItemTypeID);
       if (item == null)
       {
         Log.Error("Failed to get item instance for " + pickedItem.ItemTypeID);
         SetBuyingState(stockShop, false);
-        return false;
+        return;
       }
 
       Item obj = await ItemAssetsCollection.InstantiateAsync(pickedItem.ItemTypeID);
@@ -175,61 +213,30 @@ namespace DuckovLuckyBox
       NotificationText.Push(message);
       AudioManager.Post(SFX_BUY);
 
-      if (!SetBuyingState(stockShop, false)) return false;
-
-      return true;
-    }
-
-    private static void OnPickOneClicked(StockShopView view)
-    {
-      PickOneTask(view).Forget();
+      if (!SetBuyingState(stockShop, false)) return;
+      return;
     }
 
     private static bool SetBuyingState(StockShop? stockShop, bool isBuying)
     {
       if (stockShop == null) return false;
 
-      var buyingField = typeof(StockShop).GetField("buying", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-      if (buyingField == null)
-      {
-        Log.Error("Failed to find buying field in StockShop");
-        return false;
-      }
-
-      buyingField.SetValue(stockShop, isBuying);
+      AccessTools.Field(typeof(StockShop), "buying").SetValue(stockShop, isBuying);
       return true;
     }
 
     private static bool TryGetStockShop(StockShopView view, out StockShop? stockShop)
     {
-      stockShop = null;
 
-      var targetField = typeof(StockShopView).GetField("target", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-      if (targetField == null)
-      {
-        Log.Error("Failed to find targetField in StockShopView");
-        return false;
-      }
-
-      stockShop = targetField.GetValue(view) as StockShop;
-      if (stockShop != null) return true;
-
-      Log.Error("Failed to get stockShop from StockShopView");
-      return false;
+      stockShop = AccessTools.Field(typeof(StockShopView), "target").GetValue(view) as StockShop;
+      return stockShop != null;
     }
 
     private static bool TryInvokeRefresh(StockShop? stockShop)
     {
       if (stockShop == null) return false;
 
-      var doRefreshStockMethod = typeof(StockShop).GetMethod("DoRefreshStock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-      if (doRefreshStockMethod == null)
-      {
-        Log.Error("Failed to find DoRefreshStock method in StockShop");
-        return false;
-      }
-
-      doRefreshStockMethod.Invoke(stockShop, null);
+      AccessTools.Method(typeof(StockShop), "DoRefreshStock").Invoke(stockShop, null);
       return true;
     }
 

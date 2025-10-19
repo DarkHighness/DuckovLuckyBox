@@ -10,6 +10,7 @@ namespace DuckovLuckyBox
       public static readonly string RefreshStockKey = "UI_RefreshStock";
       public static readonly string PickOneKey = "UI_PickOne";
       public static readonly string PickOneNotificationFormatKey = "Notification_PickOneFormat";
+      public static readonly string BuyLuckyBoxText = "UI_BuyLuckyBox";
     }
   }
 }

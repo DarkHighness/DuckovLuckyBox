@@ -28,10 +28,12 @@ namespace DuckovLuckyBox
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 
             Localizations.Instance.Initialize();
+            // ItemAssetsCollection.AddDynamicEntry(LuckyBoxItem.Instance);
         }
         void OnDisable()
         {
             Localizations.Instance.Destroy();
+            // ItemAssetsCollection.RemoveDynamicEntry(LuckyBoxItem.Instance);
             harmony?.UnpatchAll(Constants.ModId);
         }
     }
