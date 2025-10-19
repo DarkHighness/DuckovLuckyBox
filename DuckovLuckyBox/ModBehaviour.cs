@@ -18,10 +18,12 @@ namespace DuckovLuckyBox
         {
             Log.Debug($"{Constants.ModName} has been loaded.");
         }
+
         void OnDestroy()
         {
 
         }
+
         void OnEnable()
         {
             harmony = new Harmony(Constants.ModId);
@@ -30,6 +32,7 @@ namespace DuckovLuckyBox
             Localizations.Instance.Initialize();
             // ItemAssetsCollection.AddDynamicEntry(LuckyBoxItem.Instance);
         }
+
         void OnDisable()
         {
             Localizations.Instance.Destroy();

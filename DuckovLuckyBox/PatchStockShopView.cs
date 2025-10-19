@@ -9,7 +9,6 @@ using SodaCraft.Localizations;
 using HarmonyLib;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using System.Threading.Tasks;
 using System;
 using ItemStatsSystem;
 using System.Linq;
@@ -28,6 +27,22 @@ namespace DuckovLuckyBox
     private static Button? _buyLuckyBoxButton;
     private static RectTransform? _actionsContainer;
     private static readonly string SFX_BUY = "UI/buy";
+    private const float AnchorOffsetExtraPadding = 40f;
+    private const float ActionsContainerFallbackWidth = 320f;
+    private const float ActionsContainerHeight = 48f;
+    private const float ActionsLayoutSpacing = 16f;
+    private const int ActionsLayoutPaddingHorizontal = 12;
+    private const int ActionsLayoutPaddingTop = 8;
+    private const int ActionsLayoutPaddingBottom = 8;
+    private const float ActionLabelPreferredHeight = 40f;
+    private const float ActionLabelMinWidth = 140f;
+    private const float ActionLabelExtraWidth = 24f;
+    private const float ActionLabelMinFontSize = 18f;
+    private const float ActionLabelFontScale = 0.9f;
+    private static readonly Color ActionButtonNormalColor = Color.white;
+    private static readonly Color ActionButtonHighlightedColor = new Color(0.9f, 0.95f, 1f, 1f);
+    private static readonly Color ActionButtonPressedColor = new Color(0.8f, 0.85f, 0.95f, 1f);
+    private static readonly Color ActionButtonDisabledColor = new Color(1f, 1f, 1f, 0.35f);
     private static List<int>? _itemTypeIdsCache = null;
     public static List<int> ItemTypeIdsCache
     {
@@ -82,15 +97,15 @@ namespace DuckovLuckyBox
         _actionsContainer.SetParent(parent, false);
 
         float anchorOffset = merchantNameText.rectTransform.rect.height;
-        if (anchorOffset <= 0f) anchorOffset = merchantNameText.fontSize + 40f;
+        if (anchorOffset <= 0f) anchorOffset = merchantNameText.fontSize + AnchorOffsetExtraPadding;
         _actionsContainer.anchorMin = new Vector2(0.5f, 1f);
         _actionsContainer.anchorMax = new Vector2(0.5f, 1f);
         _actionsContainer.pivot = new Vector2(0.5f, 1f);
         _actionsContainer.anchoredPosition = new Vector2(0f, -anchorOffset);
 
         float width = merchantNameText.rectTransform.rect.width;
-        if (width <= 0f) width = 320f;
-        _actionsContainer.sizeDelta = new Vector2(width, 48f);
+        if (width <= 0f) width = ActionsContainerFallbackWidth;
+        _actionsContainer.sizeDelta = new Vector2(width, ActionsContainerHeight);
 
         var layout = _actionsContainer.gameObject.AddComponent<HorizontalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleCenter;
@@ -98,8 +113,8 @@ namespace DuckovLuckyBox
         layout.childControlWidth = true;
         layout.childForceExpandHeight = false;
         layout.childForceExpandWidth = false;
-        layout.spacing = 16f;
-        layout.padding = new RectOffset(12, 12, 8, 8);
+        layout.spacing = ActionsLayoutSpacing;
+        layout.padding = CreateActionsPadding();
       }
 
       _refreshStockText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
@@ -136,13 +151,22 @@ namespace DuckovLuckyBox
       var selectedIndex = UnityEngine.Random.Range(0, ItemTypeIdsCache.Count);
       var selectedItemTypeId = ItemTypeIdsCache[selectedIndex];
       Item obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
+      var isSentToStorage = true;
       if (!ItemUtilities.SendToPlayerCharacterInventory(obj))
       {
         Log.Error($"Failed to send item to player inventory: {selectedItemTypeId}. Send to the player storage.");
         ItemUtilities.SendToPlayerStorage(obj);
+        isSentToStorage = true;
       }
       var messageTemplate = Constants.I18n.PickOneNotificationFormatKey.ToPlainText();
       var message = messageTemplate.Replace("{itemDisplayName}", obj.DisplayName);
+
+      if (isSentToStorage)
+      {
+        var inventoryFullMessage = Constants.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
+        message = $"{message}({inventoryFullMessage})";
+      }
+
       NotificationText.Push(message);
       AudioManager.Post(SFX_BUY);
     }
@@ -156,12 +180,12 @@ namespace DuckovLuckyBox
     }
 
 
-    private static async UniTask OnPickOneClicked(StockShopView stockShopView)
+    private static async UniTask<bool> OnPickOneClicked(StockShopView stockShopView)
     {
-      if (!TryGetStockShop(stockShopView, out var stockShop)) return;
-      if (stockShop == null) return;
+      if (!TryGetStockShop(stockShopView, out var stockShop)) return false;
+      if (stockShop == null) return false;
 
-      if (stockShop.Busy) return;
+      if (stockShop.Busy) return false;
 
       var itemEntries = new List<StockShop.Entry>();
       foreach (var entry in stockShop.entries)
@@ -177,26 +201,28 @@ namespace DuckovLuckyBox
       if (itemEntries.Count == 0)
       {
         Log.Warning("No available items to pick");
-        return;
+        return false;
       }
 
       var randomIndex = UnityEngine.Random.Range(0, itemEntries.Count);
       var pickedItem = itemEntries[randomIndex];
 
-      if (!SetBuyingState(stockShop, true)) return;
+      if (!SetBuyingState(stockShop, true)) return false;
       Item item = stockShop.GetItemInstanceDirect(pickedItem.ItemTypeID);
       if (item == null)
       {
         Log.Error("Failed to get item instance for " + pickedItem.ItemTypeID);
         SetBuyingState(stockShop, false);
-        return;
+        return false;
       }
 
       Item obj = await ItemAssetsCollection.InstantiateAsync(pickedItem.ItemTypeID);
+      var isSentToStorage = false;
       if (!ItemUtilities.SendToPlayerCharacterInventory(obj))
       {
         Log.Error($"Failed to send item to player inventory: {pickedItem.ItemTypeID}. Send to the player storage.");
         ItemUtilities.SendToPlayerStorage(obj);
+        isSentToStorage = true;
       }
 
       pickedItem.CurrentStock = Math.Max(0, pickedItem.CurrentStock - 1);
@@ -210,18 +236,25 @@ namespace DuckovLuckyBox
 
       var messageTemplate = Constants.I18n.PickOneNotificationFormatKey.ToPlainText();
       var message = messageTemplate.Replace("{itemDisplayName}", obj.DisplayName);
+
+      if (isSentToStorage)
+      {
+        var inventoryFullMessage = Constants.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
+        message = $"{message}({inventoryFullMessage})";
+      }
+
       NotificationText.Push(message);
       AudioManager.Post(SFX_BUY);
 
-      if (!SetBuyingState(stockShop, false)) return;
-      return;
+      if (!SetBuyingState(stockShop, false)) return false;
+      return true;
     }
 
-    private static bool SetBuyingState(StockShop? stockShop, bool isBuying)
+    private static bool SetBuyingState(StockShop? stockShop, bool buying)
     {
       if (stockShop == null) return false;
 
-      AccessTools.Field(typeof(StockShop), "buying").SetValue(stockShop, isBuying);
+      AccessTools.Field(typeof(StockShop), "buying").SetValue(stockShop, buying);
       return true;
     }
 
@@ -246,18 +279,18 @@ namespace DuckovLuckyBox
       label.margin = Vector4.zero;
       label.alignment = TextAlignmentOptions.Center;
       label.enableAutoSizing = false;
-      label.fontSize = Mathf.Max(18f, label.fontSize * 0.9f);
+      label.fontSize = Mathf.Max(ActionLabelMinFontSize, label.fontSize * ActionLabelFontScale);
       label.raycastTarget = true;
 
       var rectTransform = label.rectTransform;
       rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
       rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
       rectTransform.pivot = new Vector2(0.5f, 0.5f);
-      rectTransform.sizeDelta = new Vector2(0f, 40f);
+      rectTransform.sizeDelta = new Vector2(0f, ActionLabelPreferredHeight);
 
       var layoutElement = label.GetComponent<LayoutElement>() ?? label.gameObject.AddComponent<LayoutElement>();
-      layoutElement.preferredHeight = 40f;
-      layoutElement.preferredWidth = Mathf.Max(140f, label.preferredWidth + 24f);
+      layoutElement.preferredHeight = ActionLabelPreferredHeight;
+      layoutElement.preferredWidth = Mathf.Max(ActionLabelMinWidth, label.preferredWidth + ActionLabelExtraWidth);
       layoutElement.flexibleWidth = 0f;
     }
 
@@ -267,12 +300,21 @@ namespace DuckovLuckyBox
       button.targetGraphic = label;
 
       var colors = button.colors;
-      colors.normalColor = Color.white;
-      colors.highlightedColor = new Color(0.9f, 0.95f, 1f, 1f);
-      colors.pressedColor = new Color(0.8f, 0.85f, 0.95f, 1f);
-      colors.selectedColor = colors.highlightedColor;
-      colors.disabledColor = new Color(1f, 1f, 1f, 0.35f);
+      colors.normalColor = ActionButtonNormalColor;
+      colors.highlightedColor = ActionButtonHighlightedColor;
+      colors.pressedColor = ActionButtonPressedColor;
+      colors.selectedColor = ActionButtonHighlightedColor;
+      colors.disabledColor = ActionButtonDisabledColor;
       button.colors = colors;
+    }
+
+    private static RectOffset CreateActionsPadding()
+    {
+      return new RectOffset(
+        ActionsLayoutPaddingHorizontal,
+        ActionsLayoutPaddingHorizontal,
+        ActionsLayoutPaddingTop,
+        ActionsLayoutPaddingBottom);
     }
   }
 }
