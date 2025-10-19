@@ -1,0 +1,38 @@
+﻿using System.Reflection;
+using Duckov.UI;
+using Duckov.Utilities;
+using ItemStatsSystem;
+using TMPro;
+using HarmonyLib;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace DuckovLuckyBox
+{
+
+    public class ModBehaviour : Duckov.Modding.ModBehaviour
+    {
+        private Harmony? harmony = null;
+
+        void Awake()
+        {
+            Log.Debug($"{Constants.ModName} has been loaded.");
+        }
+        void OnDestroy()
+        {
+
+        }
+        void OnEnable()
+        {
+            harmony = new Harmony(Constants.ModId);
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
+
+            Localizations.Instance.Initialize();
+        }
+        void OnDisable()
+        {
+            Localizations.Instance.Destroy();
+            harmony?.UnpatchAll(Constants.ModId);
+        }
+    }
+}
