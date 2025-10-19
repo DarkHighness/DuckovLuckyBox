@@ -50,7 +50,12 @@ namespace DuckovLuckyBox
       {
         if (_itemTypeIdsCache == null)
         {
-          _itemTypeIdsCache = ItemAssetsCollection.Instance.entries.Select(entry => entry.typeID).ToList();
+          _itemTypeIdsCache = ItemAssetsCollection.Instance.entries
+          // We predictably exclude items whose display name is in the form of "*Item_*"
+          // to avoid illegal items.
+          .Where(entry => !entry.prefab.DisplayName.StartsWith("*Item_"))
+          .Select(entry => entry.typeID)
+          .ToList();
         }
         return _itemTypeIdsCache;
       }
