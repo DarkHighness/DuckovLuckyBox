@@ -12,19 +12,20 @@ using Cysharp.Threading.Tasks;
 using System;
 using ItemStatsSystem;
 using System.Linq;
+using DuckovLuckyBox.Core;
 
-namespace DuckovLuckyBox
+namespace DuckovLuckyBox.Patches
 {
 
     [HarmonyPatch(typeof(StockShopView), "Setup")]
     public class PatchStockShopView
     {
         private static TextMeshProUGUI? _refreshStockText;
-        private static Button? _refreshStockButton;
+        private static Button? _refreshButton;
         private static TextMeshProUGUI? _pickOneText;
-        private static Button? _pickOneButton;
+        private static Button? _storePickButton;
         private static TextMeshProUGUI? _buyLuckyBoxText;
-        private static Button? _buyLuckyBoxButton;
+        private static Button? _streetPickButton;
         private static RectTransform? _actionsContainer;
         private static RectTransform? _luckyRollOverlay;
         private static RectTransform? _luckyRollViewport;
@@ -174,32 +175,32 @@ namespace DuckovLuckyBox
             ConfigureActionLabel(_refreshStockText, Constants.I18n.RefreshStockKey.ToPlainText());
 
             _pickOneText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-            ConfigureActionLabel(_pickOneText, Constants.I18n.PickOneKey.ToPlainText());
+            ConfigureActionLabel(_pickOneText, Constants.I18n.StorePickKey.ToPlainText());
 
             _buyLuckyBoxText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-            ConfigureActionLabel(_buyLuckyBoxText, Constants.I18n.BuyLuckyBoxText.ToPlainText());
+            ConfigureActionLabel(_buyLuckyBoxText, Constants.I18n.StreetPickKey.ToPlainText());
         }
 
         private static void EnsureButtons(StockShopView view)
         {
-            if (_refreshStockButton != null || _pickOneButton != null || _buyLuckyBoxButton != null) return;
+            if (_refreshButton != null || _storePickButton != null || _streetPickButton != null) return;
             if (_refreshStockText == null || _pickOneText == null || _buyLuckyBoxText == null) return;
 
-            _refreshStockButton = _refreshStockText.gameObject.AddComponent<Button>();
-            ConfigureActionButton(_refreshStockButton, _refreshStockText);
+            _refreshButton = _refreshStockText.gameObject.AddComponent<Button>();
+            ConfigureActionButton(_refreshButton, _refreshStockText);
 
-            _pickOneButton = _pickOneText.gameObject.AddComponent<Button>();
-            ConfigureActionButton(_pickOneButton, _pickOneText);
+            _storePickButton = _pickOneText.gameObject.AddComponent<Button>();
+            ConfigureActionButton(_storePickButton, _pickOneText);
 
-            _buyLuckyBoxButton = _buyLuckyBoxText.gameObject.AddComponent<Button>();
-            ConfigureActionButton(_buyLuckyBoxButton, _buyLuckyBoxText);
+            _streetPickButton = _buyLuckyBoxText.gameObject.AddComponent<Button>();
+            ConfigureActionButton(_streetPickButton, _buyLuckyBoxText);
 
-            _refreshStockButton.onClick.AddListener(() => OnRefreshButtonClicked(view));
-            _pickOneButton.onClick.AddListener(() => OnPickOneClicked(view).Forget());
-            _buyLuckyBoxButton.onClick.AddListener(() => OnBuyLuckyBoxClicked(view).Forget());
+            _refreshButton.onClick.AddListener(() => OnRefreshButtonClicked(view));
+            _storePickButton.onClick.AddListener(() => OnStorePickButtonClicked(view).Forget());
+            _streetPickButton.onClick.AddListener(() => OnStreetPickButtonClicked(view).Forget());
         }
 
-        private static async UniTask OnBuyLuckyBoxClicked(StockShopView stockShopView)
+        private static async UniTask OnStreetPickButtonClicked(StockShopView stockShopView)
         {
             if (_isAnimating) return;
 
@@ -226,7 +227,7 @@ namespace DuckovLuckyBox
                 isSentToStorage = false;
             }
 
-            var messageTemplate = Constants.I18n.PickOneNotificationFormatKey.ToPlainText();
+            var messageTemplate = Constants.I18n.PickNotificationFormatKey.ToPlainText();
             var message = messageTemplate.Replace("{itemDisplayName}", obj.DisplayName);
 
             if (isSentToStorage)
@@ -248,7 +249,7 @@ namespace DuckovLuckyBox
         }
 
 
-        private static async UniTask<bool> OnPickOneClicked(StockShopView stockShopView)
+        private static async UniTask<bool> OnStorePickButtonClicked(StockShopView stockShopView)
         {
             if (_isAnimating) return false;
             if (!TryGetStockShop(stockShopView, out var stockShop)) return false;
@@ -304,7 +305,7 @@ namespace DuckovLuckyBox
                 if (onItemPurchasedField?.GetValue(null) is Action<StockShop, Item> onItemPurchased)
                     onItemPurchased(stockShop, obj);
 
-                var messageTemplate = Constants.I18n.PickOneNotificationFormatKey.ToPlainText();
+                var messageTemplate = Constants.I18n.PickNotificationFormatKey.ToPlainText();
                 var message = messageTemplate.Replace("{itemDisplayName}", obj.DisplayName);
 
                 if (isSentToStorage)

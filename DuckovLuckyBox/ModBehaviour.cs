@@ -6,6 +6,7 @@ using TMPro;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
+using DuckovLuckyBox.Core;
 
 namespace DuckovLuckyBox
 {

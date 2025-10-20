@@ -3,23 +3,23 @@ using System.Linq;
 using UnityEngine;
 using SodaCraft.Localizations;
 
-namespace DuckovLuckyBox
+namespace DuckovLuckyBox.Core
 {
     public class Localizations
     {
         private readonly Dictionary<SystemLanguage, Dictionary<string, string>> _localizedStrings = new Dictionary<SystemLanguage, Dictionary<string, string>> {
         { SystemLanguage.English, new Dictionary<string, string> {
             { Constants.I18n.RefreshStockKey, "Refresh" },
-            { Constants.I18n.PickOneKey, "Pick One" },
-            { Constants.I18n.PickOneNotificationFormatKey, "You picked one {itemDisplayName}." },
-            { Constants.I18n.BuyLuckyBoxText, "Buy one Lucky Box." },
+            { Constants.I18n.StorePickKey, "Pick One" },
+            { Constants.I18n.PickNotificationFormatKey, "You picked one {itemDisplayName}." },
+            { Constants.I18n.StreetPickKey, "Buy one Lucky Box." },
             { Constants.I18n.InventoryFullAndSendToStorageKey, "Inventory full, sending to storage." }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { Constants.I18n.RefreshStockKey, "刷新" },
-            { Constants.I18n.PickOneKey, "商人那拾一个" },
-            { Constants.I18n.PickOneNotificationFormatKey, "俺拾到了 {itemDisplayName}" },
-            { Constants.I18n.BuyLuckyBoxText, "路边拾一个" },
+            { Constants.I18n.StorePickKey, "商人那拾一个" },
+            { Constants.I18n.PickNotificationFormatKey, "俺拾到了 {itemDisplayName}" },
+            { Constants.I18n.StreetPickKey, "路边拾一个" },
             { Constants.I18n.InventoryFullAndSendToStorageKey, "俺拾不动嘞，邮回仓库嘞。" }
         } },
     };

@@ -3,7 +3,7 @@ using System.Reflection;
 using FMODUnity;
 using UnityEngine;
 
-namespace DuckovLuckyBox
+namespace DuckovLuckyBox.Utils
 {
     public static class Utils
     {
