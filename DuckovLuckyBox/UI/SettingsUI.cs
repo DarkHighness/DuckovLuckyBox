@@ -113,6 +113,9 @@ namespace DuckovLuckyBox.Core.Settings.UI
       initialized = true;
       initializing = false;
       Log.Debug("Settings UI Initialized (async complete).");
+
+      // Display after initialization
+      ShowSettingsUI();
     }
 
     private void CreateSettingPanel()

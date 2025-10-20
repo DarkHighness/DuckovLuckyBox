@@ -48,43 +48,34 @@ namespace DuckovLuckyBox.Patches
         private const float ActionLabelExtraWidth = 24f;
         private const float ActionLabelMinFontSize = 18f;
         private const float ActionLabelFontScale = 0.9f;
-        private const float LuckyRollDefaultWindowWidth = 960f;
-        private const float LuckyRollDefaultWindowHeight = 180f;
-        private static Vector2 _luckyRollWindowSize = new Vector2(LuckyRollDefaultWindowWidth, LuckyRollDefaultWindowHeight);
-        private static float LuckyRollWindowWidth => _luckyRollWindowSize.x;
-        private static float LuckyRollWindowHeight => _luckyRollWindowSize.y;
         private static readonly Vector2 LuckyRollIconSize = new Vector2(128f, 128f);
-        private const float LuckyRollPointerThickness = 12f;
-        private static Vector2 LuckyRollPointerSize => new Vector2(LuckyRollPointerThickness, LuckyRollWindowHeight + 64f);
         private const float LuckyRollItemSpacing = 24f;
         private const float LuckyRollSlotPadding = 32f;
         private static readonly float LuckyRollSlotFullWidth = LuckyRollIconSize.x + LuckyRollSlotPadding + LuckyRollItemSpacing;
-        private const int LuckyRollLeadSlots = 8;
-        private const int LuckyRollTrailSlots = 12;
-        private const int LuckyRollBaseCycles = 5;
-        private const int LuckyRollMinimumSlots = 32;
+        private const int LuckyRollMinimumSlots = 100;
+        private const float LuckyRollAnimationDuration = 5.0f;
         private const float LuckyRollFadeDuration = 0.25f;
-        private const float LuckyRollRevealHold = 0.75f;
-        private const float LuckyRollSpinDuration = 4.2f;
-        private const float LuckyRollTotalDuration = 4.4f;
-        private const float LuckyRollPreviewHold = 0.3f;
-        private const float LuckyRollPreviewTransitionDuration = 0.45f;
-        private const float LuckyRollFollowSmoothTime = 0.12f;
         private const float LuckyRollCelebrateDuration = 0.4f;
-        private const float LuckyRollCelebrateScale = 1.18f;
+        private const float LuckyRollCelebrateScale = 1.1f;
+        private const float LuckyRollPointerThickness = 12f;
+        private static readonly AnimationCurve LuckyRollAnimationCurve = new AnimationCurve(
+            new Keyframe(0f, 0f, 3f, 3f),
+            new Keyframe(0.3f, 0.6f, 2f, 2f),
+            new Keyframe(0.7f, 0.9f, 0.5f, 0.5f),
+            new Keyframe(1f, 1f, 0f, 0f));
         private static readonly Color ActionButtonNormalColor = new Color(1f, 1f, 1f, 0.8f);
         private static readonly Color ActionButtonHighlightedColor = new Color(1f, 1f, 1f, 0.95f);
         private static readonly Color ActionButtonPressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
         private static readonly Color ActionButtonDisabledColor = new Color(1f, 1f, 1f, 0.35f);
         private static readonly Color LuckyRollOverlayColor = new Color(0f, 0f, 0f, 0.7f);
-        private static readonly Color LuckyRollPointerColor = new Color(1f, 0.95f, 0.6f, 0.95f);
+        private static readonly Color LuckyRollPointerColor = new Color(1f, 1f, 1f, 0.95f);
         private static readonly Color LuckyRollFinalFrameColor = new Color(0.95f, 0.8f, 0.35f, 1f);
         private static readonly Color LuckyRollSlotFrameColor = new Color(1f, 1f, 1f, 0.25f);
         private static readonly AnimationCurve LuckyRollSpinCurve = new AnimationCurve(
-            new Keyframe(0f, 0f, 0.25f, 1.8f),
-            new Keyframe(0.18f, 0.14f, 2.35f, 2.35f),
-            new Keyframe(0.48f, 0.62f, 1.4f, 1.4f),
-            new Keyframe(0.78f, 0.9f, 0.55f, 0.55f),
+            new Keyframe(0f, 0f, 0f, 1.5f),
+            new Keyframe(0.15f, 0.1f, 1.8f, 1.8f),
+            new Keyframe(0.4f, 0.5f, 2.0f, 2.0f),
+            new Keyframe(0.7f, 0.85f, 0.8f, 0.8f),
             new Keyframe(1f, 1f, 0f, 0f));
         private static readonly AnimationCurve LuckyRollPreviewCurve = new AnimationCurve(
             new Keyframe(0f, 0f, 0f, 2f),
@@ -202,6 +193,7 @@ namespace DuckovLuckyBox.Patches
 
         private static async UniTask OnStreetPickButtonClicked(StockShopView stockShopView)
         {
+            Log.Debug("Street pick button clicked");
             if (_isAnimating) return;
 
             var selectedIndex = UnityEngine.Random.Range(0, ItemTypeIdsCache.Count);
@@ -242,6 +234,7 @@ namespace DuckovLuckyBox.Patches
 
         private static void OnRefreshButtonClicked(StockShopView stockShopView)
         {
+            Log.Debug("Refresh button clicked");
             if (!TryGetStockShop(stockShopView, out var stockShop)) return;
             if (!TryInvokeRefresh(stockShop)) return;
             AudioManager.Post(SFX_BUY);
@@ -251,6 +244,7 @@ namespace DuckovLuckyBox.Patches
 
         private static async UniTask<bool> OnStorePickButtonClicked(StockShopView stockShopView)
         {
+            Log.Debug("Store pick button clicked");
             if (_isAnimating) return false;
             if (!TryGetStockShop(stockShopView, out var stockShop)) return false;
             if (stockShop == null) return false;
@@ -401,6 +395,7 @@ namespace DuckovLuckyBox.Patches
             var canvas = merchantNameText.canvas;
             if (canvas == null) return;
 
+            // Create full-screen overlay
             _luckyRollOverlay = new GameObject("LuckyRollOverlay", typeof(RectTransform), typeof(CanvasGroup), typeof(Image)).GetComponent<RectTransform>();
             _luckyRollOverlay.SetParent(canvas.transform, false);
             _luckyRollOverlay.anchorMin = Vector2.zero;
@@ -418,12 +413,18 @@ namespace DuckovLuckyBox.Patches
             overlayImage.color = LuckyRollOverlayColor;
             overlayImage.raycastTarget = true;
 
+            // Create viewport in center of screen
+            var canvasRect = canvas.GetComponent<RectTransform>();
+            var canvasSize = canvasRect.rect.size;
+            var viewportHeight = Mathf.Min(200f, canvasSize.y * 0.3f);
+            var viewportWidth = canvasSize.x * 0.8f;
+
             _luckyRollViewport = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
             _luckyRollViewport.SetParent(_luckyRollOverlay, false);
             _luckyRollViewport.anchorMin = new Vector2(0.5f, 0.5f);
             _luckyRollViewport.anchorMax = new Vector2(0.5f, 0.5f);
             _luckyRollViewport.pivot = new Vector2(0.5f, 0.5f);
-            _luckyRollViewport.sizeDelta = new Vector2(LuckyRollWindowWidth, LuckyRollWindowHeight);
+            _luckyRollViewport.sizeDelta = new Vector2(viewportWidth, viewportHeight);
 
             _luckyRollItemsContainer = new GameObject("Items", typeof(RectTransform)).GetComponent<RectTransform>();
             _luckyRollItemsContainer.SetParent(_luckyRollViewport, false);
@@ -431,95 +432,41 @@ namespace DuckovLuckyBox.Patches
             _luckyRollItemsContainer.anchorMax = new Vector2(0.5f, 0.5f);
             _luckyRollItemsContainer.pivot = new Vector2(0.5f, 0.5f);
 
+            // Create center pointer
             _luckyRollPointer = new GameObject("Pointer", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
             _luckyRollPointer.rectTransform.SetParent(_luckyRollOverlay, false);
             _luckyRollPointer.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             _luckyRollPointer.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             _luckyRollPointer.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            _luckyRollPointer.rectTransform.sizeDelta = LuckyRollPointerSize;
+            _luckyRollPointer.rectTransform.sizeDelta = new Vector2(LuckyRollPointerThickness, viewportHeight + 64f);
             _luckyRollPointer.rectTransform.anchoredPosition = Vector2.zero;
             _luckyRollPointer.sprite = EnsureFallbackSprite();
             _luckyRollPointer.type = Image.Type.Simple;
             _luckyRollPointer.color = LuckyRollPointerColor;
             _luckyRollPointer.raycastTarget = false;
 
+            // Create result text
             _luckyRollResultText = UnityEngine.Object.Instantiate(merchantNameText, _luckyRollOverlay);
             _luckyRollResultText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             _luckyRollResultText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             _luckyRollResultText.rectTransform.pivot = new Vector2(0.5f, 1f);
-            _luckyRollResultText.rectTransform.anchoredPosition = new Vector2(0f, -LuckyRollWindowHeight * 0.75f);
+            _luckyRollResultText.rectTransform.anchoredPosition = new Vector2(0f, -viewportHeight * 0.75f);
             _luckyRollResultText.enableAutoSizing = false;
             _luckyRollResultText.fontSize = Mathf.Max(26f, merchantNameText.fontSize * 0.9f);
             _luckyRollResultText.alignment = TextAlignmentOptions.Center;
             _luckyRollResultText.raycastTarget = false;
             ResetLuckyRollResultText();
-
-            UpdateLuckyRollWindowSize(merchantNameText);
-        }
-
-        private static void UpdateLuckyRollWindowSize(TextMeshProUGUI merchantNameText)
-        {
-            if (merchantNameText == null) return;
-
-            var references = new RectTransform?[]
-            {
-                merchantNameText.rectTransform.parent as RectTransform,
-                merchantNameText.rectTransform,
-                merchantNameText.canvas != null ? merchantNameText.canvas.transform as RectTransform : null
-            };
-
-            var width = LuckyRollDefaultWindowWidth;
-            var height = LuckyRollDefaultWindowHeight;
-
-            foreach (var rectTransform in references)
-            {
-                if (rectTransform == null) continue;
-                var rect = rectTransform.rect;
-                if (rect.width > 0f)
-                {
-                    width = rect.width;
-                    break;
-                }
-            }
-
-            foreach (var rectTransform in references)
-            {
-                if (rectTransform == null) continue;
-                var rect = rectTransform.rect;
-                if (rect.height > 0f)
-                {
-                    height = rect.height;
-                    break;
-                }
-            }
-
-            width = Mathf.Max(width, LuckyRollIconSize.x + LuckyRollSlotPadding);
-            height = Mathf.Max(height, LuckyRollIconSize.y + LuckyRollSlotPadding);
-
-            _luckyRollWindowSize = new Vector2(width, height);
-            ApplyLuckyRollWindowSize();
-        }
-
-        private static void ApplyLuckyRollWindowSize()
-        {
-            if (_luckyRollViewport != null)
-            {
-                _luckyRollViewport.sizeDelta = _luckyRollWindowSize;
-            }
-
-            if (_luckyRollPointer != null)
-            {
-                _luckyRollPointer.rectTransform.sizeDelta = LuckyRollPointerSize;
-            }
-
-            if (_luckyRollResultText != null)
-            {
-                _luckyRollResultText.rectTransform.anchoredPosition = new Vector2(0f, -LuckyRollWindowHeight * 0.75f);
-            }
         }
 
         private static async UniTask PlayLuckyBoxAnimation(IEnumerable<int> candidateTypeIds, int finalTypeId, string finalDisplayName, Sprite? finalIcon)
         {
+            // Check if animation is enabled in settings
+            if (!(Core.Settings.Settings.Instance.EnableAnimation.Value is bool enabled && enabled))
+            {
+                Log.Debug("Lucky roll animation is disabled. Skipping animation.");
+                return;
+            }
+
             if (_luckyRollOverlay == null || _luckyRollItemsContainer == null || _luckyRollPointer == null || _luckyRollCanvasGroup == null)
             {
                 Log.Warning("Lucky roll overlay is not ready.");
@@ -542,27 +489,32 @@ namespace DuckovLuckyBox.Patches
 
             try
             {
-                itemsContainer.anchoredPosition = Vector2.zero;
                 overlay.gameObject.SetActive(true);
                 canvasGroup.blocksRaycasts = true;
 
-                ResetLuckyRollResultText();
-
-                await FadeCanvasGroup(canvasGroup, 0f, 1f, LuckyRollFadeDuration);
-
-                if (LuckyRollPreviewHold > 0f)
+                // Show Pointer at the start of animation
+                if (_luckyRollPointer != null)
                 {
-                    await UniTask.Delay(TimeSpan.FromSeconds(LuckyRollPreviewHold), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
+                    var pointerColor = _luckyRollPointer.color;
+                    pointerColor.a = 0.95f;
+                    _luckyRollPointer.color = pointerColor;
                 }
 
-                await AnimateRollPhase(0f, plan.StartOffset, LuckyRollPreviewTransitionDuration, LuckyRollPreviewCurve);
+                ResetLuckyRollResultText();
 
-                await AnimateRollPhase(plan.StartOffset, plan.FinalOffset, LuckyRollSpinDuration, LuckyRollSpinCurve);
+                // Fade in
+                await FadeCanvasGroup(canvasGroup, 0f, 1f, LuckyRollFadeDuration);
 
-                itemsContainer.anchoredPosition = new Vector2(-plan.FinalOffset, 0f);
+                // Single continuous roll animation
+                await PerformContinuousRoll(plan, LuckyRollAnimationDuration, LuckyRollAnimationCurve);
+
+                // Celebration on final slot
                 await AnimateLuckyRollCelebration(plan);
 
+                // Reveal result and hold
                 await RevealLuckyRollResult(finalDisplayName);
+
+                // Fade out
                 await FadeCanvasGroup(canvasGroup, 1f, 0f, LuckyRollFadeDuration);
             }
             finally
@@ -572,6 +524,14 @@ namespace DuckovLuckyBox.Patches
                 canvasGroup.alpha = 0f;
                 canvasGroup.blocksRaycasts = false;
                 overlay.gameObject.SetActive(false);
+
+                // Hide Pointer after animation ends
+                if (_luckyRollPointer != null)
+                {
+                    var pointerColor = _luckyRollPointer.color;
+                    pointerColor.a = 0f;
+                    _luckyRollPointer.color = pointerColor;
+                }
 
                 ResetLuckyRollResultText();
                 ClearLuckyRollItems();
@@ -584,11 +544,11 @@ namespace DuckovLuckyBox.Patches
             plan = default!;
 
             if (_luckyRollItemsContainer == null) return false;
+            if (_luckyRollViewport == null) return false;
 
-            var sequenceData = BuildLuckyRollSequence(candidateTypeIds, finalTypeId);
-            var sequence = sequenceData.Slots;
-            var finalIndex = sequenceData.FinalIndex;
-            if (sequence.Count == 0 || finalIndex < 0 || finalIndex >= sequence.Count)
+            var baseSequenceData = BuildLuckyRollSequence(candidateTypeIds, finalTypeId);
+            var baseSequence = baseSequenceData.Slots;
+            if (baseSequence.Count == 0)
             {
                 return false;
             }
@@ -596,56 +556,143 @@ namespace DuckovLuckyBox.Patches
             ClearLuckyRollItems();
 
             var slotWidth = LuckyRollSlotFullWidth;
-            var totalWidth = sequence.Count * slotWidth;
-            _luckyRollItemsContainer.sizeDelta = new Vector2(totalWidth, LuckyRollWindowHeight);
+            var viewportWidth = _luckyRollViewport.rect.width;
+            var viewportHalfWidth = viewportWidth * 0.5f;
 
-            var slots = new List<LuckyRollSlot>(sequence.Count);
-            var hasFinalSlot = false;
-            LuckyRollSlot finalSlot = default;
+            // ===== SIMPLIFIED SCROLLING APPROACH =====
+            //
+            // The base sequence has ~100 random items + 1 final item
+            // We need to create a scrolling animation where:
+            // 1. Initial state shows items filling the viewport
+            // 2. Items scroll from left to right smoothly
+            // 3. Final item stops at center WITH items visible after it
 
-            for (int i = 0; i < sequence.Count; i++)
+            var displaySequence = new List<int>(baseSequence);
+
+            // Find the final item index in the base sequence
+            int baselineFinalItemIndex = -1;
+            for (int i = 0; i < displaySequence.Count; i++)
             {
-                var typeId = sequence[i];
-                var isFinalSlot = i == finalIndex;
-                var sprite = isFinalSlot ? (finalIcon ?? GetItemIcon(typeId)) : GetItemIcon(typeId);
-                var slot = CreateLuckyRollSlot(typeId, sprite, GetDisplayNameForType(typeId));
+                if (displaySequence[i] == finalTypeId)
+                {
+                    baselineFinalItemIndex = i;
+                    break;
+                }
+            }
 
-                var positionX = -totalWidth * 0.5f + slotWidth * 0.5f + i * slotWidth;
+            if (baselineFinalItemIndex < 0)
+            {
+                // Should not happen, but just in case
+                baselineFinalItemIndex = displaySequence.Count - 1;
+            }
+
+            // Add some items after the final item so there are visible items after it
+            // Use the same random pool to generate them
+            // If pool size is small, items will be repeated as needed
+            int itemsAfterFinal = Mathf.CeilToInt(viewportWidth / slotWidth);
+            var random = new System.Random();
+            int? lastId = finalTypeId;
+            for (int i = 0; i < itemsAfterFinal; i++)
+            {
+                var pool = candidateTypeIds?.Distinct().Where(id => id > 0).ToList() ?? new List<int>();
+                if (pool.Count == 0) pool.Add(finalTypeId);
+
+                int pick;
+                if (pool.Count == 1)
+                {
+                    pick = pool[0];
+                }
+                else
+                {
+                    do
+                    {
+                        pick = pool[random.Next(pool.Count)];
+                    } while (lastId.HasValue && pool.Count > 1 && pick == lastId.Value);
+                }
+                displaySequence.Add(pick);
+                lastId = pick;
+            }
+
+            var totalWidth = displaySequence.Count * slotWidth;
+            _luckyRollItemsContainer.sizeDelta = new Vector2(totalWidth, 200f);
+
+            var slots = new List<LuckyRollSlot>(displaySequence.Count);
+            int finalItemIndex = baselineFinalItemIndex;
+
+            // Create UI slots for each item in the sequence
+            for (int i = 0; i < displaySequence.Count; i++)
+            {
+                var typeId = displaySequence[i];
+                var isFinal = (i == finalItemIndex); // Only the first occurrence at baselineFinalItemIndex is the target
+
+                var sprite = isFinal ? (finalIcon ?? GetItemIcon(typeId)) : GetItemIcon(typeId);
+                var slot = CreateLuckyRollSlot(typeId, sprite, GetDisplayNameForType(typeId), GetItemQualityColor(typeId));
+
+                // Position: container is centered, so position is offset from center
+                var positionX = (float)i * slotWidth - totalWidth * 0.5f + slotWidth * 0.5f;
                 slot.Rect.anchoredPosition = new Vector2(positionX, 0f);
 
                 slots.Add(slot);
-
-                if (isFinalSlot)
-                {
-                    finalSlot = slot;
-                    hasFinalSlot = true;
-                }
             }
 
-            var finalSlotIndex = Mathf.Clamp(finalIndex, 0, slots.Count - 1);
-            if (!hasFinalSlot)
-            {
-                finalSlot = slots[finalSlotIndex];
-            }
+            // ===== CALCULATE OFFSETS =====
+            //
+            // Container's anchoredPosition is the offset that controls viewport visibility
+            //
+            // With both container and viewport pivoted at center:
+            // - offset = 0: viewport shows items around container center
+            // - offset > 0: container moves right, viewport sees earlier items
+            // - offset < 0: container moves left, viewport sees later items
+            //
+            // For left-to-right scrolling animation:
+            // - startOffset should be positive (to show early items)
+            // - endOffset should be negative (to show final item near end)
+            // - As offset decreases, viewport scrolls right (new items enter from left)
 
-            var centerOffset = finalSlot.Rect.anchoredPosition.x;
-            if (!Mathf.Approximately(centerOffset, 0f))
-            {
-                for (int i = 0; i < slots.Count; i++)
-                {
-                    var rect = slots[i].Rect;
-                    var position = rect.anchoredPosition;
-                    rect.anchoredPosition = new Vector2(position.x - centerOffset, position.y);
-                }
-            }
+            var finalItemPos = slots[finalItemIndex].Rect.anchoredPosition.x;
 
-            finalSlot = slots[finalSlotIndex];
-            var finalOffset = finalSlot.Rect.anchoredPosition.x;
-            var leadSlotCount = Mathf.Max(sequenceData.LeadCount, 1);
-            var startOffset = finalOffset + slotWidth * leadSlotCount;
+            // End state: final item at viewport center (where the pointer is)
+            // We need offset such that viewport center (0) sees finalItemPos
+            // offset = -finalItemPos achieves this
+            // With items added after the final item, they will be visible to the right
+            var endOffset = -finalItemPos;
 
-            plan = new LuckyRollAnimationPlan(slots, finalSlotIndex, startOffset, finalOffset);
+            // Start state: show early items filling viewport from left to right
+            // We want the first item (or items near start) visible at left edge
+            var firstItemPos = slots[0].Rect.anchoredPosition.x;
+
+            // To place first item at left viewport edge:
+            // We need: offset + firstItemPos = -viewportHalfWidth
+            // offset = -viewportHalfWidth - firstItemPos
+            var startOffset = -viewportHalfWidth - firstItemPos;
+
+            plan = new LuckyRollAnimationPlan(slots, finalItemIndex, startOffset, endOffset);
             return true;
+        }
+
+        private static async UniTask PerformContinuousRoll(LuckyRollAnimationPlan plan, float duration, AnimationCurve curve)
+        {
+            if (_luckyRollItemsContainer == null) return;
+
+            // Initialize to start position
+            _luckyRollItemsContainer.anchoredPosition = new Vector2(plan.StartOffset, 0f);
+
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                await UniTask.Yield(PlayerLoopTiming.Update);
+                elapsed += Time.deltaTime;
+
+                var t = Mathf.Clamp01(elapsed / duration);
+                var progress = curve?.Evaluate(t) ?? t;
+
+                // Smooth interpolation from start to end position
+                var currentOffset = Mathf.Lerp(plan.StartOffset, plan.FinalOffset, progress);
+                _luckyRollItemsContainer.anchoredPosition = new Vector2(currentOffset, 0f);
+            }
+
+            // Ensure final position is set precisely
+            _luckyRollItemsContainer.anchoredPosition = new Vector2(plan.FinalOffset, 0f);
         }
 
         private static async UniTask AnimateLuckyRollCelebration(LuckyRollAnimationPlan plan)
@@ -662,6 +709,13 @@ namespace DuckovLuckyBox.Patches
             frame.color = initialColor;
             iconTransform.localScale = initialScale;
 
+            // Record initial font size and scale of result text
+            var initialTextFontSize = _luckyRollResultText?.fontSize ?? 24f;
+            var targetTextFontSize = initialTextFontSize * 1.1f;
+            var resultTextRectTransform = _luckyRollResultText?.rectTransform;
+            var initialTextScale = resultTextRectTransform?.localScale ?? Vector3.one;
+            var targetTextScale = initialTextScale * 1.1f;
+
             var elapsed = 0f;
             while (elapsed < LuckyRollCelebrateDuration)
             {
@@ -671,10 +725,30 @@ namespace DuckovLuckyBox.Patches
                 t = Mathf.SmoothStep(0f, 1f, t);
                 frame.color = Color.Lerp(initialColor, targetColor, t);
                 iconTransform.localScale = Vector3.Lerp(initialScale, targetScale, t);
+
+                // Scale up result text
+                if (_luckyRollResultText != null)
+                {
+                    _luckyRollResultText.fontSize = Mathf.Lerp(initialTextFontSize, targetTextFontSize, t);
+                    if (resultTextRectTransform != null)
+                    {
+                        resultTextRectTransform.localScale = Vector3.Lerp(initialTextScale, targetTextScale, t);
+                    }
+                }
             }
 
             frame.color = targetColor;
             iconTransform.localScale = targetScale;
+
+            // Ensure text reaches target size
+            if (_luckyRollResultText != null)
+            {
+                _luckyRollResultText.fontSize = (int)targetTextFontSize;
+                if (resultTextRectTransform != null)
+                {
+                    resultTextRectTransform.localScale = targetTextScale;
+                }
+            }
         }
 
         private static void ResetLuckyRollResultText()
@@ -689,7 +763,7 @@ namespace DuckovLuckyBox.Patches
 
         private static async UniTask RevealLuckyRollResult(string finalDisplayName)
         {
-            await UniTask.Delay(TimeSpan.FromSeconds(LuckyRollRevealHold), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
+            await UniTask.Delay(TimeSpan.FromSeconds(0.5f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
 
             if (_luckyRollResultText != null)
             {
@@ -699,37 +773,7 @@ namespace DuckovLuckyBox.Patches
                 _luckyRollResultText.color = textColor;
             }
 
-            await UniTask.Delay(TimeSpan.FromSeconds(LuckyRollRevealHold), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
-        }
-
-        private static async UniTask AnimateRollPhase(float from, float to, float duration, AnimationCurve curve)
-        {
-            if (_luckyRollItemsContainer == null) return;
-
-            if (duration <= 0f || Mathf.Approximately(from, to))
-            {
-                _luckyRollItemsContainer.anchoredPosition = new Vector2(-to, 0f);
-                await UniTask.Yield(PlayerLoopTiming.Update);
-                return;
-            }
-
-            var elapsed = 0f;
-            var current = from;
-            var velocity = 0f;
-            while (elapsed < duration)
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update);
-                elapsed += Time.deltaTime;
-
-                var t = Mathf.Clamp01(elapsed / duration);
-                var targetProgress = curve?.Evaluate(t) ?? t;
-                var target = Mathf.Lerp(from, to, targetProgress);
-
-                current = Mathf.SmoothDamp(current, target, ref velocity, LuckyRollFollowSmoothTime, Mathf.Infinity, Time.deltaTime);
-                _luckyRollItemsContainer.anchoredPosition = new Vector2(-current, 0f);
-            }
-
-            _luckyRollItemsContainer.anchoredPosition = new Vector2(-to, 0f);
+            await UniTask.Delay(TimeSpan.FromSeconds(0.75f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
         }
 
         private static Sprite EnsureFallbackSprite()
@@ -759,71 +803,26 @@ namespace DuckovLuckyBox.Patches
                 return pick;
             }
 
-            var visibleEstimate = Mathf.Max(3, Mathf.CeilToInt(LuckyRollWindowWidth / LuckyRollSlotFullWidth));
-            var leadTarget = Mathf.Max(LuckyRollLeadSlots, visibleEstimate * 2);
-            var trailTarget = Mathf.Max(LuckyRollTrailSlots, visibleEstimate * 2);
+            var sequence = new List<int>();
 
-            var leadSlots = new List<int>(leadTarget + LuckyRollMinimumSlots);
-            var trailSlots = new List<int>(trailTarget + LuckyRollMinimumSlots);
-
-            int? lastLead = null;
-            while (leadSlots.Count < leadTarget)
+            // Build sequence: many random items, then the final item
+            // Items are sampled from the pool with repetition allowed
+            // If pool is smaller than required slots, items will be repeated
+            int? lastId = null;
+            while (sequence.Count < LuckyRollMinimumSlots - 1)
             {
-                var id = SampleNext(lastLead);
-                leadSlots.Add(id);
-                lastLead = id;
+                var id = SampleNext(lastId);
+                sequence.Add(id);
+                lastId = id;
             }
 
-            int? lastTrail = null;
-            while (trailSlots.Count < trailTarget)
-            {
-                var id = SampleNext(lastTrail);
-                trailSlots.Add(id);
-                lastTrail = id;
-            }
-
-            while (leadSlots.Count + 1 + trailSlots.Count < LuckyRollMinimumSlots)
-            {
-                if (leadSlots.Count <= trailSlots.Count)
-                {
-                    var id = SampleNext(lastLead);
-                    leadSlots.Add(id);
-                    lastLead = id;
-                }
-                else
-                {
-                    var id = SampleNext(lastTrail);
-                    trailSlots.Add(id);
-                    lastTrail = id;
-                }
-            }
-
-            // Inject a partially shuffled pass so long sequences feel less predictable.
-            foreach (var id in pool.OrderBy(_ => random.Next()))
-            {
-                if (leadSlots.Count + 1 + trailSlots.Count >= LuckyRollMinimumSlots * 2) break;
-                if (random.NextDouble() < 0.5)
-                {
-                    leadSlots.Add(id);
-                    lastLead = id;
-                }
-                else
-                {
-                    trailSlots.Add(id);
-                    lastTrail = id;
-                }
-            }
-
-            var sequence = new List<int>(leadSlots.Count + 1 + trailSlots.Count);
-            sequence.AddRange(leadSlots);
+            var finalIndex = sequence.Count;
             sequence.Add(finalTypeId);
-            sequence.AddRange(trailSlots);
 
-            var finalIndex = leadSlots.Count;
-            return new LuckyRollSequenceData(sequence, finalIndex, leadSlots.Count);
+            return new LuckyRollSequenceData(sequence, finalIndex, 0);
         }
 
-        private static LuckyRollSlot CreateLuckyRollSlot(int typeId, Sprite sprite, string displayName)
+        private static LuckyRollSlot CreateLuckyRollSlot(int typeId, Sprite sprite, string displayName, Color frameColor)
         {
             var root = new GameObject($"LuckyItem_{typeId}", typeof(RectTransform), typeof(Image));
             var rect = root.GetComponent<RectTransform>();
@@ -833,11 +832,18 @@ namespace DuckovLuckyBox.Patches
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(LuckyRollIconSize.x + LuckyRollSlotPadding, LuckyRollIconSize.y + LuckyRollSlotPadding);
 
+
             var frame = root.GetComponent<Image>();
             frame.sprite = EnsureFallbackSprite();
             frame.type = Image.Type.Simple;
-            frame.color = LuckyRollSlotFrameColor;
+            frame.color = frameColor;
             frame.raycastTarget = false;
+            // Add rounded corners to frame
+            frame.useSpriteMesh = true;
+
+            // Add mask for rounded corner effect
+            var frameMask = root.AddComponent<Mask>();
+            frameMask.showMaskGraphic = false;
 
             var iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
             var iconRect = iconObject.GetComponent<RectTransform>();
@@ -852,6 +858,8 @@ namespace DuckovLuckyBox.Patches
             icon.color = Color.white;
             icon.preserveAspect = true;
             icon.raycastTarget = false;
+            // Add rounded corners to icon
+            icon.useSpriteMesh = true;
             iconObject.name = displayName;
 
             return new LuckyRollSlot(rect, frame, icon);
@@ -867,11 +875,47 @@ namespace DuckovLuckyBox.Patches
             }
         }
 
+        private static Item getItem(int typeId)
+        {
+            var GetEntryMethod = AccessTools.Method(typeof(ItemAssetsCollection), "GetEntry") ?? throw new InvalidOperationException("Failed to find GetEntry method in ItemAssetsCollection");
+            var entry = GetEntryMethod.Invoke(ItemAssetsCollection.Instance, new object[] { typeId }) as ItemAssetsCollection.Entry ?? throw new InvalidOperationException($"Failed to get item entry for typeId {typeId}");
+            return entry.prefab;
+        }
+
         private static Sprite GetItemIcon(int typeId)
         {
-            var entry = ItemAssetsCollection.Instance.entries.FirstOrDefault(e => e != null && e.typeID == typeId);
-            var sprite = entry?.prefab?.Icon;
+            var item = getItem(typeId);
+            if (item == null) return EnsureFallbackSprite();
+            var sprite = item.Icon;
             return sprite ?? EnsureFallbackSprite();
+        }
+
+        private static int GetItemQuality(int typeId)
+        {
+            var item = getItem(typeId);
+            return item?.Quality ?? 0;
+        }
+
+
+        private static readonly Color[] ItemQualityColors = new Color[]
+        {
+            // Reference: https://github.com/shiquda/duckov-fancy-items/blob/7d3094cf40f1b01bbd08f0c8e05d341672b4fb33/fancy-items/Constants/FancyItemsConstants.cs#L56
+            new Color(0.5f, 0.5f, 0.5f, 0.5f),      // Quality 0: 灰色
+            new Color(0.9f, 0.9f, 0.9f, 0.24f),     // Quality 1: 浅白色
+            new Color(0.6f, 0.9f, 0.6f, 0.24f),     // Quality 2: 柔和浅绿
+            new Color(0.6f, 0.8f, 1.0f, 0.30f),     // Quality 3: 天蓝浅色
+            new Color(1.0f, 0.50f, 1.0f, 0.40f),   // Quality 4: 亮浅紫（提亮，略粉）
+            new Color(1.0f, 0.75f, 0.2f, 0.60f),   // Quality 5: 柔亮橙（更偏橙、更暖）
+            new Color(1.0f, 0.3f, 0.3f, 0.4f),     // Quality 6+: 明亮红（亮度提升、透明度降低）
+        };
+        private static Color GetItemQualityColor(int typeId)
+        {
+            var quality = GetItemQuality(typeId);
+            if (quality < 0 || quality >= ItemQualityColors.Length)
+            {
+                quality = 0;
+            }
+            return ItemQualityColors[quality];
         }
 
         private static async UniTask FadeCanvasGroup(CanvasGroup group, float from, float to, float duration)
