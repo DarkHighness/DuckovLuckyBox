@@ -91,7 +91,7 @@ namespace DuckovLuckyBox.Patches
                     _itemTypeIdsCache = ItemAssetsCollection.Instance.entries
                     // We predictably exclude items whose display name is in the form of "*Item_*"
                     // to avoid illegal items.
-                    .Where(entry => !entry.prefab.DisplayName.StartsWith("*Item_"))
+                    .Where(entry => !entry.prefab.DisplayName.StartsWith("*Item_") && entry.prefab.Quality > 0)
                     .Select(entry => entry.typeID)
                     .ToList();
                 }
@@ -474,7 +474,6 @@ namespace DuckovLuckyBox.Patches
             }
 
             var overlay = _luckyRollOverlay;
-            var itemsContainer = _luckyRollItemsContainer;
             var canvasGroup = _luckyRollCanvasGroup;
 
             if (_isAnimating) return;
