@@ -7,12 +7,15 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using DuckovLuckyBox.Core;
+using DuckovLuckyBox.Core.Settings;
+using DuckovLuckyBox.Core.Settings.UI;
 
 namespace DuckovLuckyBox
 {
 
     public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
+        private SettingsUI? settingsUI = null;
         private Harmony? harmony = null;
 
         void Awake()
@@ -27,18 +30,32 @@ namespace DuckovLuckyBox
 
         void OnEnable()
         {
+            settingsUI = gameObject.AddComponent<SettingsUI>();
+            Log.Debug("Settings UI component created.");
+
             harmony = new Harmony(Constants.ModId);
             harmony.PatchAll(Assembly.GetExecutingAssembly());
+            Log.Debug("Harmony patches applied.");
 
             Localizations.Instance.Initialize();
-            // ItemAssetsCollection.AddDynamicEntry(LuckyBoxItem.Instance);
+            Log.Debug("Localizations initialized.");
         }
 
         void OnDisable()
         {
             Localizations.Instance.Destroy();
-            // ItemAssetsCollection.RemoveDynamicEntry(LuckyBoxItem.Instance);
+            Log.Debug("Localizations destroyed.");
+
             harmony?.UnpatchAll(Constants.ModId);
+            Log.Debug("Harmony patches removed.");
+        }
+
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                settingsUI!.ToggleSettingsUI();
+            }
         }
     }
 }

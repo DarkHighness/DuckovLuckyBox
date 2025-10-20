@@ -218,7 +218,7 @@ namespace DuckovLuckyBox.Patches
             var isSentToStorage = true;
             if (!ItemUtilities.SendToPlayerCharacterInventory(obj))
             {
-                Log.Error($"Failed to send item to player inventory: {selectedItemTypeId}. Send to the player storage.");
+                Log.Warning($"Failed to send item to player inventory: {selectedItemTypeId}. Send to the player storage.");
                 ItemUtilities.SendToPlayerStorage(obj);
                 isSentToStorage = true;
             }
@@ -291,7 +291,7 @@ namespace DuckovLuckyBox.Patches
                 var isSentToStorage = false;
                 if (!ItemUtilities.SendToPlayerCharacterInventory(obj))
                 {
-                    Log.Error($"Failed to send item to player inventory: {pickedItem.ItemTypeID}. Send to the player storage.");
+                    Log.Warning($"Failed to send item to player inventory: {pickedItem.ItemTypeID}. Send to the player storage.");
                     ItemUtilities.SendToPlayerStorage(obj);
                     isSentToStorage = true;
                 }
