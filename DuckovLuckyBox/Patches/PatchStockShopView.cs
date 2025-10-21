@@ -473,9 +473,12 @@ namespace DuckovLuckyBox.Patches
         private static async UniTask PlayLuckyBoxAnimation(IEnumerable<int> candidateTypeIds, int finalTypeId, string finalDisplayName, Sprite? finalIcon)
         {
             // Check if animation is enabled in settings
-            if (!(Core.Settings.Settings.Instance.EnableAnimation.Value is bool enabled && enabled))
+            var enableAnimationValue = Core.Settings.Settings.Instance.EnableAnimation.Value;
+            Log.Debug($"Animation setting check - Value: {enableAnimationValue}, Type: {enableAnimationValue?.GetType().Name ?? "null"}");
+
+            if (enableAnimationValue is bool enabled && !enabled)
             {
-                Log.Debug("Lucky roll animation is disabled. Skipping animation.");
+                Log.Debug("Lucky roll animation is disabled in settings. Skipping animation.");
                 return;
             }
 

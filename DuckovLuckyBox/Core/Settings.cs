@@ -48,6 +48,7 @@ namespace DuckovLuckyBox.Core.Settings
         if (!_hasValue)
         {
           _value = value;
+          _hasValue = true;
         }
       }
     }
