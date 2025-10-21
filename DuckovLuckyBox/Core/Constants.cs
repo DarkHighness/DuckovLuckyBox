@@ -18,5 +18,15 @@ namespace DuckovLuckyBox.Core
             public static readonly string SettingsCategoryGeneralKey = "UI_SettingsCategoryGeneral";
             public static readonly string SettingsEnableAnimationKey = "UI_SettingsEnableAnimation";
         }
+
+        public static class Sound {
+            public static readonly string RollingSoundResourceName = "Resources.rolling.mp3";
+            public static FMOD.Sound? ROLLING_SOUND { get; private set; }
+
+            public static void LoadSounds()
+            {
+                ROLLING_SOUND = Utils.CreateSound(RollingSoundResourceName);
+            }
+        }
     }
 }

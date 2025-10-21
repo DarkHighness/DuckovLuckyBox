@@ -33,6 +33,8 @@ namespace DuckovLuckyBox
             settingsUI = gameObject.AddComponent<SettingsUI>();
             Log.Debug("Settings UI component created.");
 
+            Constants.Sound.LoadSounds();
+
             harmony = new Harmony(Constants.ModId);
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             Log.Debug("Harmony patches applied.");

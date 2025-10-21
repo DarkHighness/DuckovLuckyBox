@@ -13,6 +13,8 @@ using System;
 using ItemStatsSystem;
 using System.Linq;
 using DuckovLuckyBox.Core;
+using FMOD;
+using FMODUnity;
 
 namespace DuckovLuckyBox.Patches
 {
@@ -48,21 +50,22 @@ namespace DuckovLuckyBox.Patches
         private const float ActionLabelExtraWidth = 24f;
         private const float ActionLabelMinFontSize = 18f;
         private const float ActionLabelFontScale = 0.9f;
-        private static readonly Vector2 LuckyRollIconSize = new Vector2(128f, 128f);
-        private const float LuckyRollItemSpacing = 24f;
-        private const float LuckyRollSlotPadding = 32f;
+        private static readonly Vector2 LuckyRollIconSize = new Vector2(160f, 160f);
+        private const float LuckyRollItemSpacing = 16f;
+        private const float LuckyRollSlotPadding = 24f;
         private static readonly float LuckyRollSlotFullWidth = LuckyRollIconSize.x + LuckyRollSlotPadding + LuckyRollItemSpacing;
-        private const int LuckyRollMinimumSlots = 100;
-        private const float LuckyRollAnimationDuration = 5.0f;
+        private const int LuckyRollMinimumSlots = 150;
+        private const float LuckyRollAnimationDuration = 7.0f; // matches the BGM
         private const float LuckyRollFadeDuration = 0.25f;
         private const float LuckyRollCelebrateDuration = 0.4f;
-        private const float LuckyRollCelebrateScale = 1.1f;
         private const float LuckyRollPointerThickness = 12f;
         private static readonly AnimationCurve LuckyRollAnimationCurve = new AnimationCurve(
-            new Keyframe(0f, 0f, 3f, 3f),
-            new Keyframe(0.3f, 0.6f, 2f, 2f),
-            new Keyframe(0.7f, 0.9f, 0.5f, 0.5f),
-            new Keyframe(1f, 1f, 0f, 0f));
+            new Keyframe(0f, 0f, 0f, 3.0f),        // Start very fast
+            new Keyframe(0.2f, 0.5f, 2.0f, 2.0f),  // High speed, starting to slow
+            new Keyframe(0.5f, 0.8f, 1.0f, 1.0f),  // Continue slowing down
+            new Keyframe(0.75f, 0.93f, 0.4f, 0.4f), // Slow approach
+            new Keyframe(0.9f, 0.985f, 0.15f, 0.15f), // Very slow near end
+            new Keyframe(1f, 1f, 0f, 0f));         // Stop smoothly (pure deceleration curve)
         private static readonly Color ActionButtonNormalColor = new Color(1f, 1f, 1f, 0.8f);
         private static readonly Color ActionButtonHighlightedColor = new Color(1f, 1f, 1f, 0.95f);
         private static readonly Color ActionButtonPressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
@@ -71,16 +74,6 @@ namespace DuckovLuckyBox.Patches
         private static readonly Color LuckyRollPointerColor = new Color(1f, 1f, 1f, 0.95f);
         private static readonly Color LuckyRollFinalFrameColor = new Color(0.95f, 0.8f, 0.35f, 1f);
         private static readonly Color LuckyRollSlotFrameColor = new Color(1f, 1f, 1f, 0.25f);
-        private static readonly AnimationCurve LuckyRollSpinCurve = new AnimationCurve(
-            new Keyframe(0f, 0f, 0f, 1.5f),
-            new Keyframe(0.15f, 0.1f, 1.8f, 1.8f),
-            new Keyframe(0.4f, 0.5f, 2.0f, 2.0f),
-            new Keyframe(0.7f, 0.85f, 0.8f, 0.8f),
-            new Keyframe(1f, 1f, 0f, 0f));
-        private static readonly AnimationCurve LuckyRollPreviewCurve = new AnimationCurve(
-            new Keyframe(0f, 0f, 0f, 2f),
-            new Keyframe(0.6f, 0.7f, 1.4f, 1.4f),
-            new Keyframe(1f, 1f, 0f, 0f));
         private static List<int>? _itemTypeIdsCache = null;
         public static List<int> ItemTypeIdsCache
         {
@@ -89,9 +82,12 @@ namespace DuckovLuckyBox.Patches
                 if (_itemTypeIdsCache == null)
                 {
                     _itemTypeIdsCache = ItemAssetsCollection.Instance.entries
-                    // We predictably exclude items whose display name is in the form of "*Item_*"
+                    // We predictably exclude items
+                    // (1) whose display name is in the form of "*Item_*"
+                    // (2) whose quality is 0 (junk items)
+                    // (3) whose icon is the default "cross" icon
                     // to avoid illegal items.
-                    .Where(entry => !entry.prefab.DisplayName.StartsWith("*Item_") && entry.prefab.Quality > 0)
+                    .Where(entry => !entry.prefab.DisplayName.StartsWith("*Item_") && entry.prefab.Quality > 0 && entry.prefab.Icon.name != "cross")
                     .Select(entry => entry.typeID)
                     .ToList();
                 }
@@ -419,21 +415,36 @@ namespace DuckovLuckyBox.Patches
             var viewportHeight = Mathf.Min(200f, canvasSize.y * 0.3f);
             var viewportWidth = canvasSize.x * 0.8f;
 
-            _luckyRollViewport = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
+            _luckyRollViewport = new GameObject("LuckyRollViewport", typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
             _luckyRollViewport.SetParent(_luckyRollOverlay, false);
             _luckyRollViewport.anchorMin = new Vector2(0.5f, 0.5f);
             _luckyRollViewport.anchorMax = new Vector2(0.5f, 0.5f);
             _luckyRollViewport.pivot = new Vector2(0.5f, 0.5f);
             _luckyRollViewport.sizeDelta = new Vector2(viewportWidth, viewportHeight);
 
-            _luckyRollItemsContainer = new GameObject("Items", typeof(RectTransform)).GetComponent<RectTransform>();
+            // Create black background layer behind items
+            var itemsBackground = new GameObject("LuckyRollItemsBackground", typeof(RectTransform), typeof(Image));
+            var bgRect = itemsBackground.GetComponent<RectTransform>();
+            bgRect.SetParent(_luckyRollViewport, false);
+            bgRect.anchorMin = new Vector2(0.5f, 0.5f);
+            bgRect.anchorMax = new Vector2(0.5f, 0.5f);
+            bgRect.pivot = new Vector2(0.5f, 0.5f);
+            bgRect.sizeDelta = new Vector2(viewportWidth * 2f, viewportHeight); // Wide enough to cover all items
+
+            var bgImage = itemsBackground.GetComponent<Image>();
+            bgImage.sprite = EnsureFallbackSprite();
+            bgImage.type = Image.Type.Simple;
+            bgImage.color = new Color(0f, 0f, 0f, 0.5f); // Semi-transparent black
+            bgImage.raycastTarget = false;
+
+            _luckyRollItemsContainer = new GameObject("LuckyRollItemsContainer", typeof(RectTransform)).GetComponent<RectTransform>();
             _luckyRollItemsContainer.SetParent(_luckyRollViewport, false);
             _luckyRollItemsContainer.anchorMin = new Vector2(0.5f, 0.5f);
             _luckyRollItemsContainer.anchorMax = new Vector2(0.5f, 0.5f);
             _luckyRollItemsContainer.pivot = new Vector2(0.5f, 0.5f);
 
             // Create center pointer
-            _luckyRollPointer = new GameObject("Pointer", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            _luckyRollPointer = new GameObject("LuckyRollPointer", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
             _luckyRollPointer.rectTransform.SetParent(_luckyRollOverlay, false);
             _luckyRollPointer.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             _luckyRollPointer.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
@@ -447,6 +458,7 @@ namespace DuckovLuckyBox.Patches
 
             // Create result text
             _luckyRollResultText = UnityEngine.Object.Instantiate(merchantNameText, _luckyRollOverlay);
+            _luckyRollResultText.gameObject.name = "LuckyRollResultText";
             _luckyRollResultText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             _luckyRollResultText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             _luckyRollResultText.rectTransform.pivot = new Vector2(0.5f, 1f);
@@ -499,10 +511,28 @@ namespace DuckovLuckyBox.Patches
                     _luckyRollPointer.color = pointerColor;
                 }
 
-                ResetLuckyRollResultText();
+                // Show result text at the start - it will update in real-time during animation
+                if (_luckyRollResultText != null)
+                {
+                    _luckyRollResultText.text = ""; // Start with empty text
+                    var textColor = _luckyRollResultText.color;
+                    textColor.a = 1f; // Make text visible from the start
+                    _luckyRollResultText.color = textColor;
+                }
 
                 // Fade in
                 await FadeCanvasGroup(canvasGroup, 0f, 1f, LuckyRollFadeDuration);
+
+                // Play rolling sound
+                if (Constants.Sound.ROLLING_SOUND != null)
+                {
+                    RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
+                    RESULT result = RuntimeManager.CoreSystem.playSound(Constants.Sound.ROLLING_SOUND.Value, sfxGroup, false, out FMOD.Channel channel);
+                    if (result != RESULT.OK)
+                    {
+                        Log.Warning($"Failed to play rolling sound: {result}");
+                    }
+                }
 
                 // Single continuous roll animation
                 await PerformContinuousRoll(plan, LuckyRollAnimationDuration, LuckyRollAnimationCurve);
@@ -676,6 +706,8 @@ namespace DuckovLuckyBox.Patches
             // Initialize to start position
             _luckyRollItemsContainer.anchoredPosition = new Vector2(plan.StartOffset, 0f);
 
+            int lastHighlightedIndex = -1;
+
             var elapsed = 0f;
             while (elapsed < duration)
             {
@@ -688,32 +720,86 @@ namespace DuckovLuckyBox.Patches
                 // Smooth interpolation from start to end position
                 var currentOffset = Mathf.Lerp(plan.StartOffset, plan.FinalOffset, progress);
                 _luckyRollItemsContainer.anchoredPosition = new Vector2(currentOffset, 0f);
+
+                // Find which slot is currently centered under the pointer
+                int currentIndex = FindCenteredSlotIndex(plan, currentOffset);
+                if (currentIndex != lastHighlightedIndex)
+                {
+                    // Remove highlight from previous slot
+                    if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count)
+                    {
+                        var prevSlot = plan.Slots[lastHighlightedIndex];
+                        prevSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 0f);
+                    }
+
+                    // Highlight current slot with white outline and update display name
+                    if (currentIndex >= 0 && currentIndex < plan.Slots.Count)
+                    {
+                        var currentSlot = plan.Slots[currentIndex];
+                        currentSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f); // White outline
+
+                        // Update result text to show current item name in real-time
+                        if (_luckyRollResultText != null)
+                        {
+                            _luckyRollResultText.text = currentSlot.DisplayName;
+                        }
+                    }
+
+                    lastHighlightedIndex = currentIndex;
+                }
             }
 
             // Ensure final position is set precisely
             _luckyRollItemsContainer.anchoredPosition = new Vector2(plan.FinalOffset, 0f);
+
+            // Ensure final slot is highlighted
+            if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count && lastHighlightedIndex != plan.FinalSlotIndex)
+            {
+                var prevSlot = plan.Slots[lastHighlightedIndex];
+                prevSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 0f);
+            }
+            var finalSlot = plan.FinalSlot;
+            finalSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f); // White outline
+
+            // Update result text to show final item name
+            if (_luckyRollResultText != null)
+            {
+                _luckyRollResultText.text = finalSlot.DisplayName;
+            }
+        }
+
+        private static int FindCenteredSlotIndex(LuckyRollAnimationPlan plan, float currentOffset)
+        {
+            // The pointer is at position 0 in viewport coordinates
+            // We need to find which slot is closest to position 0 accounting for the offset
+            float minDistance = float.MaxValue;
+            int closestIndex = -1;
+
+            for (int i = 0; i < plan.Slots.Count; i++)
+            {
+                var slot = plan.Slots[i];
+                var slotWorldX = slot.Rect.anchoredPosition.x + currentOffset;
+                var distance = Mathf.Abs(slotWorldX);
+
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closestIndex = i;
+                }
+            }
+
+            return closestIndex;
         }
 
         private static async UniTask AnimateLuckyRollCelebration(LuckyRollAnimationPlan plan)
         {
             var slot = plan.FinalSlot;
             var frame = slot.Frame;
-            var iconTransform = slot.Icon.rectTransform;
 
             var initialColor = LuckyRollSlotFrameColor;
             var targetColor = LuckyRollFinalFrameColor;
-            var initialScale = Vector3.one;
-            var targetScale = Vector3.one * LuckyRollCelebrateScale;
 
             frame.color = initialColor;
-            iconTransform.localScale = initialScale;
-
-            // Record initial font size and scale of result text
-            var initialTextFontSize = _luckyRollResultText?.fontSize ?? 24f;
-            var targetTextFontSize = initialTextFontSize * 1.1f;
-            var resultTextRectTransform = _luckyRollResultText?.rectTransform;
-            var initialTextScale = resultTextRectTransform?.localScale ?? Vector3.one;
-            var targetTextScale = initialTextScale * 1.1f;
 
             var elapsed = 0f;
             while (elapsed < LuckyRollCelebrateDuration)
@@ -723,31 +809,9 @@ namespace DuckovLuckyBox.Patches
                 var t = Mathf.Clamp01(elapsed / LuckyRollCelebrateDuration);
                 t = Mathf.SmoothStep(0f, 1f, t);
                 frame.color = Color.Lerp(initialColor, targetColor, t);
-                iconTransform.localScale = Vector3.Lerp(initialScale, targetScale, t);
-
-                // Scale up result text
-                if (_luckyRollResultText != null)
-                {
-                    _luckyRollResultText.fontSize = Mathf.Lerp(initialTextFontSize, targetTextFontSize, t);
-                    if (resultTextRectTransform != null)
-                    {
-                        resultTextRectTransform.localScale = Vector3.Lerp(initialTextScale, targetTextScale, t);
-                    }
-                }
             }
 
             frame.color = targetColor;
-            iconTransform.localScale = targetScale;
-
-            // Ensure text reaches target size
-            if (_luckyRollResultText != null)
-            {
-                _luckyRollResultText.fontSize = (int)targetTextFontSize;
-                if (resultTextRectTransform != null)
-                {
-                    resultTextRectTransform.localScale = targetTextScale;
-                }
-            }
         }
 
         private static void ResetLuckyRollResultText()
@@ -762,14 +826,14 @@ namespace DuckovLuckyBox.Patches
 
         private static async UniTask RevealLuckyRollResult(string finalDisplayName)
         {
+            // Text is already updated in real-time during animation
+            // Just ensure it shows the final result and hold for a moment
             await UniTask.Delay(TimeSpan.FromSeconds(0.5f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
 
             if (_luckyRollResultText != null)
             {
+                // Ensure final name is displayed (should already be set by the animation)
                 _luckyRollResultText.text = finalDisplayName;
-                var textColor = _luckyRollResultText.color;
-                textColor.a = 1f;
-                _luckyRollResultText.color = textColor;
             }
 
             await UniTask.Delay(TimeSpan.FromSeconds(0.75f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
@@ -823,33 +887,34 @@ namespace DuckovLuckyBox.Patches
 
         private static LuckyRollSlot CreateLuckyRollSlot(int typeId, Sprite sprite, string displayName, Color frameColor)
         {
-            var root = new GameObject($"LuckyItem_{typeId}", typeof(RectTransform), typeof(Image));
+            var root = new GameObject($"LuckyRollSlot_{typeId}", typeof(RectTransform), typeof(Image));
             var rect = root.GetComponent<RectTransform>();
             rect.SetParent(_luckyRollItemsContainer, false);
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(LuckyRollIconSize.x + LuckyRollSlotPadding, LuckyRollIconSize.y + LuckyRollSlotPadding);
+            rect.sizeDelta = new Vector2(LuckyRollIconSize.x + LuckyRollSlotPadding, LuckyRollIconSize.y + LuckyRollSlotPadding); // No extra space needed since text is removed
 
 
             var frame = root.GetComponent<Image>();
             frame.sprite = EnsureFallbackSprite();
             frame.type = Image.Type.Simple;
-            frame.color = frameColor;
+            frame.color = frameColor; // Use quality color for frame
             frame.raycastTarget = false;
             // Add rounded corners to frame
             frame.useSpriteMesh = true;
 
-            // Add mask for rounded corner effect
+            // Add mask for rounded corner effect - show frame as background
             var frameMask = root.AddComponent<Mask>();
-            frameMask.showMaskGraphic = false;
+            frameMask.showMaskGraphic = true; // Show frame graphic as quality background
 
-            var iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            var iconObject = new GameObject("LuckyRollSlotIcon", typeof(RectTransform), typeof(Image));
             var iconRect = iconObject.GetComponent<RectTransform>();
             iconRect.SetParent(rect, false);
             iconRect.anchorMin = new Vector2(0.5f, 0.5f);
             iconRect.anchorMax = new Vector2(0.5f, 0.5f);
             iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.anchoredPosition = new Vector2(0f, 0f); // Centered since no text below
             iconRect.sizeDelta = LuckyRollIconSize;
 
             var icon = iconObject.GetComponent<Image>();
@@ -859,9 +924,17 @@ namespace DuckovLuckyBox.Patches
             icon.raycastTarget = false;
             // Add rounded corners to icon
             icon.useSpriteMesh = true;
-            iconObject.name = displayName;
+            iconObject.name = $"LuckyRollSlotIcon_{displayName}";
 
-            return new LuckyRollSlot(rect, frame, icon);
+            // Add Outline component to icon for white stroke effect (initially disabled)
+            var iconOutline = iconObject.AddComponent<Outline>();
+            iconOutline.effectColor = new Color(1f, 1f, 1f, 0f); // White, initially transparent
+            iconOutline.effectDistance = new Vector2(2f, -2f); // Small distance for subtle outline
+            iconOutline.useGraphicAlpha = false;
+
+            // No text in slot - name will be displayed in fixed position at top
+
+            return new LuckyRollSlot(rect, frame, icon, iconOutline, displayName);
         }
 
         private static void ClearLuckyRollItems()
@@ -958,12 +1031,16 @@ namespace DuckovLuckyBox.Patches
             public RectTransform Rect { get; }
             public Image Frame { get; }
             public Image Icon { get; }
+            public Outline IconOutline { get; }
+            public string DisplayName { get; } // Store display name instead of TextMeshProUGUI
 
-            public LuckyRollSlot(RectTransform rect, Image frame, Image icon)
+            public LuckyRollSlot(RectTransform rect, Image frame, Image icon, Outline iconOutline, string displayName)
             {
                 Rect = rect;
                 Frame = frame;
                 Icon = icon;
+                IconOutline = iconOutline;
+                DisplayName = displayName;
             }
         }
 
