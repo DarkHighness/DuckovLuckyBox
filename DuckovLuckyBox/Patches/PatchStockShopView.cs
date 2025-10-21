@@ -37,14 +37,15 @@ namespace DuckovLuckyBox.Patches
         private static CanvasGroup? _luckyRollCanvasGroup;
         private static Sprite? _fallbackIconSprite;
         private static bool _isAnimating;
+        private static bool _priceChangeSubscribed = false;
         private static readonly string SFX_BUY = "UI/buy";
         private const float AnchorOffsetExtraPadding = 40f;
         private const float ActionsContainerFallbackWidth = 320f;
-        private const float ActionsContainerHeight = 48f;
-        private const float ActionsLayoutSpacing = 16f;
-        private const int ActionsLayoutPaddingHorizontal = 12;
-        private const int ActionsLayoutPaddingTop = 8;
-        private const int ActionsLayoutPaddingBottom = 8;
+        private const float ActionsContainerHeight = 240f; // Increased height for vertical layout with larger spacing
+        private const float ActionsLayoutSpacing = 24f; // Larger spacing between buttons to prevent overlap
+        private const int ActionsLayoutPaddingHorizontal = 0; // No horizontal padding for left alignment
+        private const int ActionsLayoutPaddingTop = 16;
+        private const int ActionsLayoutPaddingBottom = 16;
         private const float ActionLabelPreferredHeight = 40f;
         private const float ActionLabelMinWidth = 140f;
         private const float ActionLabelExtraWidth = 24f;
@@ -103,6 +104,8 @@ namespace DuckovLuckyBox.Patches
 
             EnsureTexts(merchantNameText);
             EnsureButtons(__instance);
+            SubscribeToPriceChanges();
+            UpdateButtonTexts();
         }
 
         private static TextMeshProUGUI? GetMerchantNameText(StockShopView instance)
@@ -132,23 +135,36 @@ namespace DuckovLuckyBox.Patches
                 var parent = merchantNameText.transform.parent as RectTransform;
                 if (parent == null) return;
 
-                _actionsContainer = new GameObject("ExtraActionsContainer", typeof(RectTransform)).GetComponent<RectTransform>();
-                _actionsContainer.SetParent(parent, false);
+                // Navigate up the hierarchy to find the appropriate container
+                // Goal: place buttons below the item grid
+                var grandParent = parent.parent as RectTransform;
+                var greatGrandParent = grandParent?.parent as RectTransform;
 
-                float anchorOffset = merchantNameText.rectTransform.rect.height;
-                if (anchorOffset <= 0f) anchorOffset = merchantNameText.fontSize + AnchorOffsetExtraPadding;
-                _actionsContainer.anchorMin = new Vector2(0.5f, 1f);
-                _actionsContainer.anchorMax = new Vector2(0.5f, 1f);
-                _actionsContainer.pivot = new Vector2(0.5f, 1f);
-                _actionsContainer.anchoredPosition = new Vector2(0f, -anchorOffset);
+                // Use the highest available parent (great-grandparent if available, otherwise grandparent, otherwise parent)
+                var targetParent = greatGrandParent != null ? greatGrandParent : (grandParent != null ? grandParent : parent);
+
+                Log.Debug($"Button container parent hierarchy - Parent: {parent.name}, GrandParent: {grandParent?.name ?? "null"}, GreatGrandParent: {greatGrandParent?.name ?? "null"}");
+                Log.Debug($"Using target parent: {targetParent.name}");
+
+                _actionsContainer = new GameObject("ExtraActionsContainer", typeof(RectTransform)).GetComponent<RectTransform>();
+                _actionsContainer.SetParent(targetParent, false);
+
+                // Anchor to bottom instead of top to place below items
+                _actionsContainer.anchorMin = new Vector2(0.5f, 0f);
+                _actionsContainer.anchorMax = new Vector2(0.5f, 0f);
+                _actionsContainer.pivot = new Vector2(0.5f, 0f);
+                _actionsContainer.anchoredPosition = new Vector2(0f, 20f); // Small offset from bottom
 
                 float width = merchantNameText.rectTransform.rect.width;
                 if (width <= 0f) width = ActionsContainerFallbackWidth;
                 _actionsContainer.sizeDelta = new Vector2(width, ActionsContainerHeight);
 
-                var layout = _actionsContainer.gameObject.AddComponent<HorizontalLayoutGroup>();
-                layout.childAlignment = TextAnchor.MiddleCenter;
-                layout.childControlHeight = true;
+                // Move to the end of sibling list to ensure proper rendering order
+                _actionsContainer.SetAsLastSibling();
+
+                var layout = _actionsContainer.gameObject.AddComponent<VerticalLayoutGroup>();
+                layout.childAlignment = TextAnchor.UpperCenter;
+                layout.childControlHeight = false; // Don't control height - let buttons keep their fixed size
                 layout.childControlWidth = true;
                 layout.childForceExpandHeight = false;
                 layout.childForceExpandWidth = false;
@@ -187,10 +203,55 @@ namespace DuckovLuckyBox.Patches
             _streetPickButton.onClick.AddListener(() => OnStreetPickButtonClicked(view).Forget());
         }
 
+        private static void UpdateButtonTexts()
+        {
+            if (_refreshStockText == null || _pickOneText == null || _buyLuckyBoxText == null) return;
+
+            long refreshPrice = Core.Settings.Settings.Instance.RefreshStockPrice.Value is long rp ? rp : 5L;
+            long storePickPrice = Core.Settings.Settings.Instance.StorePickPrice.Value is long sp ? sp : 50L;
+            long streetPickPrice = Core.Settings.Settings.Instance.StreetPickPrice.Value is long stp ? stp : 50L;
+
+            var baseRefreshText = Constants.I18n.RefreshStockKey.ToPlainText();
+            var baseStorePickText = Constants.I18n.StorePickKey.ToPlainText();
+            var baseStreetPickText = Constants.I18n.StreetPickKey.ToPlainText();
+
+            _refreshStockText.text = refreshPrice > 0 ? $"{baseRefreshText} (${refreshPrice})" : baseRefreshText;
+            _pickOneText.text = storePickPrice > 0 ? $"{baseStorePickText} (${storePickPrice})" : baseStorePickText;
+            _buyLuckyBoxText.text = streetPickPrice > 0 ? $"{baseStreetPickText} (${streetPickPrice})" : baseStreetPickText;
+        }
+
+        private static void SubscribeToPriceChanges()
+        {
+            if (_priceChangeSubscribed) return;
+
+            var settings = Core.Settings.Settings.Instance;
+
+            settings.RefreshStockPrice.OnValueChanged += _ => UpdateButtonTexts();
+            settings.StorePickPrice.OnValueChanged += _ => UpdateButtonTexts();
+            settings.StreetPickPrice.OnValueChanged += _ => UpdateButtonTexts();
+
+            _priceChangeSubscribed = true;
+            Log.Debug("Subscribed to price change events");
+        }
+
         private static async UniTask OnStreetPickButtonClicked(StockShopView stockShopView)
         {
             Log.Debug("Street pick button clicked");
             if (_isAnimating) return;
+
+            // Get price from settings and try to pay
+            long price = Core.Settings.Settings.Instance.StreetPickPrice.Value is long priceValue ? priceValue : 50L;
+
+            // Skip payment if price is zero
+            if (price > 0 && !Pay(price))
+            {
+                Log.Warning($"Failed to pay {price} for street pick");
+                var notEnoughMoneyMessage = Constants.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
+                NotificationText.Push(notEnoughMoneyMessage);
+                return;
+            }
+
+            AudioManager.Post(SFX_BUY);
 
             var selectedIndex = UnityEngine.Random.Range(0, ItemTypeIdsCache.Count);
             var selectedItemTypeId = ItemTypeIdsCache[selectedIndex];
@@ -232,6 +293,19 @@ namespace DuckovLuckyBox.Patches
         {
             Log.Debug("Refresh button clicked");
             if (!TryGetStockShop(stockShopView, out var stockShop)) return;
+
+            // Get price from settings and try to pay
+            long price = Core.Settings.Settings.Instance.RefreshStockPrice.Value is long priceValue ? priceValue : 5L;
+
+            // Skip payment if price is zero
+            if (price > 0 && !Pay(price))
+            {
+                Log.Warning($"Failed to pay {price} for refresh stock");
+                var notEnoughMoneyMessage = Constants.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
+                NotificationText.Push(notEnoughMoneyMessage);
+                return;
+            }
+
             if (!TryInvokeRefresh(stockShop)) return;
             AudioManager.Post(SFX_BUY);
             Log.Debug("Stock refreshed");
@@ -253,9 +327,28 @@ namespace DuckovLuckyBox.Patches
               entry.Possibility > 0f &&
               entry.Show).ToList();
 
+            // If the length of itemEntries is too short, we randomly duplicate entries to ensure enough variety in the lucky roll animation
+            while (itemEntries.Count < LuckyRollMinimumSlots)
+            {
+                var randomEntry = itemEntries[UnityEngine.Random.Range(0, itemEntries.Count)];
+                itemEntries.Add(randomEntry);
+            }
+
             if (itemEntries.Count == 0)
             {
                 Log.Warning("No available items to pick");
+                return false;
+            }
+
+            // Get price from settings and try to pay
+            long price = Core.Settings.Settings.Instance.StorePickPrice.Value is long priceValue ? priceValue : 50L;
+
+            // Skip payment if price is zero
+            if (price > 0 && !Pay(price))
+            {
+                Log.Warning($"Failed to pay {price} for store pick");
+                var notEnoughMoneyMessage = Constants.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
+                NotificationText.Push(notEnoughMoneyMessage);
                 return false;
             }
 
@@ -344,7 +437,7 @@ namespace DuckovLuckyBox.Patches
         {
             label.text = text;
             label.margin = Vector4.zero;
-            label.alignment = TextAlignmentOptions.Center;
+            label.alignment = TextAlignmentOptions.Center; // Center alignment
             label.enableAutoSizing = false;
             label.fontSize = Mathf.Max(ActionLabelMinFontSize, label.fontSize * ActionLabelFontScale);
             label.raycastTarget = true;
@@ -382,6 +475,13 @@ namespace DuckovLuckyBox.Patches
               ActionsLayoutPaddingHorizontal,
               ActionsLayoutPaddingTop,
               ActionsLayoutPaddingBottom);
+        }
+
+        private static bool Pay(long money)
+        {
+            return EconomyManager.Pay(
+                new Cost(money), true, true
+            );
         }
 
         private static void EnsureLuckyRollUI(TextMeshProUGUI merchantNameText)

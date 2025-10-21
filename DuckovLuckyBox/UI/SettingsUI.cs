@@ -252,9 +252,12 @@ namespace DuckovLuckyBox.Core.Settings.UI
 
     private void CreateSettingCategory(Category category, List<SettingItem> settings)
     {
-      string categoryDisplayName = category == Category.General
-        ? Constants.I18n.SettingsCategoryGeneralKey.ToPlainText()
-        : category.ToString();
+      string categoryDisplayName = category switch
+      {
+        Category.General => Constants.I18n.SettingsCategoryGeneralKey.ToPlainText(),
+        Category.Pricing => Constants.I18n.SettingsCategoryPricingKey.ToPlainText(),
+        _ => category.ToString()
+      };
 
       Text categoryText = CreateText(settingsPanel!.transform, $"DuckovLuckyBox.UI.SettingCategory.{category}", $"{categoryDisplayName}", 16, new Color(0.4f, 0.85f, 0.95f, 1f), TextAnchor.MiddleLeft);
       categoryText.fontStyle = FontStyle.Bold;
@@ -298,6 +301,10 @@ namespace DuckovLuckyBox.Core.Settings.UI
       if (setting.Type == Type.Toggle)
       {
         CreateToggle(settingItem.transform, setting);
+      }
+      else if (setting.Type == Type.Number)
+      {
+        CreateNumberInput(settingItem.transform, setting);
       }
 
       var itemLayout = settingItem.AddComponent<LayoutElement>();
@@ -381,6 +388,85 @@ namespace DuckovLuckyBox.Core.Settings.UI
 
       var layoutElement = toggleRoot.AddComponent<LayoutElement>();
       layoutElement.preferredWidth = 64f;
+      layoutElement.preferredHeight = 32f;
+    }
+
+    private void CreateNumberInput(Transform parent, SettingItem setting)
+    {
+      GameObject inputRoot = new GameObject($"DuckovLuckyBox.UI.NumberInput.{setting.Key}");
+      inputRoot.transform.SetParent(parent, false);
+
+      RectTransform inputRect = inputRoot.AddComponent<RectTransform>();
+      inputRect.sizeDelta = new Vector2(120f, 32f);
+
+      // Background for input field - dark matching game UI
+      Image inputBackground = inputRoot.AddComponent<Image>();
+      inputBackground.color = new Color(0.06f, 0.09f, 0.12f, 1f);
+
+      // Add cyan glow border
+      var inputOutline = inputRoot.AddComponent<Outline>();
+      inputOutline.effectColor = new Color(0.1f, 0.7f, 0.9f, 0.7f);
+      inputOutline.effectDistance = new Vector2(2, -2);
+
+      // Create InputField
+      GameObject textObj = new GameObject("Text");
+      textObj.transform.SetParent(inputRoot.transform, false);
+      Text textComponent = textObj.AddComponent<Text>();
+      textComponent.font = defaultFont;
+      textComponent.fontSize = 16;
+      textComponent.color = new Color(0.85f, 0.95f, 1f, 1f); // Bright cyan-white text
+      textComponent.alignment = TextAnchor.MiddleCenter;
+      textComponent.supportRichText = false;
+
+      RectTransform textRect = textObj.GetComponent<RectTransform>();
+      textRect.anchorMin = Vector2.zero;
+      textRect.anchorMax = Vector2.one;
+      textRect.offsetMin = new Vector2(8, 0);
+      textRect.offsetMax = new Vector2(-8, 0);
+
+      InputField inputField = inputRoot.AddComponent<InputField>();
+      inputField.textComponent = textComponent;
+      inputField.targetGraphic = inputBackground;
+      inputField.contentType = InputField.ContentType.IntegerNumber;
+
+      // Set initial value
+      long currentValue = setting.Value is long longVal ? longVal : 0L;
+      inputField.text = currentValue.ToString();
+
+      Log.Debug($"CreateNumberInput - Setting: {setting.Key}, Value: {setting.Value}, Type: {setting.Value?.GetType().Name ?? "null"}, InputField.text: {inputField.text}");
+
+      // Color scheme matching game's interactive UI elements
+      var colors = inputField.colors;
+      colors.normalColor = new Color(0.06f, 0.09f, 0.12f, 1f);
+      colors.highlightedColor = new Color(0.08f, 0.14f, 0.18f, 1f);
+      colors.pressedColor = new Color(0.04f, 0.06f, 0.08f, 1f);
+      colors.selectedColor = new Color(0.08f, 0.12f, 0.16f, 1f);
+      colors.disabledColor = new Color(0.05f, 0.07f, 0.09f, 0.5f);
+      inputField.colors = colors;
+
+      inputField.onEndEdit.AddListener(value =>
+      {
+        if (long.TryParse(value, out long newValue))
+        {
+          // Ensure non-negative values
+          newValue = System.Math.Max(0, newValue);
+          inputField.text = newValue.ToString();
+
+          Log.Debug($"NumberInput changed - Setting: {setting.Key}, New value: {newValue}");
+          setting.Value = newValue;
+          Log.Debug($"Setting updated - Setting: {setting.Key}, Stored value: {setting.Value}");
+        }
+        else
+        {
+          // Invalid input, reset to current value
+          long resetValue = setting.Value is long longVal ? longVal : 0L;
+          inputField.text = resetValue.ToString();
+          Log.Warning($"Invalid number input for {setting.Key}, reset to {resetValue}");
+        }
+      });
+
+      var layoutElement = inputRoot.AddComponent<LayoutElement>();
+      layoutElement.preferredWidth = 120f;
       layoutElement.preferredHeight = 32f;
     }
   }

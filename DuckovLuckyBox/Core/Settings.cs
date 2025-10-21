@@ -7,11 +7,13 @@ namespace DuckovLuckyBox.Core.Settings
 
   public enum Category
   {
-    General
+    General,
+    Pricing
   }
   public enum Type
   {
-    Toggle
+    Toggle,
+    Number
   }
 
   public class SettingItem
@@ -70,11 +72,44 @@ namespace DuckovLuckyBox.Core.Settings
       DefaultValue = true,
     };
 
+    public SettingItem RefreshStockPrice { get; set; } = new SettingItem
+    {
+      Key = "DuckovLuckyBox.Settings.RefreshStockPrice",
+      Label = Constants.I18n.SettingsRefreshStockPriceKey,
+      Description = "DuckovLuckyBox.Settings.RefreshStockPrice.Description",
+      Type = Type.Number,
+      Category = Category.Pricing,
+      DefaultValue = 5L,
+    };
+
+    public SettingItem StorePickPrice { get; set; } = new SettingItem
+    {
+      Key = "DuckovLuckyBox.Settings.StorePickPrice",
+      Label = Constants.I18n.SettingsStorePickPriceKey,
+      Description = "DuckovLuckyBox.Settings.StorePickPrice.Description",
+      Type = Type.Number,
+      Category = Category.Pricing,
+      DefaultValue = 50L,
+    };
+
+    public SettingItem StreetPickPrice { get; set; } = new SettingItem
+    {
+      Key = "DuckovLuckyBox.Settings.StreetPickPrice",
+      Label = Constants.I18n.SettingsStreetPickPriceKey,
+      Description = "DuckovLuckyBox.Settings.StreetPickPrice.Description",
+      Type = Type.Number,
+      Category = Category.Pricing,
+      DefaultValue = 50L,
+    };
+
     public IEnumerable<SettingItem> AllSettings
     {
       get
       {
         yield return EnableAnimation;
+        yield return RefreshStockPrice;
+        yield return StorePickPrice;
+        yield return StreetPickPrice;
       }
     }
 

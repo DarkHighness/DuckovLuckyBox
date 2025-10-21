@@ -14,9 +14,14 @@ namespace DuckovLuckyBox.Core
             { Constants.I18n.PickNotificationFormatKey, "You picked one {itemDisplayName}." },
             { Constants.I18n.StreetPickKey, "Buy one Lucky Box." },
             { Constants.I18n.InventoryFullAndSendToStorageKey, "Inventory full, sending to storage." },
+            { Constants.I18n.NotEnoughMoneyFormatKey, "Not enough money! Need {price} coins." },
             { Constants.I18n.SettingsPanelTitleKey, "DuckvoLuckyBox SETTINGS" },
             { Constants.I18n.SettingsCategoryGeneralKey, "General" },
-            { Constants.I18n.SettingsEnableAnimationKey, "Enable Animation" }
+            { Constants.I18n.SettingsCategoryPricingKey, "Pricing" },
+            { Constants.I18n.SettingsEnableAnimationKey, "Enable Animation" },
+            { Constants.I18n.SettingsRefreshStockPriceKey, "Refresh Stock Price" },
+            { Constants.I18n.SettingsStorePickPriceKey, "Store Pick Price" },
+            { Constants.I18n.SettingsStreetPickPriceKey, "Street Pick Price" }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { Constants.I18n.RefreshStockKey, "刷新" },
@@ -24,9 +29,14 @@ namespace DuckovLuckyBox.Core
             { Constants.I18n.PickNotificationFormatKey, "俺拾到了 {itemDisplayName}" },
             { Constants.I18n.StreetPickKey, "路边拾一个" },
             { Constants.I18n.InventoryFullAndSendToStorageKey, "俺拾不动嘞，邮回仓库嘞。" },
-            { Constants.I18n.SettingsPanelTitleKey, "幸运“方块”设置" },
+            { Constants.I18n.NotEnoughMoneyFormatKey, "钱不够嘞！需要 {price} 个铜板。" },
+            { Constants.I18n.SettingsPanelTitleKey, "幸运\"方块\"设置" },
             { Constants.I18n.SettingsCategoryGeneralKey, "常规" },
-            { Constants.I18n.SettingsEnableAnimationKey, "启用动画" }
+            { Constants.I18n.SettingsCategoryPricingKey, "价格" },
+            { Constants.I18n.SettingsEnableAnimationKey, "启用动画" },
+            { Constants.I18n.SettingsRefreshStockPriceKey, "刷新库存价格" },
+            { Constants.I18n.SettingsStorePickPriceKey, "商人抽奖价格" },
+            { Constants.I18n.SettingsStreetPickPriceKey, "街边抽奖价格" }
         } },
     };
 
