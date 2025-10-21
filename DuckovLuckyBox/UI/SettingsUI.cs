@@ -136,12 +136,12 @@ namespace DuckovLuckyBox.Core.Settings.UI
       settingsPanel = new GameObject("DuckovLuckyBox.UI.SettingsPanel");
       settingsPanel.transform.SetParent(canvas.transform, false);
 
-      // Create fullscreen blocker with semi-transparent dark overlay (like game's background)
+      // Create fullscreen blocker with semi-transparent dark overlay (Material Design scrim)
       // Place it as child of settingsPanel so it's hidden when panel is hidden
       GameObject blockerObj = new GameObject("DuckovLuckyBox.UI.InputBlocker");
       blockerObj.transform.SetParent(settingsPanel.transform, false);
       Image blockerImage = blockerObj.AddComponent<Image>();
-      blockerImage.color = new Color(0.02f, 0.05f, 0.08f, 0.85f); // Dark semi-transparent overlay
+      blockerImage.color = new Color(0f, 0f, 0f, 0.5f); // Simple black overlay at 50% opacity
 
       RectTransform blockerRect = blockerObj.GetComponent<RectTransform>();
       blockerRect.anchorMin = Vector2.zero;
@@ -151,71 +151,25 @@ namespace DuckovLuckyBox.Core.Settings.UI
       blockerRect.SetAsFirstSibling(); // Ensure blocker is behind the panel content
       blockerObj.AddComponent<GraphicRaycaster>();
 
-      // Base background - Match game's dark UI panels with slight transparency
+      // Base background - Material Design surface color (pure white)
       Image backgroundImage = settingsPanel.AddComponent<Image>();
-      backgroundImage.color = new Color(0.05f, 0.08f, 0.12f, 0.95f); // Very dark blue-gray, semi-transparent
+      backgroundImage.color = new Color(1f, 1f, 1f, 1f); // Pure white background
 
       panelTransform = settingsPanel.GetComponent<RectTransform>();
       panelTransform.anchorMin = new Vector2(0.5f, 0.5f);
       panelTransform.anchorMax = new Vector2(0.5f, 0.5f);
       panelTransform.pivot = new Vector2(0.5f, 0.5f);
       panelTransform.anchoredPosition = Vector2.zero;
-      panelTransform.sizeDelta = new Vector2(650f, 400f); // Wider and shorter like game's UI
-
-      // Add cyan border glow effect (matching game's UI accent color)
-      var outline = settingsPanel.AddComponent<Outline>();
-      outline.effectColor = new Color(0.1f, 0.8f, 0.95f, 0.8f); // Bright cyan glow
-      outline.effectDistance = new Vector2(3, -3);
+      panelTransform.sizeDelta = new Vector2(600f, 480f); // Material Design card proportions
 
       var verticalLayout = settingsPanel.AddComponent<VerticalLayoutGroup>();
       verticalLayout.childAlignment = TextAnchor.UpperLeft;
       verticalLayout.childForceExpandHeight = false;
       verticalLayout.childForceExpandWidth = true;
-      verticalLayout.spacing = 12f;
-      verticalLayout.padding = new RectOffset(32, 32, 28, 28);
-
-      // Add top border line only (matching game's minimalist UI style)
-      CreateTopBorderLine(settingsPanel.transform);
+      verticalLayout.spacing = 8f; // Consistent spacing
+      verticalLayout.padding = new RectOffset(24, 24, 24, 24); // Material Design padding
 
       settingsPanel.SetActive(false);
-    }
-
-    private void CreateTopBorderLine(Transform panelTransform)
-    {
-      // Bright cyan top accent line (matching game's UI highlights)
-      GameObject lineObj = new GameObject("TopAccentLine");
-      lineObj.transform.SetParent(panelTransform, false);
-      Image lineImage = lineObj.AddComponent<Image>();
-      lineImage.color = new Color(0.1f, 0.9f, 1f, 0.95f); // Bright cyan
-
-      RectTransform lineRect = lineObj.GetComponent<RectTransform>();
-      lineRect.anchorMin = new Vector2(0, 1);
-      lineRect.anchorMax = new Vector2(1, 1);
-      lineRect.offsetMin = new Vector2(0, -4f);
-      lineRect.offsetMax = new Vector2(0, 0);
-    }
-
-    private void CreateBorderLine(Transform panelTransform, string name, Vector2 anchorMin, Vector2 anchorMax, float height, Color color)
-    {
-      GameObject lineObj = new GameObject(name);
-      lineObj.transform.SetParent(panelTransform, false);
-      Image lineImage = lineObj.AddComponent<Image>();
-      lineImage.color = color;
-
-      RectTransform lineRect = lineObj.GetComponent<RectTransform>();
-      lineRect.anchorMin = anchorMin;
-      lineRect.anchorMax = anchorMax;
-
-      if (anchorMin.y == 1) // Top
-      {
-        lineRect.offsetMin = new Vector2(0, -height);
-        lineRect.offsetMax = new Vector2(0, 0);
-      }
-      else // Bottom
-      {
-        lineRect.offsetMin = new Vector2(0, 0);
-        lineRect.offsetMax = new Vector2(0, height);
-      }
     }
 
     private void CreateSettings()
@@ -242,12 +196,11 @@ namespace DuckovLuckyBox.Core.Settings.UI
 
     private void CreateSettingsTitle()
     {
-      Text titleComponent = CreateText(settingsPanel!.transform, "DuckovLuckyBox.UI.SettingsTitle", Constants.I18n.SettingsPanelTitleKey.ToPlainText(), 28, new Color(0.15f, 0.95f, 1f, 1f), TextAnchor.MiddleCenter);
+      // Material Design: Dark gray title text (87% opacity on white)
+      Text titleComponent = CreateText(settingsPanel!.transform, "DuckovLuckyBox.UI.SettingsTitle", Constants.I18n.SettingsPanelTitleKey.ToPlainText(), 24, new Color(0f, 0f, 0f, 0.87f), TextAnchor.MiddleLeft);
       titleComponent.fontStyle = FontStyle.Bold;
       var layout = titleComponent.gameObject.AddComponent<LayoutElement>();
-      layout.preferredHeight = 50f;
-
-      // No separator - cleaner look matching game UI
+      layout.preferredHeight = 48f;
     }
 
     private void CreateSettingCategory(Category category, List<SettingItem> settings)
@@ -259,10 +212,11 @@ namespace DuckovLuckyBox.Core.Settings.UI
         _ => category.ToString()
       };
 
-      Text categoryText = CreateText(settingsPanel!.transform, $"DuckovLuckyBox.UI.SettingCategory.{category}", $"{categoryDisplayName}", 16, new Color(0.4f, 0.85f, 0.95f, 1f), TextAnchor.MiddleLeft);
+      // Material Design: Medium gray category text (60% opacity)
+      Text categoryText = CreateText(settingsPanel!.transform, $"DuckovLuckyBox.UI.SettingCategory.{category}", $"{categoryDisplayName}", 14, new Color(0f, 0f, 0f, 0.6f), TextAnchor.MiddleLeft);
       categoryText.fontStyle = FontStyle.Bold;
       var layout = categoryText.gameObject.AddComponent<LayoutElement>();
-      layout.preferredHeight = 28f;
+      layout.preferredHeight = 32f;
 
       // Create settings under this category
       foreach (var setting in settings)
@@ -276,24 +230,20 @@ namespace DuckovLuckyBox.Core.Settings.UI
       GameObject settingItem = new GameObject($"DuckovLuckyBox.UI.SettingItem.{setting.Key}");
       settingItem.transform.SetParent(settingsPanel!.transform, false);
 
-      // Background matching game's item card style - dark with slight transparency
+      // Material Design: Light gray background for list items (hover state)
       Image itemBackground = settingItem.AddComponent<Image>();
-      itemBackground.color = new Color(0.08f, 0.12f, 0.16f, 0.85f);
-
-      // Add cyan accent border (matching game's item quality borders)
-      var outline = settingItem.AddComponent<Outline>();
-      outline.effectColor = new Color(0.1f, 0.7f, 0.9f, 0.5f);
-      outline.effectDistance = new Vector2(2, -2);
+      itemBackground.color = new Color(0.96f, 0.96f, 0.96f, 1f); // #F5F5F5
 
       var rowLayout = settingItem.AddComponent<HorizontalLayoutGroup>();
       rowLayout.childAlignment = TextAnchor.MiddleLeft;
-      rowLayout.spacing = 20f;
-      rowLayout.padding = new RectOffset(20, 20, 12, 12);
+      rowLayout.spacing = 16f;
+      rowLayout.padding = new RectOffset(16, 16, 12, 12);
       rowLayout.childForceExpandHeight = false;
       rowLayout.childForceExpandWidth = false;
 
       string labelText = setting.Label.ToPlainText();
-      Text labelComponent = CreateText(settingItem.transform, $"DuckovLuckyBox.UI.SettingItem.{setting.Key}.Label", labelText, 16, new Color(0.85f, 0.95f, 1f, 1f), TextAnchor.MiddleLeft);
+      // Material Design: Dark gray text (87% opacity)
+      Text labelComponent = CreateText(settingItem.transform, $"DuckovLuckyBox.UI.SettingItem.{setting.Key}.Label", labelText, 14, new Color(0f, 0f, 0f, 0.87f), TextAnchor.MiddleLeft);
       var labelLayout = labelComponent.gameObject.AddComponent<LayoutElement>();
       labelLayout.minWidth = 380f;
       labelLayout.flexibleWidth = 1f;
@@ -308,7 +258,7 @@ namespace DuckovLuckyBox.Core.Settings.UI
       }
 
       var itemLayout = settingItem.AddComponent<LayoutElement>();
-      itemLayout.preferredHeight = 56f;
+      itemLayout.preferredHeight = 48f; // Material Design list item height
     }
 
     private Text CreateText(Transform parent, string objectName, string content, int fontSize, Color color, TextAnchor alignment)
@@ -332,13 +282,13 @@ namespace DuckovLuckyBox.Core.Settings.UI
       toggleRoot.transform.SetParent(parent, false);
 
       RectTransform toggleRect = toggleRoot.AddComponent<RectTransform>();
-      toggleRect.sizeDelta = new Vector2(64f, 32f); // Slightly larger
+      toggleRect.sizeDelta = new Vector2(52f, 32f); // Material Design switch size
 
-      // Background for toggle - dark matching game UI
+      // Background for toggle - Material Design switch track
       GameObject backgroundObj = new GameObject("Background");
       backgroundObj.transform.SetParent(toggleRoot.transform, false);
       Image backgroundImage = backgroundObj.AddComponent<Image>();
-      backgroundImage.color = new Color(0.06f, 0.09f, 0.12f, 1f);
+      backgroundImage.color = new Color(0.62f, 0.62f, 0.62f, 0.5f); // Gray track when OFF
 
       RectTransform backgroundRect = backgroundObj.GetComponent<RectTransform>();
       backgroundRect.anchorMin = Vector2.zero;
@@ -346,20 +296,15 @@ namespace DuckovLuckyBox.Core.Settings.UI
       backgroundRect.offsetMin = Vector2.zero;
       backgroundRect.offsetMax = Vector2.zero;
 
-      // Add cyan glow border to background
-      var bgOutline = backgroundObj.AddComponent<Outline>();
-      bgOutline.effectColor = new Color(0.1f, 0.7f, 0.9f, 0.7f);
-      bgOutline.effectDistance = new Vector2(2, -2);
-
-      // Checkmark for toggle - bright cyan when ON
+      // Checkmark for toggle - Material Design primary color when ON
       GameObject checkmarkObj = new GameObject("Checkmark");
       checkmarkObj.transform.SetParent(backgroundObj.transform, false);
       Image checkmarkImage = checkmarkObj.AddComponent<Image>();
-      checkmarkImage.color = new Color(0.1f, 0.95f, 1f, 1f); // Bright cyan
+      checkmarkImage.color = new Color(0.13f, 0.59f, 0.95f, 1f); // Material Blue 600 (#2196F3)
 
       RectTransform checkmarkRect = checkmarkObj.GetComponent<RectTransform>();
-      checkmarkRect.anchorMin = new Vector2(0.12f, 0.12f);
-      checkmarkRect.anchorMax = new Vector2(0.88f, 0.88f);
+      checkmarkRect.anchorMin = new Vector2(0.15f, 0.15f);
+      checkmarkRect.anchorMax = new Vector2(0.85f, 0.85f);
       checkmarkRect.offsetMin = Vector2.zero;
       checkmarkRect.offsetMax = Vector2.zero;
 
@@ -370,13 +315,13 @@ namespace DuckovLuckyBox.Core.Settings.UI
 
       Log.Debug($"CreateToggle - Setting: {setting.Key}, Value: {setting.Value}, Type: {setting.Value?.GetType().Name ?? "null"}, Toggle.isOn: {toggle.isOn}");
 
-      // Color scheme matching game's interactive UI elements
+      // Material Design color scheme
       var colors = toggle.colors;
-      colors.normalColor = new Color(0.06f, 0.09f, 0.12f, 1f);
-      colors.highlightedColor = new Color(0.08f, 0.14f, 0.18f, 1f);
-      colors.pressedColor = new Color(0.04f, 0.06f, 0.08f, 1f);
-      colors.selectedColor = new Color(0.08f, 0.12f, 0.16f, 1f);
-      colors.disabledColor = new Color(0.05f, 0.07f, 0.09f, 0.5f);
+      colors.normalColor = new Color(0.62f, 0.62f, 0.62f, 0.5f); // Gray when OFF
+      colors.highlightedColor = new Color(0.13f, 0.59f, 0.95f, 0.12f); // Light blue tint
+      colors.pressedColor = new Color(0.13f, 0.59f, 0.95f, 0.24f); // Darker blue tint
+      colors.selectedColor = new Color(0.13f, 0.59f, 0.95f, 1f); // Blue when ON
+      colors.disabledColor = new Color(0.62f, 0.62f, 0.62f, 0.26f); // Lighter gray when disabled
       toggle.colors = colors;
 
       toggle.onValueChanged.AddListener(value =>
@@ -387,7 +332,7 @@ namespace DuckovLuckyBox.Core.Settings.UI
       });
 
       var layoutElement = toggleRoot.AddComponent<LayoutElement>();
-      layoutElement.preferredWidth = 64f;
+      layoutElement.preferredWidth = 52f;
       layoutElement.preferredHeight = 32f;
     }
 
@@ -397,24 +342,19 @@ namespace DuckovLuckyBox.Core.Settings.UI
       inputRoot.transform.SetParent(parent, false);
 
       RectTransform inputRect = inputRoot.AddComponent<RectTransform>();
-      inputRect.sizeDelta = new Vector2(120f, 32f);
+      inputRect.sizeDelta = new Vector2(100f, 32f);
 
-      // Background for input field - dark matching game UI
+      // Background for input field - Material Design filled text field
       Image inputBackground = inputRoot.AddComponent<Image>();
-      inputBackground.color = new Color(0.06f, 0.09f, 0.12f, 1f);
-
-      // Add cyan glow border
-      var inputOutline = inputRoot.AddComponent<Outline>();
-      inputOutline.effectColor = new Color(0.1f, 0.7f, 0.9f, 0.7f);
-      inputOutline.effectDistance = new Vector2(2, -2);
+      inputBackground.color = new Color(0.96f, 0.96f, 0.96f, 1f); // Light gray background
 
       // Create InputField
       GameObject textObj = new GameObject("Text");
       textObj.transform.SetParent(inputRoot.transform, false);
       Text textComponent = textObj.AddComponent<Text>();
       textComponent.font = defaultFont;
-      textComponent.fontSize = 16;
-      textComponent.color = new Color(0.85f, 0.95f, 1f, 1f); // Bright cyan-white text
+      textComponent.fontSize = 14;
+      textComponent.color = new Color(0f, 0f, 0f, 0.87f); // Material Design primary text
       textComponent.alignment = TextAnchor.MiddleCenter;
       textComponent.supportRichText = false;
 
@@ -435,13 +375,13 @@ namespace DuckovLuckyBox.Core.Settings.UI
 
       Log.Debug($"CreateNumberInput - Setting: {setting.Key}, Value: {setting.Value}, Type: {setting.Value?.GetType().Name ?? "null"}, InputField.text: {inputField.text}");
 
-      // Color scheme matching game's interactive UI elements
+      // Material Design color scheme for text field
       var colors = inputField.colors;
-      colors.normalColor = new Color(0.06f, 0.09f, 0.12f, 1f);
-      colors.highlightedColor = new Color(0.08f, 0.14f, 0.18f, 1f);
-      colors.pressedColor = new Color(0.04f, 0.06f, 0.08f, 1f);
-      colors.selectedColor = new Color(0.08f, 0.12f, 0.16f, 1f);
-      colors.disabledColor = new Color(0.05f, 0.07f, 0.09f, 0.5f);
+      colors.normalColor = new Color(0.96f, 0.96f, 0.96f, 1f); // Light gray
+      colors.highlightedColor = new Color(0.93f, 0.93f, 0.93f, 1f); // Slightly darker
+      colors.pressedColor = new Color(0.90f, 0.90f, 0.90f, 1f); // Even darker
+      colors.selectedColor = new Color(0.13f, 0.59f, 0.95f, 0.12f); // Light blue tint when selected
+      colors.disabledColor = new Color(0.96f, 0.96f, 0.96f, 0.38f); // Faded when disabled
       inputField.colors = colors;
 
       inputField.onEndEdit.AddListener(value =>
@@ -466,7 +406,7 @@ namespace DuckovLuckyBox.Core.Settings.UI
       });
 
       var layoutElement = inputRoot.AddComponent<LayoutElement>();
-      layoutElement.preferredWidth = 120f;
+      layoutElement.preferredWidth = 100f;
       layoutElement.preferredHeight = 32f;
     }
   }
