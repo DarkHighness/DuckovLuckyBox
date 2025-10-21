@@ -37,3 +37,8 @@ Minecraft “幸运方块”
 
 1. 📦添加“幸运方块”道具，当打开时，随机抽取一件物品或BUFF
 2. 设置配置落盘 [WIP]
+
+## 相关链接
+
+源代码仓库: https://github.com/DarkHighness/DuckovLuckyBox
+Steam 创意工坊: https://steamcommunity.com/sharedfiles/filedetails/?id=3589741459
