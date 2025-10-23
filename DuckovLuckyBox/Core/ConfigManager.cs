@@ -191,7 +191,7 @@ namespace DuckovLuckyBox.Core.Settings
       return new ConfigData
       {
         EnableAnimation = settings.EnableAnimation.Value is bool b ? b : DefaultSettings.EnableAnimation,
-        SettingsHotkey = (settings.SettingsHotkey.Value is KeyCode keyCode ? keyCode : DefaultSettings.SettingsHotkey).ToString(),
+        SettingsHotkey = (settings.SettingsHotkey.Value as Hotkey ?? DefaultSettings.SettingsHotkey).ToString(),
         RefreshStockPrice = settings.RefreshStockPrice.Value is long l1 ? l1 : DefaultSettings.RefreshStockPrice,
         StorePickPrice = settings.StorePickPrice.Value is long l2 ? l2 : DefaultSettings.StorePickPrice,
         StreetPickPrice = settings.StreetPickPrice.Value is long l3 ? l3 : DefaultSettings.StreetPickPrice,
@@ -209,11 +209,8 @@ namespace DuckovLuckyBox.Core.Settings
       {
         settings.EnableAnimation.Value = config.EnableAnimation;
 
-        // Parse KeyCode from string
-        if (Enum.TryParse<KeyCode>(config.SettingsHotkey, out KeyCode keyCode))
-        {
-          settings.SettingsHotkey.Value = keyCode;
-        }
+        // Parse Hotkey from string (e.g., "Ctrl+F1")
+        settings.SettingsHotkey.Value = Hotkey.Parse(config.SettingsHotkey);
 
         settings.RefreshStockPrice.Value = config.RefreshStockPrice;
         settings.StorePickPrice.Value = config.StorePickPrice;

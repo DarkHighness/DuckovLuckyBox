@@ -1,0 +1,7 @@
+{
+  "EnableAnimation": true,
+  "SettingsHotkey": "Ctrl+F1",
+  "RefreshStockPrice": 100,
+  "StorePickPrice": 100,
+  "StreetPickPrice": 100
+}

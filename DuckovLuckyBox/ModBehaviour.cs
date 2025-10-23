@@ -61,9 +61,9 @@ namespace DuckovLuckyBox
 
         void Update()
         {
-            KeyCode hotkeyCode = Settings.Instance.SettingsHotkey.Value is KeyCode keyCode ? keyCode : DefaultSettings.SettingsHotkey;
+            var hotkey = Settings.Instance.SettingsHotkey.Value as Hotkey ?? DefaultSettings.SettingsHotkey;
 
-            if (Input.GetKeyDown(hotkeyCode))
+            if (hotkey.IsPressed())
             {
                 settingsUI!.ToggleSettingsUI();
             }

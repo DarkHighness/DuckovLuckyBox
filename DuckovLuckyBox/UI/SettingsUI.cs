@@ -572,8 +572,8 @@ namespace DuckovLuckyBox.UI
       button.targetGraphic = buttonImage;
 
       // Set initial value
-      KeyCode currentKey = setting.Value is KeyCode keyCode ? keyCode : DefaultSettings.SettingsHotkey;
-      buttonText.text = currentKey.ToString();
+      var currentHotkey = setting.Value as Hotkey ?? DefaultSettings.SettingsHotkey;
+      buttonText.text = currentHotkey.ToString();
 
       bool isWaitingForKey = false;
 
@@ -603,6 +603,11 @@ namespace DuckovLuckyBox.UI
         yield return null;
       }
 
+      // Capture modifier keys state
+      bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+      bool shiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+      bool altPressed = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
+
       // Find which key was pressed
       foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
       {
@@ -614,9 +619,19 @@ namespace DuckovLuckyBox.UI
             continue;
           }
 
-          Log.Debug($"HotkeyInput changed - Setting: {setting.Key}, New key: {keyCode}");
-          setting.Value = keyCode;
-          textComponent.text = keyCode.ToString();
+          // Skip modifier keys themselves as the main key
+          if (keyCode == KeyCode.LeftControl || keyCode == KeyCode.RightControl ||
+              keyCode == KeyCode.LeftShift || keyCode == KeyCode.RightShift ||
+              keyCode == KeyCode.LeftAlt || keyCode == KeyCode.RightAlt)
+          {
+            continue;
+          }
+
+          var hotkey = new Hotkey(keyCode, ctrlPressed, shiftPressed, altPressed);
+
+          Log.Debug($"HotkeyInput changed - Setting: {setting.Key}, New hotkey: {hotkey}");
+          setting.Value = hotkey;
+          textComponent.text = hotkey.ToString();
           Log.Debug($"Setting updated - Setting: {setting.Key}, Stored value: {setting.Value}");
           break;
         }

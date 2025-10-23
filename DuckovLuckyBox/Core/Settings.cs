@@ -73,7 +73,7 @@ namespace DuckovLuckyBox.Core.Settings
   {
     // General Settings
     public const bool EnableAnimation = true;
-    public const KeyCode SettingsHotkey = KeyCode.F1;
+    public static readonly Hotkey SettingsHotkey = new Hotkey(KeyCode.F1, false, false, false);
 
     // Pricing Settings
     public const long RefreshStockPrice = 100L;
