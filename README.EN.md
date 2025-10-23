@@ -10,7 +10,7 @@ A mod for "Escape from Duckov" that allows players to use additional features in
 
 ### Shop Features
 
-1. ⌚ A decent-looking lottery animation
+1. ⌚ A decent-looking lottery animation (can be skipped by left-clicking the mouse while playing)
 
 2. ♻️ "Refresh": Refresh the current merchant's inventory
 
