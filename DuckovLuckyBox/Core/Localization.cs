@@ -23,7 +23,9 @@ namespace DuckovLuckyBox.Core
             { Constants.I18n.SettingsPressAnyKeyKey, "Press any key..." },
             { Constants.I18n.SettingsRefreshStockPriceKey, "Refresh Stock Price" },
             { Constants.I18n.SettingsStorePickPriceKey, "Store Pick Price" },
-            { Constants.I18n.SettingsStreetPickPriceKey, "Street Pick Price" }
+            { Constants.I18n.SettingsStreetPickPriceKey, "Street Pick Price" },
+            { Constants.I18n.SettingsResetToDefaultKey, "Reset to Default" },
+            { Constants.I18n.FreeKey, "Free!" }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { Constants.I18n.RefreshStockKey, "刷新" },
@@ -40,7 +42,9 @@ namespace DuckovLuckyBox.Core
             { Constants.I18n.SettingsPressAnyKeyKey, "按任意键..." },
             { Constants.I18n.SettingsRefreshStockPriceKey, "刷新库存价格" },
             { Constants.I18n.SettingsStorePickPriceKey, "商人抽奖价格" },
-            { Constants.I18n.SettingsStreetPickPriceKey, "街边抽奖价格" }
+            { Constants.I18n.SettingsStreetPickPriceKey, "街边抽奖价格" },
+            { Constants.I18n.SettingsResetToDefaultKey, "恢复默认值" },
+            { Constants.I18n.FreeKey, "免费！" }
         } },
     };
 

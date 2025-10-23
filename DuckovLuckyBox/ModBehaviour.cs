@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
-using DuckovLuckyBox.Core.Settings.UI;
+using DuckovLuckyBox.UI;
 
 namespace DuckovLuckyBox
 {

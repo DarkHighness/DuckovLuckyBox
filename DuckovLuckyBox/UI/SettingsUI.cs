@@ -1,20 +1,21 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using TMPro;
 using SodaCraft.Localizations;
+using DuckovLuckyBox.Core;
+using DuckovLuckyBox.Core.Settings;
 
-namespace DuckovLuckyBox.Core.Settings.UI
+namespace DuckovLuckyBox.UI
 {
   public class SettingsUI : MonoBehaviour
   {
     private GameObject? settingsPanel;
     private Canvas? canvas;
-    private RectTransform? panelTransform;
-    private Font defaultFont = null!;
     private bool initialized = false;
     private bool initializing = false;
+
     public bool IsVisible => settingsPanel != null && settingsPanel.activeSelf;
 
     void Awake()
@@ -89,22 +90,12 @@ namespace DuckovLuckyBox.Core.Settings.UI
       initializing = true;
       Log.Debug("Initializing Settings UI (async)...");
 
-      // Load assets in first frame to get them ready
       yield return null;
 
-      // Ensure inputs can reach the runtime-generated UI.
-      if (EventSystem.current == null)
-      {
-        var eventSystemObj = new GameObject("DuckovLuckyBox.UI.EventSystem");
-        eventSystemObj.AddComponent<EventSystem>();
-        eventSystemObj.AddComponent<StandaloneInputModule>();
-      }
+      CreateCanvas();
+      yield return null;
 
-      // Load built-in assets so text and toggles render even when the host project has no prefabs.
-      defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
-
-      // Spread UI creation across frames to avoid stutters
-      CreateSettingPanel();
+      CreateSettingsPanel();
       yield return null;
 
       CreateSettings();
@@ -114,13 +105,11 @@ namespace DuckovLuckyBox.Core.Settings.UI
       initializing = false;
       Log.Debug("Settings UI Initialized (async complete).");
 
-      // Display after initialization
       ShowSettingsUI();
     }
 
-    private void CreateSettingPanel()
+    private void CreateCanvas()
     {
-      // Create canvas
       GameObject canvasObj = new GameObject("DuckovLuckyBox.UI.SettingsUICanvas");
       canvas = canvasObj.AddComponent<Canvas>();
       canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -131,334 +120,460 @@ namespace DuckovLuckyBox.Core.Settings.UI
       scaler.referenceResolution = new Vector2(1920f, 1080f);
 
       canvasObj.AddComponent<GraphicRaycaster>();
+    }
 
-      // Create settings panel - Match game's dark cyberpunk style
+    private void CreateSettingsPanel()
+    {
       settingsPanel = new GameObject("DuckovLuckyBox.UI.SettingsPanel");
-      settingsPanel.transform.SetParent(canvas.transform, false);
+      settingsPanel.transform.SetParent(canvas!.transform, false);
 
-      // Create fullscreen blocker with semi-transparent dark overlay (Material Design scrim)
-      // Place it as child of settingsPanel so it's hidden when panel is hidden
+      // Fullscreen blocker
       GameObject blockerObj = new GameObject("DuckovLuckyBox.UI.InputBlocker");
       blockerObj.transform.SetParent(settingsPanel.transform, false);
       Image blockerImage = blockerObj.AddComponent<Image>();
-      blockerImage.color = new Color(0f, 0f, 0f, 0.5f); // Simple black overlay at 50% opacity
+      blockerImage.color = new Color(0f, 0f, 0f, 0.7f);
 
       RectTransform blockerRect = blockerObj.GetComponent<RectTransform>();
       blockerRect.anchorMin = Vector2.zero;
       blockerRect.anchorMax = Vector2.one;
       blockerRect.offsetMin = Vector2.zero;
       blockerRect.offsetMax = Vector2.zero;
-      blockerRect.SetAsFirstSibling(); // Ensure blocker is behind the panel content
+      blockerRect.SetAsFirstSibling();
       blockerObj.AddComponent<GraphicRaycaster>();
 
-      // Base background - Material Design surface color (pure white)
-      Image backgroundImage = settingsPanel.AddComponent<Image>();
-      backgroundImage.color = new Color(1f, 1f, 1f, 1f); // Pure white background
+      // Panel background - matching game style
+      Image panelBackground = settingsPanel.AddComponent<Image>();
+      panelBackground.color = new Color(0.15f, 0.15f, 0.15f, 0.95f);
 
-      panelTransform = settingsPanel.GetComponent<RectTransform>();
-      panelTransform.anchorMin = new Vector2(0.5f, 0.5f);
-      panelTransform.anchorMax = new Vector2(0.5f, 0.5f);
-      panelTransform.pivot = new Vector2(0.5f, 0.5f);
-      panelTransform.anchoredPosition = Vector2.zero;
-      panelTransform.sizeDelta = new Vector2(600f, 480f); // Material Design card proportions
+      RectTransform panelRect = settingsPanel.GetComponent<RectTransform>();
+      panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+      panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+      panelRect.pivot = new Vector2(0.5f, 0.5f);
+      panelRect.anchoredPosition = Vector2.zero;
+      panelRect.sizeDelta = new Vector2(800f, 600f);
 
       var verticalLayout = settingsPanel.AddComponent<VerticalLayoutGroup>();
       verticalLayout.childAlignment = TextAnchor.UpperLeft;
       verticalLayout.childForceExpandHeight = false;
       verticalLayout.childForceExpandWidth = true;
-      verticalLayout.spacing = 8f; // Consistent spacing
-      verticalLayout.padding = new RectOffset(24, 24, 24, 24); // Material Design padding
+      verticalLayout.spacing = 16f;
+      verticalLayout.padding = new RectOffset(32, 32, 32, 32);
 
       settingsPanel.SetActive(false);
     }
 
     private void CreateSettings()
     {
-      CreateSettingsTitle();
+      CreateTitle();
 
-      // group settings by category
-      var categorizedSettings = new Dictionary<Category, List<SettingItem>>();
-      foreach (var setting in Settings.Instance.AllSettings)
-      {
-        if (!categorizedSettings.ContainsKey(setting.Category))
-        {
-          categorizedSettings[setting.Category] = new List<SettingItem>();
-        }
-        categorizedSettings[setting.Category].Add(setting);
-      }
+      var settings = Settings.Instance;
 
-      // create UI for each category
-      foreach (var category in categorizedSettings.Keys)
-      {
-        CreateSettingCategory(category, categorizedSettings[category]);
-      }
+      // General category
+      CreateCategoryLabel(Constants.I18n.SettingsCategoryGeneralKey);
+      CreateToggleSetting(settings.EnableAnimation);
+      CreateHotkeySetting(settings.SettingsHotkey);
+
+      // Pricing category
+      CreateCategoryLabel(Constants.I18n.SettingsCategoryPricingKey);
+      CreateSliderSetting(settings.RefreshStockPrice);
+      CreateSliderSetting(settings.StorePickPrice);
+      CreateSliderSetting(settings.StreetPickPrice);
+
+      // Reset button
+      CreateResetButton();
     }
 
-    private void CreateSettingsTitle()
+    private void CreateTitle()
     {
-      // Material Design: Dark gray title text (87% opacity on white)
-      Text titleComponent = CreateText(settingsPanel!.transform, "DuckovLuckyBox.UI.SettingsTitle", Constants.I18n.SettingsPanelTitleKey.ToPlainText(), 24, new Color(0f, 0f, 0f, 0.87f), TextAnchor.MiddleLeft);
-      titleComponent.fontStyle = FontStyle.Bold;
-      var layout = titleComponent.gameObject.AddComponent<LayoutElement>();
-      layout.preferredHeight = 48f;
+      GameObject titleObj = new GameObject("DuckovLuckyBox.UI.Title");
+      titleObj.transform.SetParent(settingsPanel!.transform, false);
+
+      TextMeshProUGUI titleText = titleObj.AddComponent<TextMeshProUGUI>();
+      titleText.text = Constants.I18n.SettingsPanelTitleKey.ToPlainText();
+      titleText.fontSize = 32;
+      titleText.fontStyle = FontStyles.Bold;
+      titleText.color = new Color(1f, 0.9f, 0.6f);
+      titleText.alignment = TextAlignmentOptions.Center;
+
+      var layout = titleObj.AddComponent<LayoutElement>();
+      layout.preferredHeight = 60f;
     }
 
-    private void CreateSettingCategory(Category category, List<SettingItem> settings)
+    private void CreateCategoryLabel(string categoryKey)
     {
-      string categoryDisplayName = category switch
-      {
-        Category.General => Constants.I18n.SettingsCategoryGeneralKey.ToPlainText(),
-        Category.Pricing => Constants.I18n.SettingsCategoryPricingKey.ToPlainText(),
-        _ => category.ToString()
-      };
+      GameObject categoryObj = new GameObject($"DuckovLuckyBox.UI.Category.{categoryKey}");
+      categoryObj.transform.SetParent(settingsPanel!.transform, false);
 
-      // Material Design: Medium gray category text (60% opacity)
-      Text categoryText = CreateText(settingsPanel!.transform, $"DuckovLuckyBox.UI.SettingCategory.{category}", $"{categoryDisplayName}", 14, new Color(0f, 0f, 0f, 0.6f), TextAnchor.MiddleLeft);
-      categoryText.fontStyle = FontStyle.Bold;
-      var layout = categoryText.gameObject.AddComponent<LayoutElement>();
-      layout.preferredHeight = 32f;
+      TextMeshProUGUI categoryText = categoryObj.AddComponent<TextMeshProUGUI>();
+      categoryText.text = categoryKey.ToPlainText();
+      categoryText.fontSize = 20;
+      categoryText.fontStyle = FontStyles.Bold;
+      categoryText.color = new Color(0.8f, 0.8f, 0.8f);
+      categoryText.alignment = TextAlignmentOptions.Left;
 
-      // Create settings under this category
-      foreach (var setting in settings)
-      {
-        CreateSettingItem(setting);
-      }
+      var layout = categoryObj.AddComponent<LayoutElement>();
+      layout.preferredHeight = 40f;
     }
 
-    private void CreateSettingItem(SettingItem setting)
+    private void CreateToggleSetting(SettingItem setting)
     {
-      GameObject settingItem = new GameObject($"DuckovLuckyBox.UI.SettingItem.{setting.Key}");
-      settingItem.transform.SetParent(settingsPanel!.transform, false);
+      GameObject entryObj = new GameObject($"DuckovLuckyBox.UI.Entry.{setting.Key}");
+      entryObj.transform.SetParent(settingsPanel!.transform, false);
 
-      // Material Design: Light gray background for list items (hover state)
-      Image itemBackground = settingItem.AddComponent<Image>();
-      itemBackground.color = new Color(0.96f, 0.96f, 0.96f, 1f); // #F5F5F5
+      // Background
+      Image entryBg = entryObj.AddComponent<Image>();
+      entryBg.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
 
-      var rowLayout = settingItem.AddComponent<HorizontalLayoutGroup>();
-      rowLayout.childAlignment = TextAnchor.MiddleLeft;
-      rowLayout.spacing = 16f;
-      rowLayout.padding = new RectOffset(16, 16, 12, 12);
-      rowLayout.childForceExpandHeight = false;
-      rowLayout.childForceExpandWidth = false;
+      var horizontalLayout = entryObj.AddComponent<HorizontalLayoutGroup>();
+      horizontalLayout.childAlignment = TextAnchor.MiddleLeft;
+      horizontalLayout.childForceExpandHeight = false;
+      horizontalLayout.childForceExpandWidth = false;
+      horizontalLayout.padding = new RectOffset(16, 16, 8, 8);
+      horizontalLayout.spacing = 16f;
 
-      string labelText = setting.Label.ToPlainText();
-      // Material Design: Dark gray text (87% opacity)
-      Text labelComponent = CreateText(settingItem.transform, $"DuckovLuckyBox.UI.SettingItem.{setting.Key}.Label", labelText, 14, new Color(0f, 0f, 0f, 0.87f), TextAnchor.MiddleLeft);
-      var labelLayout = labelComponent.gameObject.AddComponent<LayoutElement>();
-      labelLayout.minWidth = 380f;
+      // Label
+      GameObject labelObj = new GameObject("Label");
+      labelObj.transform.SetParent(entryObj.transform, false);
+      TextMeshProUGUI labelText = labelObj.AddComponent<TextMeshProUGUI>();
+      labelText.text = setting.Label.ToPlainText();
+      labelText.fontSize = 18;
+      labelText.color = Color.white;
+      labelText.alignment = TextAlignmentOptions.Left;
+
+      var labelLayout = labelObj.AddComponent<LayoutElement>();
+      labelLayout.minWidth = 400f;
       labelLayout.flexibleWidth = 1f;
 
-      if (setting.Type == Type.Toggle)
-      {
-        CreateToggle(settingItem.transform, setting);
-      }
-      else if (setting.Type == Type.Number)
-      {
-        CreateNumberInput(settingItem.transform, setting);
-      }
-      else if (setting.Type == Type.Hotkey)
-      {
-        CreateHotkeyInput(settingItem.transform, setting);
-      }
+      // Toggle (using Slider like the game does)
+      GameObject toggleObj = new GameObject("Toggle");
+      toggleObj.transform.SetParent(entryObj.transform, false);
 
-      var itemLayout = settingItem.AddComponent<LayoutElement>();
-      itemLayout.preferredHeight = 48f; // Material Design list item height
-    }
+      RectTransform toggleRect = toggleObj.AddComponent<RectTransform>();
+      toggleRect.sizeDelta = new Vector2(200f, 32f);
 
-    private Text CreateText(Transform parent, string objectName, string content, int fontSize, Color color, TextAnchor alignment)
-    {
-      GameObject textObj = new GameObject(objectName);
-      textObj.transform.SetParent(parent, false);
-      Text text = textObj.AddComponent<Text>();
-      text.text = content;
-      text.fontSize = fontSize;
-      text.color = color;
-      text.font = defaultFont;
-      text.alignment = alignment;
-      text.horizontalOverflow = HorizontalWrapMode.Overflow;
-      text.verticalOverflow = VerticalWrapMode.Overflow;
-      return text;
-    }
+      Slider toggleSlider = toggleObj.AddComponent<Slider>();
+      toggleSlider.wholeNumbers = true;
+      toggleSlider.minValue = 0f;
+      toggleSlider.maxValue = 1f;
 
-    private void CreateToggle(Transform parent, SettingItem setting)
-    {
-      GameObject toggleRoot = new GameObject($"DuckovLuckyBox.UI.Toggle.{setting.Key}");
-      toggleRoot.transform.SetParent(parent, false);
+      // Background for slider
+      GameObject bgObj = new GameObject("Background");
+      bgObj.transform.SetParent(toggleObj.transform, false);
+      Image bgImage = bgObj.AddComponent<Image>();
+      bgImage.color = new Color(0.3f, 0.3f, 0.3f, 1f);
 
-      RectTransform toggleRect = toggleRoot.AddComponent<RectTransform>();
-      toggleRect.sizeDelta = new Vector2(52f, 32f); // Material Design switch size
+      RectTransform bgRect = bgObj.GetComponent<RectTransform>();
+      bgRect.anchorMin = Vector2.zero;
+      bgRect.anchorMax = Vector2.one;
+      bgRect.offsetMin = Vector2.zero;
+      bgRect.offsetMax = Vector2.zero;
 
-      // Background for toggle - Material Design switch track
-      GameObject backgroundObj = new GameObject("Background");
-      backgroundObj.transform.SetParent(toggleRoot.transform, false);
-      Image backgroundImage = backgroundObj.AddComponent<Image>();
-      backgroundImage.color = new Color(0.62f, 0.62f, 0.62f, 0.5f); // Gray track when OFF
+      // Fill area
+      GameObject fillAreaObj = new GameObject("Fill Area");
+      fillAreaObj.transform.SetParent(toggleObj.transform, false);
+      RectTransform fillAreaRect = fillAreaObj.AddComponent<RectTransform>();
+      fillAreaRect.anchorMin = Vector2.zero;
+      fillAreaRect.anchorMax = Vector2.one;
+      fillAreaRect.offsetMin = Vector2.zero;
+      fillAreaRect.offsetMax = Vector2.zero;
 
-      RectTransform backgroundRect = backgroundObj.GetComponent<RectTransform>();
-      backgroundRect.anchorMin = Vector2.zero;
-      backgroundRect.anchorMax = Vector2.one;
-      backgroundRect.offsetMin = Vector2.zero;
-      backgroundRect.offsetMax = Vector2.zero;
+      GameObject fillObj = new GameObject("Fill");
+      fillObj.transform.SetParent(fillAreaObj.transform, false);
+      Image fillImage = fillObj.AddComponent<Image>();
+      fillImage.color = new Color(0.2f, 0.7f, 0.3f, 1f);
 
-      // Checkmark for toggle - Material Design primary color when ON
-      GameObject checkmarkObj = new GameObject("Checkmark");
-      checkmarkObj.transform.SetParent(backgroundObj.transform, false);
-      Image checkmarkImage = checkmarkObj.AddComponent<Image>();
-      checkmarkImage.color = new Color(0.13f, 0.59f, 0.95f, 1f); // Material Blue 600 (#2196F3)
+      RectTransform fillRect = fillObj.GetComponent<RectTransform>();
+      fillRect.anchorMin = Vector2.zero;
+      fillRect.anchorMax = Vector2.one;
+      fillRect.offsetMin = Vector2.zero;
+      fillRect.offsetMax = Vector2.zero;
 
-      RectTransform checkmarkRect = checkmarkObj.GetComponent<RectTransform>();
-      checkmarkRect.anchorMin = new Vector2(0.15f, 0.15f);
-      checkmarkRect.anchorMax = new Vector2(0.85f, 0.85f);
-      checkmarkRect.offsetMin = Vector2.zero;
-      checkmarkRect.offsetMax = Vector2.zero;
+      // Handle
+      GameObject handleAreaObj = new GameObject("Handle Slide Area");
+      handleAreaObj.transform.SetParent(toggleObj.transform, false);
+      RectTransform handleAreaRect = handleAreaObj.AddComponent<RectTransform>();
+      handleAreaRect.anchorMin = Vector2.zero;
+      handleAreaRect.anchorMax = Vector2.one;
+      handleAreaRect.offsetMin = new Vector2(10, 0);
+      handleAreaRect.offsetMax = new Vector2(-10, 0);
 
-      Toggle toggle = toggleRoot.AddComponent<Toggle>();
-      toggle.targetGraphic = backgroundImage;
-      toggle.graphic = checkmarkImage;
-      toggle.isOn = setting.Value is bool boolean && boolean;
+      GameObject handleObj = new GameObject("Handle");
+      handleObj.transform.SetParent(handleAreaObj.transform, false);
+      Image handleImage = handleObj.AddComponent<Image>();
+      handleImage.color = Color.white;
 
-      Log.Debug($"CreateToggle - Setting: {setting.Key}, Value: {setting.Value}, Type: {setting.Value?.GetType().Name ?? "null"}, Toggle.isOn: {toggle.isOn}");
+      RectTransform handleRect = handleObj.GetComponent<RectTransform>();
+      handleRect.sizeDelta = new Vector2(20f, 0f);
 
-      // Material Design color scheme
-      var colors = toggle.colors;
-      colors.normalColor = new Color(0.62f, 0.62f, 0.62f, 0.5f); // Gray when OFF
-      colors.highlightedColor = new Color(0.13f, 0.59f, 0.95f, 0.12f); // Light blue tint
-      colors.pressedColor = new Color(0.13f, 0.59f, 0.95f, 0.24f); // Darker blue tint
-      colors.selectedColor = new Color(0.13f, 0.59f, 0.95f, 1f); // Blue when ON
-      colors.disabledColor = new Color(0.62f, 0.62f, 0.62f, 0.26f); // Lighter gray when disabled
-      toggle.colors = colors;
-
-      toggle.onValueChanged.AddListener(value =>
-      {
-        Log.Debug($"Toggle changed - Setting: {setting.Key}, New value: {value}");
-        setting.Value = value;
-        Log.Debug($"Setting updated - Setting: {setting.Key}, Stored value: {setting.Value}");
-      });
-
-      var layoutElement = toggleRoot.AddComponent<LayoutElement>();
-      layoutElement.preferredWidth = 52f;
-      layoutElement.preferredHeight = 32f;
-    }
-
-    private void CreateNumberInput(Transform parent, SettingItem setting)
-    {
-      GameObject inputRoot = new GameObject($"DuckovLuckyBox.UI.NumberInput.{setting.Key}");
-      inputRoot.transform.SetParent(parent, false);
-
-      RectTransform inputRect = inputRoot.AddComponent<RectTransform>();
-      inputRect.sizeDelta = new Vector2(100f, 32f);
-
-      // Background for input field - Material Design filled text field
-      Image inputBackground = inputRoot.AddComponent<Image>();
-      inputBackground.color = new Color(0.96f, 0.96f, 0.96f, 1f); // Light gray background
-
-      // Create InputField
-      GameObject textObj = new GameObject("Text");
-      textObj.transform.SetParent(inputRoot.transform, false);
-      Text textComponent = textObj.AddComponent<Text>();
-      textComponent.font = defaultFont;
-      textComponent.fontSize = 14;
-      textComponent.color = new Color(0f, 0f, 0f, 0.87f); // Material Design primary text
-      textComponent.alignment = TextAnchor.MiddleCenter;
-      textComponent.supportRichText = false;
-
-      RectTransform textRect = textObj.GetComponent<RectTransform>();
-      textRect.anchorMin = Vector2.zero;
-      textRect.anchorMax = Vector2.one;
-      textRect.offsetMin = new Vector2(8, 0);
-      textRect.offsetMax = new Vector2(-8, 0);
-
-      InputField inputField = inputRoot.AddComponent<InputField>();
-      inputField.textComponent = textComponent;
-      inputField.targetGraphic = inputBackground;
-      inputField.contentType = InputField.ContentType.IntegerNumber;
+      // Setup slider
+      toggleSlider.fillRect = fillRect;
+      toggleSlider.handleRect = handleRect;
+      toggleSlider.targetGraphic = handleImage;
 
       // Set initial value
-      long currentValue = setting.Value is long longVal ? longVal : 0L;
-      inputField.text = currentValue.ToString();
+      bool currentValue = setting.Value is bool b && b;
+      toggleSlider.SetValueWithoutNotify(currentValue ? 1f : 0f);
 
-      Log.Debug($"CreateNumberInput - Setting: {setting.Key}, Value: {setting.Value}, Type: {setting.Value?.GetType().Name ?? "null"}, InputField.text: {inputField.text}");
-
-      // Material Design color scheme for text field
-      var colors = inputField.colors;
-      colors.normalColor = new Color(0.96f, 0.96f, 0.96f, 1f); // Light gray
-      colors.highlightedColor = new Color(0.93f, 0.93f, 0.93f, 1f); // Slightly darker
-      colors.pressedColor = new Color(0.90f, 0.90f, 0.90f, 1f); // Even darker
-      colors.selectedColor = new Color(0.13f, 0.59f, 0.95f, 0.12f); // Light blue tint when selected
-      colors.disabledColor = new Color(0.96f, 0.96f, 0.96f, 0.38f); // Faded when disabled
-      inputField.colors = colors;
-
-      inputField.onEndEdit.AddListener(value =>
+      // Add listener
+      toggleSlider.onValueChanged.AddListener(value =>
       {
-        if (long.TryParse(value, out long newValue))
-        {
-          // Ensure non-negative values
-          newValue = System.Math.Max(0, newValue);
-          inputField.text = newValue.ToString();
+        bool newValue = value > 0f;
+        setting.Value = newValue;
+        Log.Debug($"Toggle changed - Setting: {setting.Key}, New value: {newValue}");
+      });
 
-          Log.Debug($"NumberInput changed - Setting: {setting.Key}, New value: {newValue}");
+      var toggleLayout = toggleObj.AddComponent<LayoutElement>();
+      toggleLayout.preferredWidth = 200f;
+      toggleLayout.preferredHeight = 32f;
+
+      var entryLayout = entryObj.AddComponent<LayoutElement>();
+      entryLayout.preferredHeight = 48f;
+    }
+
+    private void CreateSliderSetting(SettingItem setting)
+    {
+      float minValue = setting.MinValue;
+      float maxValue = setting.MaxValue;
+      float step = setting.Step;
+
+      GameObject entryObj = new GameObject($"DuckovLuckyBox.UI.Entry.{setting.Key}");
+      entryObj.transform.SetParent(settingsPanel!.transform, false);
+
+      // Background
+      Image entryBg = entryObj.AddComponent<Image>();
+      entryBg.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
+
+      var horizontalLayout = entryObj.AddComponent<HorizontalLayoutGroup>();
+      horizontalLayout.childAlignment = TextAnchor.MiddleLeft;
+      horizontalLayout.childForceExpandHeight = false;
+      horizontalLayout.childForceExpandWidth = false;
+      horizontalLayout.padding = new RectOffset(16, 16, 8, 8);
+      horizontalLayout.spacing = 16f;
+
+      // Label
+      GameObject labelObj = new GameObject("Label");
+      labelObj.transform.SetParent(entryObj.transform, false);
+      TextMeshProUGUI labelText = labelObj.AddComponent<TextMeshProUGUI>();
+      labelText.text = setting.Label.ToPlainText();
+      labelText.fontSize = 18;
+      labelText.color = Color.white;
+      labelText.alignment = TextAlignmentOptions.Left;
+
+      var labelLayout = labelObj.AddComponent<LayoutElement>();
+      labelLayout.minWidth = 300f;
+      labelLayout.flexibleWidth = 1f;
+
+      // Slider
+      GameObject sliderObj = new GameObject("Slider");
+      sliderObj.transform.SetParent(entryObj.transform, false);
+
+      RectTransform sliderRect = sliderObj.AddComponent<RectTransform>();
+      sliderRect.sizeDelta = new Vector2(200f, 32f);
+
+      Slider slider = sliderObj.AddComponent<Slider>();
+      slider.wholeNumbers = step >= 1f;
+      slider.minValue = minValue;
+      slider.maxValue = maxValue;
+
+      // Background
+      GameObject bgObj = new GameObject("Background");
+      bgObj.transform.SetParent(sliderObj.transform, false);
+      Image bgImage = bgObj.AddComponent<Image>();
+      bgImage.color = new Color(0.3f, 0.3f, 0.3f, 1f);
+
+      RectTransform bgRect = bgObj.GetComponent<RectTransform>();
+      bgRect.anchorMin = Vector2.zero;
+      bgRect.anchorMax = Vector2.one;
+      bgRect.offsetMin = Vector2.zero;
+      bgRect.offsetMax = Vector2.zero;
+
+      // Fill area
+      GameObject fillAreaObj = new GameObject("Fill Area");
+      fillAreaObj.transform.SetParent(sliderObj.transform, false);
+      RectTransform fillAreaRect = fillAreaObj.AddComponent<RectTransform>();
+      fillAreaRect.anchorMin = Vector2.zero;
+      fillAreaRect.anchorMax = Vector2.one;
+      fillAreaRect.offsetMin = Vector2.zero;
+      fillAreaRect.offsetMax = Vector2.zero;
+
+      GameObject fillObj = new GameObject("Fill");
+      fillObj.transform.SetParent(fillAreaObj.transform, false);
+      Image fillImage = fillObj.AddComponent<Image>();
+      fillImage.color = new Color(0.4f, 0.6f, 0.8f, 1f);
+
+      RectTransform fillRect = fillObj.GetComponent<RectTransform>();
+      fillRect.anchorMin = Vector2.zero;
+      fillRect.anchorMax = Vector2.one;
+      fillRect.offsetMin = Vector2.zero;
+      fillRect.offsetMax = Vector2.zero;
+
+      // Handle
+      GameObject handleAreaObj = new GameObject("Handle Slide Area");
+      handleAreaObj.transform.SetParent(sliderObj.transform, false);
+      RectTransform handleAreaRect = handleAreaObj.AddComponent<RectTransform>();
+      handleAreaRect.anchorMin = Vector2.zero;
+      handleAreaRect.anchorMax = Vector2.one;
+      handleAreaRect.offsetMin = new Vector2(10, 0);
+      handleAreaRect.offsetMax = new Vector2(-10, 0);
+
+      GameObject handleObj = new GameObject("Handle");
+      handleObj.transform.SetParent(handleAreaObj.transform, false);
+      Image handleImage = handleObj.AddComponent<Image>();
+      handleImage.color = Color.white;
+
+      RectTransform handleRect = handleObj.GetComponent<RectTransform>();
+      handleRect.sizeDelta = new Vector2(20f, 0f);
+
+      // Setup slider
+      slider.fillRect = fillRect;
+      slider.handleRect = handleRect;
+      slider.targetGraphic = handleImage;
+
+      // Value field
+      GameObject valueFieldObj = new GameObject("ValueField");
+      valueFieldObj.transform.SetParent(entryObj.transform, false);
+
+      Image valueFieldBg = valueFieldObj.AddComponent<Image>();
+      valueFieldBg.color = new Color(0.25f, 0.25f, 0.25f, 1f);
+
+      TMP_InputField valueField = valueFieldObj.AddComponent<TMP_InputField>();
+      valueField.contentType = TMP_InputField.ContentType.IntegerNumber;
+
+      GameObject valueTextObj = new GameObject("Text");
+      valueTextObj.transform.SetParent(valueFieldObj.transform, false);
+      TextMeshProUGUI valueText = valueTextObj.AddComponent<TextMeshProUGUI>();
+      valueText.fontSize = 18;
+      valueText.color = Color.white;
+      valueText.alignment = TextAlignmentOptions.Center;
+
+      RectTransform valueTextRect = valueTextObj.GetComponent<RectTransform>();
+      valueTextRect.anchorMin = Vector2.zero;
+      valueTextRect.anchorMax = Vector2.one;
+      valueTextRect.offsetMin = new Vector2(8, 0);
+      valueTextRect.offsetMax = new Vector2(-8, 0);
+
+      valueField.textComponent = valueText;
+      valueField.targetGraphic = valueFieldBg;
+
+      // Set initial value
+      long currentValue = setting.Value is long l ? l : (long)minValue;
+      slider.SetValueWithoutNotify(currentValue);
+      valueField.SetTextWithoutNotify(currentValue.ToString());
+
+      // Add listeners
+      slider.onValueChanged.AddListener(value =>
+      {
+        // Round to nearest step
+        long rawValue = (long)value;
+        long stepValue = (long)step;
+        long newValue = (rawValue / stepValue) * stepValue;
+
+        setting.Value = newValue;
+        valueField.SetTextWithoutNotify(newValue.ToString());
+
+        // Update slider if rounding changed the value
+        if (newValue != rawValue)
+        {
+          slider.SetValueWithoutNotify(newValue);
+        }
+
+        Log.Debug($"Slider changed - Setting: {setting.Key}, New value: {newValue}");
+      });
+
+      valueField.onEndEdit.AddListener(text =>
+      {
+        if (long.TryParse(text, out long newValue))
+        {
+          // Clamp to min/max
+          newValue = Math.Max((long)minValue, Math.Min((long)maxValue, newValue));
+
+          // Round to nearest step
+          long stepValue = (long)step;
+          newValue = (newValue / stepValue) * stepValue;
+
           setting.Value = newValue;
-          Log.Debug($"Setting updated - Setting: {setting.Key}, Stored value: {setting.Value}");
+          slider.SetValueWithoutNotify(newValue);
+          valueField.SetTextWithoutNotify(newValue.ToString());
+          Log.Debug($"ValueField changed - Setting: {setting.Key}, New value: {newValue}");
         }
         else
         {
-          // Invalid input, reset to current value
-          long resetValue = setting.Value is long longVal ? longVal : 0L;
-          inputField.text = resetValue.ToString();
-          Log.Warning($"Invalid number input for {setting.Key}, reset to {resetValue}");
+          long resetValue = setting.Value is long l ? l : (long)minValue;
+          valueField.SetTextWithoutNotify(resetValue.ToString());
         }
       });
 
-      var layoutElement = inputRoot.AddComponent<LayoutElement>();
-      layoutElement.preferredWidth = 100f;
-      layoutElement.preferredHeight = 32f;
+      var sliderLayout = sliderObj.AddComponent<LayoutElement>();
+      sliderLayout.preferredWidth = 200f;
+      sliderLayout.preferredHeight = 32f;
+
+      var valueFieldLayout = valueFieldObj.AddComponent<LayoutElement>();
+      valueFieldLayout.preferredWidth = 80f;
+      valueFieldLayout.preferredHeight = 32f;
+
+      var entryLayout = entryObj.AddComponent<LayoutElement>();
+      entryLayout.preferredHeight = 48f;
     }
 
-    private void CreateHotkeyInput(Transform parent, SettingItem setting)
+    private void CreateHotkeySetting(SettingItem setting)
     {
-      GameObject buttonRoot = new GameObject($"DuckovLuckyBox.UI.HotkeyInput.{setting.Key}");
-      buttonRoot.transform.SetParent(parent, false);
+      GameObject entryObj = new GameObject($"DuckovLuckyBox.UI.Entry.{setting.Key}");
+      entryObj.transform.SetParent(settingsPanel!.transform, false);
 
-      RectTransform buttonRect = buttonRoot.AddComponent<RectTransform>();
-      buttonRect.sizeDelta = new Vector2(120f, 32f);
+      // Background
+      Image entryBg = entryObj.AddComponent<Image>();
+      entryBg.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
 
-      // Create button
-      Button button = buttonRoot.AddComponent<Button>();
-      Image buttonImage = buttonRoot.AddComponent<Image>();
-      buttonImage.color = new Color(0.13f, 0.59f, 0.95f, 1f); // Material Blue
+      var horizontalLayout = entryObj.AddComponent<HorizontalLayoutGroup>();
+      horizontalLayout.childAlignment = TextAnchor.MiddleLeft;
+      horizontalLayout.childForceExpandHeight = false;
+      horizontalLayout.childForceExpandWidth = false;
+      horizontalLayout.padding = new RectOffset(16, 16, 8, 8);
+      horizontalLayout.spacing = 16f;
+
+      // Label
+      GameObject labelObj = new GameObject("Label");
+      labelObj.transform.SetParent(entryObj.transform, false);
+      TextMeshProUGUI labelText = labelObj.AddComponent<TextMeshProUGUI>();
+      labelText.text = setting.Label.ToPlainText();
+      labelText.fontSize = 18;
+      labelText.color = Color.white;
+      labelText.alignment = TextAlignmentOptions.Left;
+
+      var labelLayout = labelObj.AddComponent<LayoutElement>();
+      labelLayout.minWidth = 400f;
+      labelLayout.flexibleWidth = 1f;
+
+      // Button
+      GameObject buttonObj = new GameObject("Button");
+      buttonObj.transform.SetParent(entryObj.transform, false);
+
+      RectTransform buttonRect = buttonObj.AddComponent<RectTransform>();
+      buttonRect.sizeDelta = new Vector2(150f, 32f);
+
+      Button button = buttonObj.AddComponent<Button>();
+      Image buttonImage = buttonObj.AddComponent<Image>();
+      buttonImage.color = new Color(0.3f, 0.5f, 0.7f, 1f);
 
       // Button text
-      GameObject textObj = new GameObject("Text");
-      textObj.transform.SetParent(buttonRoot.transform, false);
-      Text textComponent = textObj.AddComponent<Text>();
-      textComponent.font = defaultFont;
-      textComponent.fontSize = 14;
-      textComponent.color = Color.white; // White text on blue button
-      textComponent.alignment = TextAnchor.MiddleCenter;
-      textComponent.supportRichText = false;
+      GameObject buttonTextObj = new GameObject("Text");
+      buttonTextObj.transform.SetParent(buttonObj.transform, false);
+      TextMeshProUGUI buttonText = buttonTextObj.AddComponent<TextMeshProUGUI>();
+      buttonText.fontSize = 16;
+      buttonText.color = Color.white;
+      buttonText.alignment = TextAlignmentOptions.Center;
 
-      RectTransform textRect = textObj.GetComponent<RectTransform>();
-      textRect.anchorMin = Vector2.zero;
-      textRect.anchorMax = Vector2.one;
-      textRect.offsetMin = new Vector2(4, 0);
-      textRect.offsetMax = new Vector2(-4, 0);
+      RectTransform buttonTextRect = buttonTextObj.GetComponent<RectTransform>();
+      buttonTextRect.anchorMin = Vector2.zero;
+      buttonTextRect.anchorMax = Vector2.one;
+      buttonTextRect.offsetMin = new Vector2(4, 0);
+      buttonTextRect.offsetMax = new Vector2(-4, 0);
 
       button.targetGraphic = buttonImage;
 
       // Set initial value
       KeyCode currentKey = setting.Value is KeyCode keyCode ? keyCode : DefaultSettings.SettingsHotkey;
-      textComponent.text = currentKey.ToString();
-
-      Log.Debug($"CreateHotkeyInput - Setting: {setting.Key}, Value: {setting.Value}, Type: {setting.Value?.GetType().Name ?? "null"}, Button.text: {textComponent.text}");
-
-      // Material Design color scheme for button
-      var colors = button.colors;
-      colors.normalColor = new Color(0.13f, 0.59f, 0.95f, 1f); // Material Blue
-      colors.highlightedColor = new Color(0.10f, 0.53f, 0.89f, 1f); // Darker blue
-      colors.pressedColor = new Color(0.08f, 0.47f, 0.83f, 1f); // Even darker
-      colors.selectedColor = new Color(0.13f, 0.59f, 0.95f, 1f); // Same as normal
-      colors.disabledColor = new Color(0.13f, 0.59f, 0.95f, 0.38f); // Faded
-      button.colors = colors;
+      buttonText.text = currentKey.ToString();
 
       bool isWaitingForKey = false;
 
@@ -467,17 +582,20 @@ namespace DuckovLuckyBox.Core.Settings.UI
         if (!isWaitingForKey)
         {
           isWaitingForKey = true;
-          textComponent.text = Constants.I18n.SettingsPressAnyKeyKey.ToPlainText();
-          StartCoroutine(WaitForKeyPress(textComponent, setting, () => isWaitingForKey = false));
+          buttonText.text = Constants.I18n.SettingsPressAnyKeyKey.ToPlainText();
+          StartCoroutine(WaitForKeyPress(buttonText, setting, () => isWaitingForKey = false));
         }
       });
 
-      var layoutElement = buttonRoot.AddComponent<LayoutElement>();
-      layoutElement.preferredWidth = 120f;
-      layoutElement.preferredHeight = 32f;
+      var buttonLayout = buttonObj.AddComponent<LayoutElement>();
+      buttonLayout.preferredWidth = 150f;
+      buttonLayout.preferredHeight = 32f;
+
+      var entryLayout = entryObj.AddComponent<LayoutElement>();
+      entryLayout.preferredHeight = 48f;
     }
 
-    private IEnumerator WaitForKeyPress(Text textComponent, SettingItem setting, System.Action onComplete)
+    private IEnumerator WaitForKeyPress(TextMeshProUGUI textComponent, SettingItem setting, Action onComplete)
     {
       // Wait for any key press
       while (!Input.anyKeyDown)
@@ -486,11 +604,11 @@ namespace DuckovLuckyBox.Core.Settings.UI
       }
 
       // Find which key was pressed
-      foreach (KeyCode keyCode in System.Enum.GetValues(typeof(KeyCode)))
+      foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
       {
         if (Input.GetKeyDown(keyCode))
         {
-          // Filter out mouse buttons if desired
+          // Filter out mouse buttons
           if (keyCode >= KeyCode.Mouse0 && keyCode <= KeyCode.Mouse6)
           {
             continue;
@@ -506,6 +624,65 @@ namespace DuckovLuckyBox.Core.Settings.UI
 
       onComplete?.Invoke();
     }
-  }
 
+    private void CreateResetButton()
+    {
+      GameObject buttonContainerObj = new GameObject("DuckovLuckyBox.UI.ResetButtonContainer");
+      buttonContainerObj.transform.SetParent(settingsPanel!.transform, false);
+
+      // Add some spacing above the button
+      var containerLayout = buttonContainerObj.AddComponent<LayoutElement>();
+      containerLayout.preferredHeight = 60f;
+
+      // Center the button using horizontal layout
+      var horizontalLayout = buttonContainerObj.AddComponent<HorizontalLayoutGroup>();
+      horizontalLayout.childAlignment = TextAnchor.MiddleCenter;
+      horizontalLayout.childForceExpandHeight = false;
+      horizontalLayout.childForceExpandWidth = false;
+
+      // Reset button
+      GameObject buttonObj = new GameObject("ResetButton");
+      buttonObj.transform.SetParent(buttonContainerObj.transform, false);
+
+      RectTransform buttonRect = buttonObj.AddComponent<RectTransform>();
+      buttonRect.sizeDelta = new Vector2(200f, 40f);
+
+      Button button = buttonObj.AddComponent<Button>();
+      Image buttonImage = buttonObj.AddComponent<Image>();
+      buttonImage.color = new Color(0.8f, 0.3f, 0.3f, 1f); // Red-ish color to indicate reset action
+
+      // Button text
+      GameObject buttonTextObj = new GameObject("Text");
+      buttonTextObj.transform.SetParent(buttonObj.transform, false);
+      TextMeshProUGUI buttonText = buttonTextObj.AddComponent<TextMeshProUGUI>();
+      buttonText.text = Constants.I18n.SettingsResetToDefaultKey.ToPlainText();
+      buttonText.fontSize = 18;
+      buttonText.fontStyle = FontStyles.Bold;
+      buttonText.color = Color.white;
+      buttonText.alignment = TextAlignmentOptions.Center;
+
+      RectTransform buttonTextRect = buttonTextObj.GetComponent<RectTransform>();
+      buttonTextRect.anchorMin = Vector2.zero;
+      buttonTextRect.anchorMax = Vector2.one;
+      buttonTextRect.offsetMin = new Vector2(8, 0);
+      buttonTextRect.offsetMax = new Vector2(-8, 0);
+
+      button.targetGraphic = buttonImage;
+
+      // Add click event
+      button.onClick.AddListener(() =>
+      {
+        Log.Info("Reset to default button clicked.");
+        Settings.Instance.ResetToDefaults();
+
+        // Refresh the UI by reinitializing
+        OnDestroy();
+        StartCoroutine(InitializeAsync());
+      });
+
+      var buttonLayout = buttonObj.AddComponent<LayoutElement>();
+      buttonLayout.preferredWidth = 200f;
+      buttonLayout.preferredHeight = 40f;
+    }
+  }
 }

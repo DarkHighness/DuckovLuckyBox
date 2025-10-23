@@ -15,6 +15,7 @@ using System.Linq;
 using DuckovLuckyBox.Core;
 using FMOD;
 using FMODUnity;
+using DuckovLuckyBox.Core.Settings;
 
 namespace DuckovLuckyBox.Patches
 {
@@ -207,17 +208,18 @@ namespace DuckovLuckyBox.Patches
         {
             if (_refreshStockText == null || _pickOneText == null || _buyLuckyBoxText == null) return;
 
-            long refreshPrice = Core.Settings.Settings.Instance.RefreshStockPrice.Value is long rp ? rp : 5L;
-            long storePickPrice = Core.Settings.Settings.Instance.StorePickPrice.Value is long sp ? sp : 50L;
-            long streetPickPrice = Core.Settings.Settings.Instance.StreetPickPrice.Value is long stp ? stp : 50L;
+            long refreshPrice = Core.Settings.Settings.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
+            long storePickPrice = Core.Settings.Settings.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
+            long streetPickPrice = Core.Settings.Settings.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
 
             var baseRefreshText = Constants.I18n.RefreshStockKey.ToPlainText();
             var baseStorePickText = Constants.I18n.StorePickKey.ToPlainText();
             var baseStreetPickText = Constants.I18n.StreetPickKey.ToPlainText();
+            var freeText = Constants.I18n.FreeKey.ToPlainText();
 
-            _refreshStockText.text = refreshPrice > 0 ? $"{baseRefreshText} (${refreshPrice})" : baseRefreshText;
-            _pickOneText.text = storePickPrice > 0 ? $"{baseStorePickText} (${storePickPrice})" : baseStorePickText;
-            _buyLuckyBoxText.text = streetPickPrice > 0 ? $"{baseStreetPickText} (${streetPickPrice})" : baseStreetPickText;
+            _refreshStockText.text = refreshPrice > 0 ? $"{baseRefreshText} (${refreshPrice})" : $"{baseRefreshText} ({freeText})";
+            _pickOneText.text = storePickPrice > 0 ? $"{baseStorePickText} (${storePickPrice})" : $"{baseStorePickText} ({freeText})";
+            _buyLuckyBoxText.text = streetPickPrice > 0 ? $"{baseStreetPickText} (${streetPickPrice})" : $"{baseStreetPickText} ({freeText})";
         }
 
         private static void SubscribeToPriceChanges()
@@ -240,7 +242,7 @@ namespace DuckovLuckyBox.Patches
             if (_isAnimating) return;
 
             // Get price from settings and try to pay
-            long price = Core.Settings.Settings.Instance.StreetPickPrice.Value is long priceValue ? priceValue : 50L;
+            long price = Core.Settings.Settings.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
 
             // Skip payment if price is zero
             if (price > 0 && !Pay(price))
@@ -295,7 +297,7 @@ namespace DuckovLuckyBox.Patches
             if (!TryGetStockShop(stockShopView, out var stockShop)) return;
 
             // Get price from settings and try to pay
-            long price = Core.Settings.Settings.Instance.RefreshStockPrice.Value is long priceValue ? priceValue : 5L;
+            long price = Core.Settings.Settings.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
 
             // Skip payment if price is zero
             if (price > 0 && !Pay(price))
@@ -341,7 +343,7 @@ namespace DuckovLuckyBox.Patches
             }
 
             // Get price from settings and try to pay
-            long price = Core.Settings.Settings.Instance.StorePickPrice.Value is long priceValue ? priceValue : 50L;
+            long price = Core.Settings.Settings.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
 
             // Skip payment if price is zero
             if (price > 0 && !Pay(price))

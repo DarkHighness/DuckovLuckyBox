@@ -24,6 +24,8 @@ namespace DuckovLuckyBox.Core
             public static readonly string SettingsRefreshStockPriceKey = "UI_SettingsRefreshStockPrice";
             public static readonly string SettingsStorePickPriceKey = "UI_SettingsStorePickPrice";
             public static readonly string SettingsStreetPickPriceKey = "UI_SettingsStreetPickPrice";
+            public static readonly string SettingsResetToDefaultKey = "UI_SettingsResetToDefault";
+            public static readonly string FreeKey = "UI_Free";
         }
 
         public static class Sound {

@@ -14,9 +14,10 @@
 2. ♻️ "刷新"：刷新当前商人的库存情况
 3. 👌 "商人那拾一个"：从当前商人的库存当中随机抽一件，会扣库存
 4. 😊 "路边拾一个"：从游戏所有可能的物品当中随机抽一件，不涉及库存
-5. ⚙️ 按 F1 可打开设置面板，开启或关闭动画，自定义上述三项功能的花费（默认值： 5, 50, 50）（账户和现金均可支付花费）
+5. ⚙️ 按 F1 可打开设置面板，开启或关闭动画，自定义上述三项功能的花费（默认值： 100）（账户和现金均可支付花费）
 
 ⚠️ 警告："路边拾一个" 有可能抽到游戏内未开放的非法物品（尽管已经尽力过滤了 "绝大部分"），请仔细斟酌使用❗特别是对于 "看起来就很异常的" 配方❗可能会导致存档损坏，使用前请务必备份存档❗
+⚠️ 注意：如果按键存在冲突，请前往配置文件中手动修改按键设置。
 
 ## 灵感来源
 
@@ -29,14 +30,14 @@ Minecraft "幸运方块"
 
 ## 配置
 
-设置会自动保存到 `{Application.persistentDataPath}/Duckov.LuckyBox/config.json`。
+设置会自动保存到 `{Application.persistentDataPath}/Duckov.LuckyBox/config.json`。 典型值为：`C:/Users/$USER/AppData/LocalLow/TeamSoda/Duckov\Duckov.LuckyBox\config.json`
 
 配置文件支持：
 - **EnableAnimation**: 启用/关闭抽奖动画（默认：`true`）
 - **SettingsHotkey**: 打开设置面板的快捷键（默认：`"F1"`）
-- **RefreshStockPrice**: 刷新商人库存的花费（默认：`5`）
-- **StorePickPrice**: 从商人库存抽奖的花费（默认：`50`）
-- **StreetPickPrice**: 从所有物品抽奖的花费（默认：`50`）
+- **RefreshStockPrice**: 刷新商人库存的花费（默认：`100`，范围：0-5000，步长：100）
+- **StorePickPrice**: 从商人库存抽奖的花费（默认：`100`，范围：0-5000，步长：100）
+- **StreetPickPrice**: 从所有物品抽奖的花费（默认：`100`，范围：0-5000，步长：100）
 
 当配置文件被外部修改时，Mod 会自动重新加载设置。
 

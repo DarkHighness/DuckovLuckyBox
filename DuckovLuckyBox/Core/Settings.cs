@@ -26,6 +26,11 @@ namespace DuckovLuckyBox.Core.Settings
     public Category Category { get; internal set; }
     public System.Action<object> OnValueChanged = delegate { };
 
+    // For Number type settings
+    public float MinValue { get; internal set; } = 0f;
+    public float MaxValue { get; internal set; } = 100f;
+    public float Step { get; internal set; } = 1f;
+
     public object Value
     {
       get => _value;
@@ -71,9 +76,14 @@ namespace DuckovLuckyBox.Core.Settings
     public const KeyCode SettingsHotkey = KeyCode.F1;
 
     // Pricing Settings
-    public const long RefreshStockPrice = 5L;
-    public const long StorePickPrice = 50L;
-    public const long StreetPickPrice = 50L;
+    public const long RefreshStockPrice = 100L;
+    public const long StorePickPrice = 100L;
+    public const long StreetPickPrice = 100L;
+
+    // Price Range Settings
+    public const float PriceMinValue = 0f;
+    public const float PriceMaxValue = 5000f;
+    public const float PriceStep = 100f;
   }
 
   public class Settings
@@ -106,6 +116,9 @@ namespace DuckovLuckyBox.Core.Settings
       Type = Type.Number,
       Category = Category.Pricing,
       DefaultValue = DefaultSettings.RefreshStockPrice,
+      MinValue = DefaultSettings.PriceMinValue,
+      MaxValue = DefaultSettings.PriceMaxValue,
+      Step = DefaultSettings.PriceStep,
     };
 
     public SettingItem StorePickPrice { get; set; } = new SettingItem
@@ -116,6 +129,9 @@ namespace DuckovLuckyBox.Core.Settings
       Type = Type.Number,
       Category = Category.Pricing,
       DefaultValue = DefaultSettings.StorePickPrice,
+      MinValue = DefaultSettings.PriceMinValue,
+      MaxValue = DefaultSettings.PriceMaxValue,
+      Step = DefaultSettings.PriceStep,
     };
 
     public SettingItem StreetPickPrice { get; set; } = new SettingItem
@@ -126,6 +142,9 @@ namespace DuckovLuckyBox.Core.Settings
       Type = Type.Number,
       Category = Category.Pricing,
       DefaultValue = DefaultSettings.StreetPickPrice,
+      MinValue = DefaultSettings.PriceMinValue,
+      MaxValue = DefaultSettings.PriceMaxValue,
+      Step = DefaultSettings.PriceStep,
     };
 
     public IEnumerable<SettingItem> AllSettings
@@ -138,6 +157,20 @@ namespace DuckovLuckyBox.Core.Settings
         yield return StorePickPrice;
         yield return StreetPickPrice;
       }
+    }
+
+    /// <summary>
+    /// Reset all settings to their default values
+    /// </summary>
+    public void ResetToDefaults()
+    {
+      EnableAnimation.Value = EnableAnimation.DefaultValue;
+      SettingsHotkey.Value = SettingsHotkey.DefaultValue;
+      RefreshStockPrice.Value = RefreshStockPrice.DefaultValue;
+      StorePickPrice.Value = StorePickPrice.DefaultValue;
+      StreetPickPrice.Value = StreetPickPrice.DefaultValue;
+
+      Log.Info("All settings have been reset to default values.");
     }
 
     private static ConfigManager? _configManager;

@@ -229,21 +229,21 @@ namespace DuckovLuckyBox.Core.Settings
     private void SubscribeToSettingChanges()
     {
       var settings = Settings.Instance;
-      settings.EnableAnimation.OnValueChanged += OnSettingChanged!;
-      settings.SettingsHotkey.OnValueChanged += OnSettingChanged!;
-      settings.RefreshStockPrice.OnValueChanged += OnSettingChanged!;
-      settings.StorePickPrice.OnValueChanged += OnSettingChanged!;
-      settings.StreetPickPrice.OnValueChanged += OnSettingChanged!;
+      settings.EnableAnimation.OnValueChanged += OnSettingChanged;
+      settings.SettingsHotkey.OnValueChanged += OnSettingChanged;
+      settings.RefreshStockPrice.OnValueChanged += OnSettingChanged;
+      settings.StorePickPrice.OnValueChanged += OnSettingChanged;
+      settings.StreetPickPrice.OnValueChanged += OnSettingChanged;
     }
 
     private void UnsubscribeFromSettingChanges()
     {
       var settings = Settings.Instance;
-      settings.EnableAnimation.OnValueChanged -= OnSettingChanged!;
-      settings.SettingsHotkey.OnValueChanged -= OnSettingChanged!;
-      settings.RefreshStockPrice.OnValueChanged -= OnSettingChanged!;
-      settings.StorePickPrice.OnValueChanged -= OnSettingChanged!;
-      settings.StreetPickPrice.OnValueChanged -= OnSettingChanged!;
+      settings.EnableAnimation.OnValueChanged -= OnSettingChanged;
+      settings.SettingsHotkey.OnValueChanged -= OnSettingChanged;
+      settings.RefreshStockPrice.OnValueChanged -= OnSettingChanged;
+      settings.StorePickPrice.OnValueChanged -= OnSettingChanged;
+      settings.StreetPickPrice.OnValueChanged -= OnSettingChanged;
     }
 
     private void OnSettingChanged(object value)
