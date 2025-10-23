@@ -256,6 +256,10 @@ namespace DuckovLuckyBox.Core.Settings.UI
       {
         CreateNumberInput(settingItem.transform, setting);
       }
+      else if (setting.Type == Type.Hotkey)
+      {
+        CreateHotkeyInput(settingItem.transform, setting);
+      }
 
       var itemLayout = settingItem.AddComponent<LayoutElement>();
       itemLayout.preferredHeight = 48f; // Material Design list item height
@@ -408,6 +412,99 @@ namespace DuckovLuckyBox.Core.Settings.UI
       var layoutElement = inputRoot.AddComponent<LayoutElement>();
       layoutElement.preferredWidth = 100f;
       layoutElement.preferredHeight = 32f;
+    }
+
+    private void CreateHotkeyInput(Transform parent, SettingItem setting)
+    {
+      GameObject buttonRoot = new GameObject($"DuckovLuckyBox.UI.HotkeyInput.{setting.Key}");
+      buttonRoot.transform.SetParent(parent, false);
+
+      RectTransform buttonRect = buttonRoot.AddComponent<RectTransform>();
+      buttonRect.sizeDelta = new Vector2(120f, 32f);
+
+      // Create button
+      Button button = buttonRoot.AddComponent<Button>();
+      Image buttonImage = buttonRoot.AddComponent<Image>();
+      buttonImage.color = new Color(0.13f, 0.59f, 0.95f, 1f); // Material Blue
+
+      // Button text
+      GameObject textObj = new GameObject("Text");
+      textObj.transform.SetParent(buttonRoot.transform, false);
+      Text textComponent = textObj.AddComponent<Text>();
+      textComponent.font = defaultFont;
+      textComponent.fontSize = 14;
+      textComponent.color = Color.white; // White text on blue button
+      textComponent.alignment = TextAnchor.MiddleCenter;
+      textComponent.supportRichText = false;
+
+      RectTransform textRect = textObj.GetComponent<RectTransform>();
+      textRect.anchorMin = Vector2.zero;
+      textRect.anchorMax = Vector2.one;
+      textRect.offsetMin = new Vector2(4, 0);
+      textRect.offsetMax = new Vector2(-4, 0);
+
+      button.targetGraphic = buttonImage;
+
+      // Set initial value
+      KeyCode currentKey = setting.Value is KeyCode keyCode ? keyCode : DefaultSettings.SettingsHotkey;
+      textComponent.text = currentKey.ToString();
+
+      Log.Debug($"CreateHotkeyInput - Setting: {setting.Key}, Value: {setting.Value}, Type: {setting.Value?.GetType().Name ?? "null"}, Button.text: {textComponent.text}");
+
+      // Material Design color scheme for button
+      var colors = button.colors;
+      colors.normalColor = new Color(0.13f, 0.59f, 0.95f, 1f); // Material Blue
+      colors.highlightedColor = new Color(0.10f, 0.53f, 0.89f, 1f); // Darker blue
+      colors.pressedColor = new Color(0.08f, 0.47f, 0.83f, 1f); // Even darker
+      colors.selectedColor = new Color(0.13f, 0.59f, 0.95f, 1f); // Same as normal
+      colors.disabledColor = new Color(0.13f, 0.59f, 0.95f, 0.38f); // Faded
+      button.colors = colors;
+
+      bool isWaitingForKey = false;
+
+      button.onClick.AddListener(() =>
+      {
+        if (!isWaitingForKey)
+        {
+          isWaitingForKey = true;
+          textComponent.text = Constants.I18n.SettingsPressAnyKeyKey.ToPlainText();
+          StartCoroutine(WaitForKeyPress(textComponent, setting, () => isWaitingForKey = false));
+        }
+      });
+
+      var layoutElement = buttonRoot.AddComponent<LayoutElement>();
+      layoutElement.preferredWidth = 120f;
+      layoutElement.preferredHeight = 32f;
+    }
+
+    private IEnumerator WaitForKeyPress(Text textComponent, SettingItem setting, System.Action onComplete)
+    {
+      // Wait for any key press
+      while (!Input.anyKeyDown)
+      {
+        yield return null;
+      }
+
+      // Find which key was pressed
+      foreach (KeyCode keyCode in System.Enum.GetValues(typeof(KeyCode)))
+      {
+        if (Input.GetKeyDown(keyCode))
+        {
+          // Filter out mouse buttons if desired
+          if (keyCode >= KeyCode.Mouse0 && keyCode <= KeyCode.Mouse6)
+          {
+            continue;
+          }
+
+          Log.Debug($"HotkeyInput changed - Setting: {setting.Key}, New key: {keyCode}");
+          setting.Value = keyCode;
+          textComponent.text = keyCode.ToString();
+          Log.Debug($"Setting updated - Setting: {setting.Key}, Stored value: {setting.Value}");
+          break;
+        }
+      }
+
+      onComplete?.Invoke();
     }
   }
 

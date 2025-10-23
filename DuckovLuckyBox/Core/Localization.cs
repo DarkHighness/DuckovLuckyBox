@@ -19,6 +19,8 @@ namespace DuckovLuckyBox.Core
             { Constants.I18n.SettingsCategoryGeneralKey, "General" },
             { Constants.I18n.SettingsCategoryPricingKey, "Pricing" },
             { Constants.I18n.SettingsEnableAnimationKey, "Enable Animation" },
+            { Constants.I18n.SettingsHotkeyKey, "Settings Hotkey" },
+            { Constants.I18n.SettingsPressAnyKeyKey, "Press any key..." },
             { Constants.I18n.SettingsRefreshStockPriceKey, "Refresh Stock Price" },
             { Constants.I18n.SettingsStorePickPriceKey, "Store Pick Price" },
             { Constants.I18n.SettingsStreetPickPriceKey, "Street Pick Price" }
@@ -34,6 +36,8 @@ namespace DuckovLuckyBox.Core
             { Constants.I18n.SettingsCategoryGeneralKey, "常规" },
             { Constants.I18n.SettingsCategoryPricingKey, "价格" },
             { Constants.I18n.SettingsEnableAnimationKey, "启用动画" },
+            { Constants.I18n.SettingsHotkeyKey, "设置快捷键" },
+            { Constants.I18n.SettingsPressAnyKeyKey, "按任意键..." },
             { Constants.I18n.SettingsRefreshStockPriceKey, "刷新库存价格" },
             { Constants.I18n.SettingsStorePickPriceKey, "商人抽奖价格" },
             { Constants.I18n.SettingsStreetPickPriceKey, "街边抽奖价格" }
