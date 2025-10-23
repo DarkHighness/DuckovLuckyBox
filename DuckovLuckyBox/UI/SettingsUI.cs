@@ -172,6 +172,8 @@ namespace DuckovLuckyBox.UI
       CreateCategoryLabel(Constants.I18n.SettingsCategoryGeneralKey);
       CreateToggleSetting(settings.EnableAnimation);
       CreateHotkeySetting(settings.SettingsHotkey);
+      CreateToggleSetting(settings.EnableDestroyButton);
+      CreateToggleSetting(settings.EnableLotteryButton);
 
       // Pricing category
       CreateCategoryLabel(Constants.I18n.SettingsCategoryPricingKey);

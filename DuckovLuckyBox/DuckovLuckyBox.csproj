@@ -22,5 +22,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\item_lucky_box.png" />
     <EmbeddedResource Include="Resources\rolling.mp3" />
+    <EmbeddedResource Include="Resources\lottery.mp3" />
+    <EmbeddedResource Include="Resources\destroy.mp3" />
   </ItemGroup>
 </Project>

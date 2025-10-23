@@ -21,7 +21,7 @@ namespace DuckovLuckyBox.Patches
 {
 
     [HarmonyPatch(typeof(StockShopView), "Setup")]
-    public class PatchStockShopView
+    public class PatchStockShopView_Setup
     {
         private static TextMeshProUGUI? _refreshStockText;
         private static Button? _refreshButton;
@@ -98,33 +98,14 @@ namespace DuckovLuckyBox.Patches
         }
 
 
-        public static void Postfix(StockShopView __instance)
+        public static void Postfix(StockShopView __instance, TextMeshProUGUI ___merchantNameText, StockShop ___target)
         {
-            var merchantNameText = GetMerchantNameText(__instance);
-            if (merchantNameText == null) return;
+            if (___merchantNameText == null) return;
 
-            EnsureTexts(merchantNameText);
-            EnsureButtons(__instance);
+            EnsureTexts(___merchantNameText);
+            EnsureButtons(__instance, ___target);
             SubscribeToPriceChanges();
             UpdateButtonTexts();
-        }
-
-        private static TextMeshProUGUI? GetMerchantNameText(StockShopView instance)
-        {
-            var field = typeof(StockShopView).GetField("merchantNameText", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (field == null)
-            {
-                Log.Error("Failed to find merchantNameText field in StockShopView");
-                return null;
-            }
-
-            var merchantNameText = field.GetValue(instance) as TextMeshProUGUI;
-            if (merchantNameText == null)
-            {
-                Log.Error("Failed to get merchantNameText from StockShopView");
-            }
-
-            return merchantNameText;
         }
 
         private static void EnsureTexts(TextMeshProUGUI merchantNameText)
@@ -185,7 +166,7 @@ namespace DuckovLuckyBox.Patches
             ConfigureActionLabel(_buyLuckyBoxText, Constants.I18n.StreetPickKey.ToPlainText());
         }
 
-        private static void EnsureButtons(StockShopView view)
+        private static void EnsureButtons(StockShopView view, StockShop target)
         {
             if (_refreshButton != null || _storePickButton != null || _streetPickButton != null) return;
             if (_refreshStockText == null || _pickOneText == null || _buyLuckyBoxText == null) return;
@@ -199,9 +180,9 @@ namespace DuckovLuckyBox.Patches
             _streetPickButton = _buyLuckyBoxText.gameObject.AddComponent<Button>();
             ConfigureActionButton(_streetPickButton, _buyLuckyBoxText);
 
-            _refreshButton.onClick.AddListener(() => OnRefreshButtonClicked(view));
-            _storePickButton.onClick.AddListener(() => OnStorePickButtonClicked(view).Forget());
-            _streetPickButton.onClick.AddListener(() => OnStreetPickButtonClicked(view).Forget());
+            _refreshButton.onClick.AddListener(() => OnRefreshButtonClicked(target));
+            _storePickButton.onClick.AddListener(() => OnStorePickButtonClicked(target).Forget());
+            _streetPickButton.onClick.AddListener(() => OnStreetPickButtonClicked().Forget());
         }
 
         private static void UpdateButtonTexts()
@@ -236,7 +217,7 @@ namespace DuckovLuckyBox.Patches
             Log.Debug("Subscribed to price change events");
         }
 
-        private static async UniTask OnStreetPickButtonClicked(StockShopView stockShopView)
+        private static async UniTask OnStreetPickButtonClicked()
         {
             Log.Debug("Street pick button clicked");
             if (_isAnimating) return;
@@ -291,10 +272,10 @@ namespace DuckovLuckyBox.Patches
             AudioManager.Post(SFX_BUY);
         }
 
-        private static void OnRefreshButtonClicked(StockShopView stockShopView)
+        private static void OnRefreshButtonClicked(StockShop stockShop)
         {
             Log.Debug("Refresh button clicked");
-            if (!TryGetStockShop(stockShopView, out var stockShop)) return;
+            if (stockShop == null) return;
 
             // Get price from settings and try to pay
             long price = Core.Settings.Settings.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
@@ -314,11 +295,10 @@ namespace DuckovLuckyBox.Patches
         }
 
 
-        private static async UniTask<bool> OnStorePickButtonClicked(StockShopView stockShopView)
+        private static async UniTask<bool> OnStorePickButtonClicked(StockShop stockShop)
         {
             Log.Debug("Store pick button clicked");
             if (_isAnimating) return false;
-            if (!TryGetStockShop(stockShopView, out var stockShop)) return false;
             if (stockShop == null) return false;
 
             if (stockShop.Busy) return false;
@@ -418,13 +398,6 @@ namespace DuckovLuckyBox.Patches
 
             AccessTools.Field(typeof(StockShop), "buying").SetValue(stockShop, buying);
             return true;
-        }
-
-        private static bool TryGetStockShop(StockShopView view, out StockShop? stockShop)
-        {
-
-            stockShop = AccessTools.Field(typeof(StockShopView), "target").GetValue(view) as StockShop;
-            return stockShop != null;
         }
 
         private static bool TryInvokeRefresh(StockShop? stockShop)

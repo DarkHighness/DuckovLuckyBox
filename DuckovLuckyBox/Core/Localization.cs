@@ -25,7 +25,12 @@ namespace DuckovLuckyBox.Core
             { Constants.I18n.SettingsStorePickPriceKey, "Store Pick Price" },
             { Constants.I18n.SettingsStreetPickPriceKey, "Street Pick Price" },
             { Constants.I18n.SettingsResetToDefaultKey, "Reset to Default" },
-            { Constants.I18n.FreeKey, "Free!" }
+            { Constants.I18n.FreeKey, "Free!" },
+            { Constants.I18n.SettingsEnableDestroyButtonKey, "Enable Destroy Button" },
+            { Constants.I18n.SettingsEnableLotteryButtonKey, "Enable Lottery Button" },
+            { Constants.I18n.ItemMenuDestroyKey, "Destroy" },
+            { Constants.I18n.ItemMenuLotteryKey, "Lottery" },
+            { Constants.I18n.LotteryResultFormatKey, "You got {itemDisplayName}!" }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { Constants.I18n.RefreshStockKey, "刷新" },
@@ -44,7 +49,12 @@ namespace DuckovLuckyBox.Core
             { Constants.I18n.SettingsStorePickPriceKey, "商人抽奖价格" },
             { Constants.I18n.SettingsStreetPickPriceKey, "街边抽奖价格" },
             { Constants.I18n.SettingsResetToDefaultKey, "恢复默认值" },
-            { Constants.I18n.FreeKey, "免费！" }
+            { Constants.I18n.FreeKey, "免费！" },
+            { Constants.I18n.SettingsEnableDestroyButtonKey, "启用销毁按钮" },
+            { Constants.I18n.SettingsEnableLotteryButtonKey, "启用抽奖按钮" },
+            { Constants.I18n.ItemMenuDestroyKey, "销毁" },
+            { Constants.I18n.ItemMenuLotteryKey, "抽奖" },
+            { Constants.I18n.LotteryResultFormatKey, "你抽中了 {itemDisplayName}！" }
         } },
     };
 
