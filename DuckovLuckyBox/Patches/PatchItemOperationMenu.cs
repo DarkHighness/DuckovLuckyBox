@@ -318,43 +318,51 @@ namespace DuckovLuckyBox.Patches
       // Destroy the dropped item immediately
       Object.Destroy(targetItem.gameObject);
 
-      // Get a random item from the pool
-      var itemTypeIds = ItemAssetsCollection.Instance.entries
-        .Where(entry => !entry.prefab.DisplayName.StartsWith("*Item_") &&
-                       entry.prefab.Quality > 0 &&
-                       entry.prefab.Icon.name != "cross")
-        .Select(entry => entry.typeID)
-        .ToList();
+      // Get original item quality and stack count
+      var originalQuality = targetItem.Quality;
+      var originalStackCount = targetItem.StackCount;
 
-      if (itemTypeIds.Count == 0)
+      Log.Info($"Lottery: destroying {originalStackCount}x quality {originalQuality} item(s)");
+
+      // Use LotteryService to pick random items of the same quality
+      var newItems = await Core.LotteryService.PickRandomItemsByQualityAsync(originalQuality, originalStackCount);
+      if (newItems == null || newItems.Count == 0)
       {
-        Log.Error("No valid items available for lottery");
+        Log.Error($"Failed to pick lottery items for quality {originalQuality}");
         return;
       }
 
-      var selectedIndex = Random.Range(0, itemTypeIds.Count);
-      var selectedItemTypeId = itemTypeIds[selectedIndex];
-
-      Item newItem = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
-      if (newItem == null)
+      // Add all items to player inventory
+      int successCount = 0;
+      int storageCount = 0;
+      foreach (var newItem in newItems)
       {
-        Log.Error($"Failed to instantiate lottery item: {selectedItemTypeId}");
-        return;
-      }
-
-      // Add to player inventory
-      if (!ItemUtilities.SendToPlayerCharacterInventory(newItem))
-      {
-        Log.Warning($"Failed to send item to player inventory: {selectedItemTypeId}. Sending to storage.");
-        ItemUtilities.SendToPlayerStorage(newItem);
+        if (!ItemUtilities.SendToPlayerCharacterInventory(newItem))
+        {
+          Log.Warning($"Failed to send item to player inventory: {newItem.DisplayName}. Sending to storage.");
+          ItemUtilities.SendToPlayerStorage(newItem);
+          storageCount++;
+        }
+        else
+        {
+          successCount++;
+        }
       }
 
       // Show notification
+      var itemNames = string.Join(", ", newItems.Select(i => i.DisplayName));
       var message = Constants.I18n.LotteryResultFormatKey.ToPlainText()
-        .Replace("{itemDisplayName}", newItem.DisplayName);
+        .Replace("{itemDisplayName}", itemNames);
+
+      if (storageCount > 0)
+      {
+        var inventoryFullMessage = Constants.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
+        message = $"{message} ({storageCount} {inventoryFullMessage})";
+      }
+
       NotificationText.Push(message);
 
-      Log.Info($"Lottery result: {newItem.DisplayName}");
+      Log.Info($"Lottery result: got {newItems.Count} items (quality {originalQuality})");
     }
   }
 
