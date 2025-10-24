@@ -9,6 +9,7 @@ using UnityEngine.UI;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
 using DuckovLuckyBox.UI;
+using Cysharp.Threading.Tasks;
 
 namespace DuckovLuckyBox
 {
@@ -45,6 +46,24 @@ namespace DuckovLuckyBox
 
             Localizations.Instance.Initialize();
             Log.Debug("Localizations initialized.");
+
+            // In this moment, the SettingsManager may not have loaded settings yet.
+            // Thus, we start a coroutine to wait for one frame before checking the debug setting.
+            StartCoroutine(PostEnableSetup().ToCoroutine());
+        }
+
+        async UniTask PostEnableSetup()
+        {
+            while (!SettingManager.Instance.IsInitialized)
+            {
+                await UniTask.Yield(); // Wait until settings are initialized
+            }
+
+            if (SettingManager.Instance.EnableDebug.GetAsBool())
+            {
+                Log.Warning("Debug mode is enabled.");
+                ItemUtils.DumpAllItemMetadataCSV();
+            }
         }
 
         void OnDisable()

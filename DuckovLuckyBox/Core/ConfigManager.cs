@@ -43,10 +43,10 @@ namespace DuckovLuckyBox.Core.Settings
             }
         }
 
-        public void Initialize()
+        public void Initialize(Action? callback = null)
         {
             // Load existing config or create default (async)
-            coroutineHost?.StartCoroutine(LoadConfigAsync());
+            coroutineHost?.StartCoroutine(LoadConfigAsync(callback));
 
             // Start file watcher
             StartFileWatcher();
@@ -62,7 +62,7 @@ namespace DuckovLuckyBox.Core.Settings
             Log.Debug("ConfigManager cleaned up.");
         }
 
-        private IEnumerator LoadConfigAsync()
+        private IEnumerator LoadConfigAsync(Action? callback = null)
         {
             if (isLoading) yield break;
             isLoading = true;
@@ -118,6 +118,7 @@ namespace DuckovLuckyBox.Core.Settings
             }
 
             isLoading = false;
+            callback?.Invoke();
 
             // Subscribe to setting changes after initial load
             SubscribeToSettingChanges();
@@ -192,14 +193,14 @@ namespace DuckovLuckyBox.Core.Settings
             var settings = SettingManager.Instance;
             return new ConfigData
             {
-                EnableAnimation = settings.EnableAnimation.Value is bool b1 ? b1 : DefaultSettings.EnableAnimation,
-                SettingsHotkey = (settings.SettingsHotkey.Value as Hotkey ?? DefaultSettings.SettingsHotkey).ToString(),
-                EnableDestroyButton = settings.EnableDestroyButton.Value is bool b2 ? b2 : DefaultSettings.EnableDestroyButton,
-                EnableLotteryButton = settings.EnableLotteryButton.Value is bool b3 ? b3 : DefaultSettings.EnableLotteryButton,
-                EnableDebug = settings.EnableDebug.Value is bool b4 ? b4 : DefaultSettings.EnableDebug,
-                RefreshStockPrice = settings.RefreshStockPrice.Value is long l1 ? l1 : DefaultSettings.RefreshStockPrice,
-                StorePickPrice = settings.StorePickPrice.Value is long l2 ? l2 : DefaultSettings.StorePickPrice,
-                StreetPickPrice = settings.StreetPickPrice.Value is long l3 ? l3 : DefaultSettings.StreetPickPrice,
+                EnableAnimation = settings.EnableAnimation.GetAsBool(),
+                SettingsHotkey = settings.SettingsHotkey.GetAsHotkey().ToString(),
+                EnableDestroyButton = settings.EnableDestroyButton.GetAsBool(),
+                EnableLotteryButton = settings.EnableLotteryButton.GetAsBool(),
+                EnableDebug = settings.EnableDebug.GetAsBool(),
+                RefreshStockPrice = settings.RefreshStockPrice.GetAsLong(),
+                StorePickPrice = settings.StorePickPrice.GetAsLong(),
+                StreetPickPrice = settings.StreetPickPrice.GetAsLong(),
             };
         }
 

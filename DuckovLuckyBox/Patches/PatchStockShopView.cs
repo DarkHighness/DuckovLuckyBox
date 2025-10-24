@@ -185,9 +185,6 @@ namespace DuckovLuckyBox.Patches
                 // Use the highest available parent (great-grandparent if available, otherwise grandparent, otherwise parent)
                 var targetParent = greatGrandParent ?? grandParent ?? parent;
 
-                Log.Debug($"Button container parent hierarchy - Parent: {parent.name}, GrandParent: {grandParent?.name ?? "null"}, GreatGrandParent: {greatGrandParent?.name ?? "null"}");
-                Log.Debug($"Using target parent: {targetParent.name}");
-
                 _actionsContainer = new GameObject("ExtraActionsContainer", typeof(RectTransform)).GetComponent<RectTransform>();
                 _actionsContainer.SetParent(targetParent, false);
 

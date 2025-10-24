@@ -188,7 +188,6 @@ namespace DuckovLuckyBox.Patches
         if (bgGraphic != null)
         {
           bgGraphic.color = bgColor;
-          Log.Debug($"Set BG color: {bgColor}");
         }
       }
 
@@ -197,7 +196,6 @@ namespace DuckovLuckyBox.Patches
       if (mainGraphic != null)
       {
         mainGraphic.color = mainColor;
-        Log.Debug($"Set main color: {mainColor}");
       }
 
       // Hide or modify the Icon if needed
@@ -206,7 +204,6 @@ namespace DuckovLuckyBox.Patches
       {
         // Hide the icon for custom buttons
         iconTransform.gameObject.SetActive(false);
-        Log.Debug("Hidden icon for custom button");
       }
 
       // Initially hide the button

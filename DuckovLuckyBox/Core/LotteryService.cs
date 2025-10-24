@@ -56,11 +56,13 @@ namespace DuckovLuckyBox.Core
                         // (2) whose description is in the form of "*Item_*"
                         // (3) whose quality is 0 (junk items)
                         // (4) whose icon is the default "cross" icon
+                        // (5) whose catagory is "Quest"
                         // to avoid illegal items.
                         .Where(entry => !entry.prefab.DisplayName.StartsWith("*Item_") &&
                                        !entry.prefab.Description.StartsWith("*Item_") &&
                                        entry.prefab.Quality > 0 &&
-                                       entry.prefab.Icon.name != "cross")
+                                       entry.prefab.Icon.name != "cross" &&
+                                       entry.metaData.Catagory != "Quest")
                         .Select(entry => entry.typeID)
                         .ToList();
                 }
