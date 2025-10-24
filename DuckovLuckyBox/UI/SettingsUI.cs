@@ -169,14 +169,14 @@ namespace DuckovLuckyBox.UI
       var settings = Settings.Instance;
 
       // General category
-      CreateCategoryLabel(Constants.I18n.SettingsCategoryGeneralKey);
+      CreateCategoryLabel(Localizations.I18n.SettingsCategoryGeneralKey);
       CreateToggleSetting(settings.EnableAnimation);
       CreateHotkeySetting(settings.SettingsHotkey);
       CreateToggleSetting(settings.EnableDestroyButton);
       CreateToggleSetting(settings.EnableLotteryButton);
 
       // Pricing category
-      CreateCategoryLabel(Constants.I18n.SettingsCategoryPricingKey);
+      CreateCategoryLabel(Localizations.I18n.SettingsCategoryPricingKey);
       CreateSliderSetting(settings.RefreshStockPrice);
       CreateSliderSetting(settings.StorePickPrice);
       CreateSliderSetting(settings.StreetPickPrice);
@@ -191,7 +191,7 @@ namespace DuckovLuckyBox.UI
       titleObj.transform.SetParent(settingsPanel!.transform, false);
 
       TextMeshProUGUI titleText = titleObj.AddComponent<TextMeshProUGUI>();
-      titleText.text = Constants.I18n.SettingsPanelTitleKey.ToPlainText();
+      titleText.text = Localizations.I18n.SettingsPanelTitleKey.ToPlainText();
       titleText.fontSize = 32;
       titleText.fontStyle = FontStyles.Bold;
       titleText.color = new Color(1f, 0.9f, 0.6f);
@@ -584,7 +584,7 @@ namespace DuckovLuckyBox.UI
         if (!isWaitingForKey)
         {
           isWaitingForKey = true;
-          buttonText.text = Constants.I18n.SettingsPressAnyKeyKey.ToPlainText();
+          buttonText.text = Localizations.I18n.SettingsPressAnyKeyKey.ToPlainText();
           StartCoroutine(WaitForKeyPress(buttonText, setting, () => isWaitingForKey = false));
         }
       });
@@ -672,7 +672,7 @@ namespace DuckovLuckyBox.UI
       GameObject buttonTextObj = new GameObject("Text");
       buttonTextObj.transform.SetParent(buttonObj.transform, false);
       TextMeshProUGUI buttonText = buttonTextObj.AddComponent<TextMeshProUGUI>();
-      buttonText.text = Constants.I18n.SettingsResetToDefaultKey.ToPlainText();
+      buttonText.text = Localizations.I18n.SettingsResetToDefaultKey.ToPlainText();
       buttonText.fontSize = 18;
       buttonText.fontStyle = FontStyles.Bold;
       buttonText.color = Color.white;

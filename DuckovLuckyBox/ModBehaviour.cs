@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Duckov.UI;
 using Duckov.Utilities;
 using ItemStatsSystem;

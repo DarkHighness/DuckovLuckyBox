@@ -93,7 +93,7 @@ namespace DuckovLuckyBox.Core.Settings
     public SettingItem EnableAnimation { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.EnableAnimation",
-      Label = Constants.I18n.SettingsEnableAnimationKey,
+      Label = Localizations.I18n.SettingsEnableAnimationKey,
       Description = "DuckovLuckyBox.Settings.EnableAnimation.Description",
       Type = Type.Toggle,
       Category = Category.General,
@@ -103,7 +103,7 @@ namespace DuckovLuckyBox.Core.Settings
     public SettingItem SettingsHotkey { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.SettingsHotkey",
-      Label = Constants.I18n.SettingsHotkeyKey,
+      Label = Localizations.I18n.SettingsHotkeyKey,
       Description = "DuckovLuckyBox.Settings.SettingsHotkey.Description",
       Type = Type.Hotkey,
       Category = Category.General,
@@ -113,7 +113,7 @@ namespace DuckovLuckyBox.Core.Settings
     public SettingItem EnableDestroyButton { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.EnableDestroyButton",
-      Label = Constants.I18n.SettingsEnableDestroyButtonKey,
+      Label = Localizations.I18n.SettingsEnableDestroyButtonKey,
       Description = "DuckovLuckyBox.Settings.EnableDestroyButton.Description",
       Type = Type.Toggle,
       Category = Category.General,
@@ -123,7 +123,7 @@ namespace DuckovLuckyBox.Core.Settings
     public SettingItem EnableLotteryButton { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.EnableLotteryButton",
-      Label = Constants.I18n.SettingsEnableLotteryButtonKey,
+      Label = Localizations.I18n.SettingsEnableLotteryButtonKey,
       Description = "DuckovLuckyBox.Settings.EnableLotteryButton.Description",
       Type = Type.Toggle,
       Category = Category.General,
@@ -133,7 +133,7 @@ namespace DuckovLuckyBox.Core.Settings
     public SettingItem RefreshStockPrice { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.RefreshStockPrice",
-      Label = Constants.I18n.SettingsRefreshStockPriceKey,
+      Label = Localizations.I18n.SettingsRefreshStockPriceKey,
       Description = "DuckovLuckyBox.Settings.RefreshStockPrice.Description",
       Type = Type.Number,
       Category = Category.Pricing,
@@ -146,7 +146,7 @@ namespace DuckovLuckyBox.Core.Settings
     public SettingItem StorePickPrice { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.StorePickPrice",
-      Label = Constants.I18n.SettingsStorePickPriceKey,
+      Label = Localizations.I18n.SettingsStorePickPriceKey,
       Description = "DuckovLuckyBox.Settings.StorePickPrice.Description",
       Type = Type.Number,
       Category = Category.Pricing,
@@ -159,7 +159,7 @@ namespace DuckovLuckyBox.Core.Settings
     public SettingItem StreetPickPrice { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.StreetPickPrice",
-      Label = Constants.I18n.SettingsStreetPickPriceKey,
+      Label = Localizations.I18n.SettingsStreetPickPriceKey,
       Description = "DuckovLuckyBox.Settings.StreetPickPrice.Description",
       Type = Type.Number,
       Category = Category.Pricing,

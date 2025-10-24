@@ -44,5 +44,30 @@ namespace DuckovLuckyBox
 
             return sound;
         }
+
+        public static bool PlaySound(Sound? sound, ChannelGroup channelGroup)
+        {
+            if (sound == null)
+            {
+                Log.Error("Cannot play null sound");
+                return false;
+            }
+
+            try
+            {
+                var playResult = RuntimeManager.CoreSystem.playSound((Sound)sound, channelGroup, false, out Channel channel);
+                if (playResult != RESULT.OK)
+                {
+                    Log.Error($"Failed to play sound: {playResult}");
+                    return false;
+                }
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error($"Exception occurred while playing sound: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

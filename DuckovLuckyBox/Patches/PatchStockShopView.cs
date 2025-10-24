@@ -109,13 +109,13 @@ namespace DuckovLuckyBox.Patches
             LotteryAnimation.Initialize(merchantNameText.canvas, merchantNameText);
 
             _refreshStockText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-            ConfigureActionLabel(_refreshStockText, Constants.I18n.RefreshStockKey.ToPlainText());
+            ConfigureActionLabel(_refreshStockText, Localizations.I18n.RefreshStockKey.ToPlainText());
 
             _pickOneText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-            ConfigureActionLabel(_pickOneText, Constants.I18n.StorePickKey.ToPlainText());
+            ConfigureActionLabel(_pickOneText, Localizations.I18n.StorePickKey.ToPlainText());
 
             _buyLuckyBoxText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-            ConfigureActionLabel(_buyLuckyBoxText, Constants.I18n.StreetPickKey.ToPlainText());
+            ConfigureActionLabel(_buyLuckyBoxText, Localizations.I18n.StreetPickKey.ToPlainText());
         }
 
         private static void EnsureButtons(StockShopView view, StockShop target)
@@ -145,10 +145,10 @@ namespace DuckovLuckyBox.Patches
             long storePickPrice = Core.Settings.Settings.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
             long streetPickPrice = Core.Settings.Settings.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
 
-            var baseRefreshText = Constants.I18n.RefreshStockKey.ToPlainText();
-            var baseStorePickText = Constants.I18n.StorePickKey.ToPlainText();
-            var baseStreetPickText = Constants.I18n.StreetPickKey.ToPlainText();
-            var freeText = Constants.I18n.FreeKey.ToPlainText();
+            var baseRefreshText = Localizations.I18n.RefreshStockKey.ToPlainText();
+            var baseStorePickText = Localizations.I18n.StorePickKey.ToPlainText();
+            var baseStreetPickText = Localizations.I18n.StreetPickKey.ToPlainText();
+            var freeText = Localizations.I18n.FreeKey.ToPlainText();
 
             _refreshStockText.text = refreshPrice > 0 ? $"{baseRefreshText} (${refreshPrice})" : $"{baseRefreshText} ({freeText})";
             _pickOneText.text = storePickPrice > 0 ? $"{baseStorePickText} (${storePickPrice})" : $"{baseStorePickText} ({freeText})";
@@ -180,7 +180,7 @@ namespace DuckovLuckyBox.Patches
             if (price > 0 && !Pay(price))
             {
                 Log.Warning($"Failed to pay {price} for street pick");
-                var notEnoughMoneyMessage = Constants.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
+                var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
                 NotificationText.Push(notEnoughMoneyMessage);
                 return;
             }
@@ -217,12 +217,12 @@ namespace DuckovLuckyBox.Patches
                 isSentToStorage = false;
             }
 
-            var messageTemplate = Constants.I18n.PickNotificationFormatKey.ToPlainText();
+            var messageTemplate = Localizations.I18n.PickNotificationFormatKey.ToPlainText();
             var message = messageTemplate.Replace("{itemDisplayName}", obj.DisplayName);
 
             if (isSentToStorage)
             {
-                var inventoryFullMessage = Constants.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
+                var inventoryFullMessage = Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
                 message = $"{message}({inventoryFullMessage})";
             }
 
@@ -242,7 +242,7 @@ namespace DuckovLuckyBox.Patches
             if (price > 0 && !Pay(price))
             {
                 Log.Warning($"Failed to pay {price} for refresh stock");
-                var notEnoughMoneyMessage = Constants.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
+                var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
                 NotificationText.Push(notEnoughMoneyMessage);
                 return;
             }
@@ -287,7 +287,7 @@ namespace DuckovLuckyBox.Patches
             if (price > 0 && !Pay(price))
             {
                 Log.Warning($"Failed to pay {price} for store pick");
-                var notEnoughMoneyMessage = Constants.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
+                var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
                 NotificationText.Push(notEnoughMoneyMessage);
                 return false;
             }
@@ -329,12 +329,12 @@ namespace DuckovLuckyBox.Patches
                 if (onItemPurchasedField?.GetValue(null) is Action<StockShop, Item> onItemPurchased)
                     onItemPurchased(stockShop, obj);
 
-                var messageTemplate = Constants.I18n.PickNotificationFormatKey.ToPlainText();
+                var messageTemplate = Localizations.I18n.PickNotificationFormatKey.ToPlainText();
                 var message = messageTemplate.Replace("{itemDisplayName}", obj.DisplayName);
 
                 if (isSentToStorage)
                 {
-                    var inventoryFullMessage = Constants.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
+                    var inventoryFullMessage = Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
                     message = $"{message}({inventoryFullMessage})";
                 }
 

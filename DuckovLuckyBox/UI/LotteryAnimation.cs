@@ -202,15 +202,8 @@ namespace DuckovLuckyBox.UI
                 await FadeCanvasGroup(_canvasGroup, 0f, 1f, FadeDuration);
 
                 // Play rolling sound
-                if (Constants.Sound.ROLLING_SOUND != null)
-                {
-                    RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
-                    RESULT result = RuntimeManager.CoreSystem.playSound(Constants.Sound.ROLLING_SOUND.Value, sfxGroup, false, out FMOD.Channel channel);
-                    if (result != RESULT.OK)
-                    {
-                        Log.Warning($"Failed to play rolling sound: {result}");
-                    }
-                }
+                RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
+                Utils.PlaySound(Constants.Sound.ROLLING_SOUND, sfxGroup);
 
                 // Single continuous roll animation
                 await PerformContinuousRoll(plan, AnimationDuration, AnimationCurve);

@@ -130,7 +130,7 @@ namespace DuckovLuckyBox.Patches
       state.DestroyButton = CreateButton(
         existingButton,
         contentRect,
-        Constants.I18n.ItemMenuDestroyKey.ToPlainText(),
+        Localizations.I18n.ItemMenuDestroyKey.ToPlainText(),
         new Color(0.8f, 0.2f, 0.2f, 1f), // BG color - dark red
         new Color(0.9f, 0.3f, 0.3f, 1f), // Main color - light red
         () => OnDestroyClicked(menu));
@@ -139,7 +139,7 @@ namespace DuckovLuckyBox.Patches
       state.LotteryButton = CreateButton(
         existingButton,
         contentRect,
-        Constants.I18n.ItemMenuLotteryKey.ToPlainText(),
+        Localizations.I18n.ItemMenuLotteryKey.ToPlainText(),
         new Color(0.9f, 0.7f, 0.2f, 1f), // BG color - dark gold
         new Color(1f, 0.8f, 0.3f, 1f),    // Main color - light gold
         () => OnLotteryClicked(menu).Forget());
@@ -215,39 +215,13 @@ namespace DuckovLuckyBox.Patches
       return button;
     }
 
-    private static void PlaySound(FMOD.Sound? sound)
-    {
-      if (sound == null)
-      {
-        Log.Warning("Sound is null, cannot play");
-        return;
-      }
-
-      try
-      {
-        RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
-        RESULT result = RuntimeManager.CoreSystem.playSound(sound.Value, sfxGroup, false, out FMOD.Channel channel);
-        if (result != RESULT.OK)
-        {
-          Log.Warning($"Failed to play sound: {result}");
-        }
-        else
-        {
-          Log.Debug("Sound played successfully");
-        }
-      }
-      catch (System.Exception ex)
-      {
-        Log.Error($"Exception while playing sound: {ex.Message}");
-      }
-    }
-
     private static void OnDestroyClicked(ItemOperationMenu menu)
     {
       Log.Debug("Destroy button clicked");
 
       // Play destroy sound
-      PlaySound(Constants.Sound.DESTROY_SOUND);
+      RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
+      Utils.PlaySound(Constants.Sound.DESTROY_SOUND, sfxGroup);
 
       // Get the target item using reflection
       var targetDisplayField = AccessTools.Field(typeof(ItemOperationMenu), "TargetDisplay");
@@ -285,7 +259,8 @@ namespace DuckovLuckyBox.Patches
       Log.Debug("Lottery button clicked");
 
       // Play lottery sound
-      PlaySound(Constants.Sound.LOTTERY_SOUND);
+      RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
+      Utils.PlaySound(Constants.Sound.LOTTERY_SOUND, sfxGroup);
 
       // Get the target item using reflection
       var targetDisplayField = AccessTools.Field(typeof(ItemOperationMenu), "TargetDisplay");
@@ -351,12 +326,12 @@ namespace DuckovLuckyBox.Patches
 
       // Show notification
       var itemNames = string.Join(", ", newItems.Select(i => i.DisplayName));
-      var message = Constants.I18n.LotteryResultFormatKey.ToPlainText()
+      var message = Localizations.I18n.LotteryResultFormatKey.ToPlainText()
         .Replace("{itemDisplayName}", itemNames);
 
       if (storageCount > 0)
       {
-        var inventoryFullMessage = Constants.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
+        var inventoryFullMessage = Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
         message = $"{message} ({storageCount} {inventoryFullMessage})";
       }
 
