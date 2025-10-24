@@ -5,7 +5,8 @@ namespace DuckovLuckyBox.Core
         public static readonly string ModId = "Duckov.LuckyBox";
         public static readonly string ModName = "Duckov Lucky Box";
 
-        public static class Sound {
+        public static class Sound
+        {
             public static readonly string RollingSoundResourceName = "Resources.rolling.mp3";
             public static readonly string DestroySoundResourceName = "Resources.destroy.mp3";
             public static readonly string LotterySoundResourceName = "Resources.lottery.mp3";

@@ -152,7 +152,7 @@ namespace DuckovLuckyBox.UI
         public static async UniTask PlayAsync(IEnumerable<int> candidateTypeIds, int finalTypeId, string finalDisplayName, Sprite? finalIcon)
         {
             // Check if animation is enabled in settings
-            var enableAnimationValue = Core.Settings.Settings.Instance.EnableAnimation.Value;
+            var enableAnimationValue = Core.Settings.SettingManager.Instance.EnableAnimation.Value;
             if (enableAnimationValue is bool enabled && !enabled)
             {
                 Log.Debug("Lottery animation is disabled in settings. Skipping animation.");

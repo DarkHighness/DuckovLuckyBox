@@ -4,7 +4,6 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using ItemStatsSystem;
 using UnityEngine;
-using DuckovLuckyBox.Core;
 
 namespace DuckovLuckyBox.Core
 {

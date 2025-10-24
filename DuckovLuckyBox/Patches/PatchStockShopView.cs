@@ -7,7 +7,6 @@ using UnityEngine.UI;
 using Duckov.Economy;
 using SodaCraft.Localizations;
 using HarmonyLib;
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using System;
 using ItemStatsSystem;
@@ -141,9 +140,9 @@ namespace DuckovLuckyBox.Patches
         {
             if (_refreshStockText == null || _pickOneText == null || _buyLuckyBoxText == null) return;
 
-            long refreshPrice = Core.Settings.Settings.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
-            long storePickPrice = Core.Settings.Settings.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
-            long streetPickPrice = Core.Settings.Settings.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
+            long refreshPrice = SettingManager.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
+            long storePickPrice = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
+            long streetPickPrice = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
 
             var baseRefreshText = Localizations.I18n.RefreshStockKey.ToPlainText();
             var baseStorePickText = Localizations.I18n.StorePickKey.ToPlainText();
@@ -159,7 +158,7 @@ namespace DuckovLuckyBox.Patches
         {
             if (_priceChangeSubscribed) return;
 
-            var settings = Core.Settings.Settings.Instance;
+            var settings = SettingManager.Instance;
 
             settings.RefreshStockPrice.OnValueChanged += _ => UpdateButtonTexts();
             settings.StorePickPrice.OnValueChanged += _ => UpdateButtonTexts();
@@ -174,7 +173,7 @@ namespace DuckovLuckyBox.Patches
             Log.Debug("Street pick button clicked");
 
             // Get price from settings and try to pay
-            long price = Core.Settings.Settings.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
+            long price = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
 
             // Skip payment if price is zero
             if (price > 0 && !Pay(price))
@@ -236,7 +235,7 @@ namespace DuckovLuckyBox.Patches
             if (stockShop == null) return;
 
             // Get price from settings and try to pay
-            long price = Core.Settings.Settings.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
+            long price = SettingManager.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
 
             // Skip payment if price is zero
             if (price > 0 && !Pay(price))
@@ -281,7 +280,7 @@ namespace DuckovLuckyBox.Patches
             }
 
             // Get price from settings and try to pay
-            long price = Core.Settings.Settings.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
+            long price = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
 
             // Skip payment if price is zero
             if (price > 0 && !Pay(price))

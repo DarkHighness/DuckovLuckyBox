@@ -29,13 +29,12 @@ namespace DuckovLuckyBox
             stream.CopyTo(memoryStream);
             byte[] soundData = memoryStream.ToArray();
 
-            Sound sound;
             CREATESOUNDEXINFO exinfo = new CREATESOUNDEXINFO
             {
                 cbsize = Marshal.SizeOf<CREATESOUNDEXINFO>(),
                 length = (uint)soundData.Length
             };
-            var soundResult = RuntimeManager.CoreSystem.createSound(soundData, MODE.DEFAULT | MODE.LOOP_OFF | MODE.OPENMEMORY, ref exinfo, out sound);
+            var soundResult = RuntimeManager.CoreSystem.createSound(soundData, MODE.DEFAULT | MODE.LOOP_OFF | MODE.OPENMEMORY, ref exinfo, out Sound sound);
             if (soundResult != RESULT.OK)
             {
                 Log.Error($"Failed to create sound from resource {soundFileName}: {soundResult}");

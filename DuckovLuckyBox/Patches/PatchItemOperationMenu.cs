@@ -5,12 +5,12 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using ItemStatsSystem;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using SodaCraft.Localizations;
 using FMODUnity;
 using FMOD;
+using DuckovLuckyBox.Core.Settings;
 
 namespace DuckovLuckyBox.Patches
 {
@@ -52,7 +52,7 @@ namespace DuckovLuckyBox.Patches
     private static void RegisterSettingListeners(MenuState state)
     {
       // Listen to EnableDestroyButton setting changes
-      Core.Settings.Settings.Instance.EnableDestroyButton.OnValueChanged += (value) =>
+      SettingManager.Instance.EnableDestroyButton.OnValueChanged += (value) =>
       {
         bool enabled = (bool)value;
         if (state.DestroyButton != null && state.Menu != null)
@@ -63,7 +63,7 @@ namespace DuckovLuckyBox.Patches
       };
 
       // Listen to EnableLotteryButton setting changes
-      Core.Settings.Settings.Instance.EnableLotteryButton.OnValueChanged += (value) =>
+      SettingManager.Instance.EnableLotteryButton.OnValueChanged += (value) =>
       {
         bool enabled = (bool)value;
         if (state.LotteryButton != null && state.Menu != null)
@@ -80,7 +80,7 @@ namespace DuckovLuckyBox.Patches
     {
       if (state.DestroyButton == null || state.Menu == null) return;
 
-      bool destroyButtonEnabled = (bool)Core.Settings.Settings.Instance.EnableDestroyButton.Value;
+      bool destroyButtonEnabled = (bool)SettingManager.Instance.EnableDestroyButton.Value;
 
       // Get current target item
       var targetDisplayField = AccessTools.Field(typeof(ItemOperationMenu), "TargetDisplay");
@@ -100,7 +100,7 @@ namespace DuckovLuckyBox.Patches
     {
       if (state.LotteryButton == null || state.Menu == null) return;
 
-      bool lotteryButtonEnabled = (bool)Core.Settings.Settings.Instance.EnableLotteryButton.Value;
+      bool lotteryButtonEnabled = (bool)SettingManager.Instance.EnableLotteryButton.Value;
 
       // Get current target item
       var targetDisplayField = AccessTools.Field(typeof(ItemOperationMenu), "TargetDisplay");
@@ -300,7 +300,7 @@ namespace DuckovLuckyBox.Patches
       Log.Info($"Lottery: destroying {originalStackCount}x quality {originalQuality} item(s)");
 
       // Use LotteryService to pick random items of the same quality
-      var newItems = await Core.LotteryService.PickRandomItemsByQualityAsync(originalQuality, originalStackCount);
+      var newItems = await LotteryService.PickRandomItemsByQualityAsync(originalQuality, originalStackCount);
       if (newItems == null || newItems.Count == 0)
       {
         Log.Error($"Failed to pick lottery items for quality {originalQuality}");
@@ -359,16 +359,14 @@ namespace DuckovLuckyBox.Patches
       if (targetItem == null)
       {
         // Hide buttons if no target item
-        if (state.DestroyButton != null)
-          state.DestroyButton.gameObject.SetActive(false);
-        if (state.LotteryButton != null)
-          state.LotteryButton.gameObject.SetActive(false);
+        state.DestroyButton?.gameObject.SetActive(false);
+        state.LotteryButton?.gameObject.SetActive(false);
         return;
       }
 
       // Check if buttons are enabled in settings
-      bool destroyButtonEnabled = (bool)Core.Settings.Settings.Instance.EnableDestroyButton.Value;
-      bool lotteryButtonEnabled = (bool)Core.Settings.Settings.Instance.EnableLotteryButton.Value;
+      bool destroyButtonEnabled = (bool)SettingManager.Instance.EnableDestroyButton.Value;
+      bool lotteryButtonEnabled = (bool)SettingManager.Instance.EnableLotteryButton.Value;
 
       // Show/hide Destroy button based on settings only
       if (state.DestroyButton != null)

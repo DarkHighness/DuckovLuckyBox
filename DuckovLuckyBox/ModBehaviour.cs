@@ -31,7 +31,7 @@ namespace DuckovLuckyBox
         void OnEnable()
         {
             // Initialize settings config first, passing this MonoBehaviour as host
-            Settings.InitializeConfig(this);
+            SettingManager.InitializeConfig(this);
             Log.Debug("Settings config initialized.");
 
             settingsUI = gameObject.AddComponent<SettingsUI>();
@@ -55,13 +55,13 @@ namespace DuckovLuckyBox
             harmony?.UnpatchAll(Constants.ModId);
             Log.Debug("Harmony patches removed.");
 
-            Settings.CleanupConfig();
+            SettingManager.CleanupConfig();
             Log.Debug("Settings config cleaned up.");
         }
 
         void Update()
         {
-            var hotkey = Settings.Instance.SettingsHotkey.Value as Hotkey ?? DefaultSettings.SettingsHotkey;
+            var hotkey = SettingManager.Instance.SettingsHotkey.Value as Hotkey ?? DefaultSettings.SettingsHotkey;
 
             if (hotkey.IsPressed())
             {
