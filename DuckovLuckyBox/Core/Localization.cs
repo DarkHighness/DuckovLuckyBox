@@ -30,6 +30,7 @@ namespace DuckovLuckyBox.Core
             public static readonly string FreeKey = "UI_Free";
             public static readonly string SettingsEnableDestroyButtonKey = "UI_SettingsEnableDestroyButton";
             public static readonly string SettingsEnableLotteryButtonKey = "UI_SettingsEnableLotteryButton";
+            public static readonly string SettingsEnableDebugKey = "UI_SettingsEnableDebug";
 
             // Item Operation Menu I18n keys
             public static readonly string ItemMenuDestroyKey = "UI_ItemMenuDestroy";
@@ -58,6 +59,7 @@ namespace DuckovLuckyBox.Core
             { I18n.FreeKey, "Free!" },
             { I18n.SettingsEnableDestroyButtonKey, "Enable Destroy Button" },
             { I18n.SettingsEnableLotteryButtonKey, "Enable Lottery Button" },
+            { I18n.SettingsEnableDebugKey, "Enable Debug Mode" },
             { I18n.ItemMenuDestroyKey, "Destroy" },
             { I18n.ItemMenuLotteryKey, "Lottery" },
             { I18n.LotteryResultFormatKey, "You got {itemDisplayName}!" }
@@ -82,6 +84,7 @@ namespace DuckovLuckyBox.Core
             { I18n.FreeKey, "免费！" },
             { I18n.SettingsEnableDestroyButtonKey, "启用销毁按钮" },
             { I18n.SettingsEnableLotteryButtonKey, "启用抽奖按钮" },
+            { I18n.SettingsEnableDebugKey, "启用调试模式" },
             { I18n.ItemMenuDestroyKey, "销毁" },
             { I18n.ItemMenuLotteryKey, "抽奖" },
             { I18n.LotteryResultFormatKey, "你抽中了 {itemDisplayName}！" }

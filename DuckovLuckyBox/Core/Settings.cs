@@ -23,7 +23,7 @@ namespace DuckovLuckyBox.Core.Settings
         public string Description { get; internal set; } = string.Empty;
         public Type Type { get; internal set; }
         public Category Category { get; internal set; }
-        public System.Action<object> OnValueChanged = delegate { };
+        public System.Action<object> OnValueChanged { get; set; } = delegate { };
 
         // For Number type settings
         public float MinValue { get; internal set; } = 0f;
@@ -75,6 +75,7 @@ namespace DuckovLuckyBox.Core.Settings
         public static readonly Hotkey SettingsHotkey = new Hotkey(KeyCode.F1, false, false, false);
         public const bool EnableDestroyButton = true;
         public const bool EnableLotteryButton = true;
+        public const bool EnableDebug = false;
 
         // Pricing Settings
         public const long RefreshStockPrice = 100L;
@@ -129,6 +130,16 @@ namespace DuckovLuckyBox.Core.Settings
             DefaultValue = DefaultSettings.EnableLotteryButton,
         };
 
+        public SettingItem EnableDebug { get; set; } = new SettingItem
+        {
+            Key = "DuckovLuckyBox.Settings.EnableDebug",
+            Label = Localizations.I18n.SettingsEnableDebugKey,
+            Description = "DuckovLuckyBox.Settings.EnableDebug.Description",
+            Type = Type.Toggle,
+            Category = Category.General,
+            DefaultValue = DefaultSettings.EnableDebug,
+        };
+
         public SettingItem RefreshStockPrice { get; set; } = new SettingItem
         {
             Key = "DuckovLuckyBox.Settings.RefreshStockPrice",
@@ -176,6 +187,7 @@ namespace DuckovLuckyBox.Core.Settings
                 yield return SettingsHotkey;
                 yield return EnableDestroyButton;
                 yield return EnableLotteryButton;
+                yield return EnableDebug;
                 yield return RefreshStockPrice;
                 yield return StorePickPrice;
                 yield return StreetPickPrice;
@@ -191,6 +203,7 @@ namespace DuckovLuckyBox.Core.Settings
             SettingsHotkey.Value = SettingsHotkey.DefaultValue;
             EnableDestroyButton.Value = EnableDestroyButton.DefaultValue;
             EnableLotteryButton.Value = EnableLotteryButton.DefaultValue;
+            EnableDebug.Value = EnableDebug.DefaultValue;
             RefreshStockPrice.Value = RefreshStockPrice.DefaultValue;
             StorePickPrice.Value = StorePickPrice.DefaultValue;
             StreetPickPrice.Value = StreetPickPrice.DefaultValue;

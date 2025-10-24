@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using FMOD;
 using FMODUnity;
 using DuckovLuckyBox.Core;
+using Unity.VisualScripting;
 
 namespace DuckovLuckyBox.UI
 {
@@ -309,11 +310,10 @@ namespace DuckovLuckyBox.UI
         /// </summary>
         private static List<int> BuildSlotSequence(IEnumerable<int> candidateTypeIds, int finalTypeId, out int finalSlotIndex)
         {
-            var pool = candidateTypeIds?.Distinct().Where(id => id > 0).ToList() ?? new List<int>();
+            // no need to distinct here, we just need a pool to sample from
+            var pool = candidateTypeIds?.ToList() ?? new List<int>();
             if (!pool.Contains(finalTypeId)) pool.Add(finalTypeId);
             if (pool.Count == 0) pool.Add(finalTypeId);
-
-            var random = new System.Random();
 
             int SampleNext(int? previous)
             {
@@ -321,7 +321,7 @@ namespace DuckovLuckyBox.UI
                 int pick;
                 do
                 {
-                    pick = pool[random.Next(pool.Count)];
+                    pick = pool[UnityEngine.Random.Range(0, pool.Count)];
                 } while (previous.HasValue && pool.Count > 1 && pick == previous.Value);
                 return pick;
             }
@@ -330,7 +330,8 @@ namespace DuckovLuckyBox.UI
             int? lastId = null;
 
             // Build slots before final (ensure minimum threshold)
-            while (sequence.Count < MinimumSlotsBeforeFinal)
+            var prefixCount = MinimumSlotsBeforeFinal + UnityEngine.Random.Range(0, 50);
+            while (sequence.Count < prefixCount)
             {
                 var id = SampleNext(lastId);
                 sequence.Add(id);

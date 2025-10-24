@@ -291,7 +291,7 @@ namespace DuckovLuckyBox.Patches
                 await LotteryService.PerformLotteryWithContextAsync(
                     candidateTypeIds: null, // Use default cache
                     price: price,
-                    playAnimation: true,
+                    playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
                     context: context);
             }
             catch (Exception ex)
@@ -351,7 +351,7 @@ namespace DuckovLuckyBox.Patches
                 await LotteryService.PerformLotteryWithContextAsync(
                     candidateTypeIds,
                     price,
-                    playAnimation: true,
+                    playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
                     context);
 
                 return true;

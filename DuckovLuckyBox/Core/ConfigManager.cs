@@ -10,6 +10,9 @@ namespace DuckovLuckyBox.Core.Settings
     {
         public bool EnableAnimation = DefaultSettings.EnableAnimation;
         public string SettingsHotkey = DefaultSettings.SettingsHotkey.ToString();
+        public bool EnableDestroyButton = DefaultSettings.EnableDestroyButton;
+        public bool EnableLotteryButton = DefaultSettings.EnableLotteryButton;
+        public bool EnableDebug = DefaultSettings.EnableDebug;
         public long RefreshStockPrice = DefaultSettings.RefreshStockPrice;
         public long StorePickPrice = DefaultSettings.StorePickPrice;
         public long StreetPickPrice = DefaultSettings.StreetPickPrice;
@@ -189,8 +192,11 @@ namespace DuckovLuckyBox.Core.Settings
             var settings = SettingManager.Instance;
             return new ConfigData
             {
-                EnableAnimation = settings.EnableAnimation.Value is bool b ? b : DefaultSettings.EnableAnimation,
+                EnableAnimation = settings.EnableAnimation.Value is bool b1 ? b1 : DefaultSettings.EnableAnimation,
                 SettingsHotkey = (settings.SettingsHotkey.Value as Hotkey ?? DefaultSettings.SettingsHotkey).ToString(),
+                EnableDestroyButton = settings.EnableDestroyButton.Value is bool b2 ? b2 : DefaultSettings.EnableDestroyButton,
+                EnableLotteryButton = settings.EnableLotteryButton.Value is bool b3 ? b3 : DefaultSettings.EnableLotteryButton,
+                EnableDebug = settings.EnableDebug.Value is bool b4 ? b4 : DefaultSettings.EnableDebug,
                 RefreshStockPrice = settings.RefreshStockPrice.Value is long l1 ? l1 : DefaultSettings.RefreshStockPrice,
                 StorePickPrice = settings.StorePickPrice.Value is long l2 ? l2 : DefaultSettings.StorePickPrice,
                 StreetPickPrice = settings.StreetPickPrice.Value is long l3 ? l3 : DefaultSettings.StreetPickPrice,
@@ -211,6 +217,9 @@ namespace DuckovLuckyBox.Core.Settings
                 // Parse Hotkey from string (e.g., "Ctrl+F1")
                 settings.SettingsHotkey.Value = Hotkey.Parse(config.SettingsHotkey);
 
+                settings.EnableDestroyButton.Value = config.EnableDestroyButton;
+                settings.EnableLotteryButton.Value = config.EnableLotteryButton;
+                settings.EnableDebug.Value = config.EnableDebug;
                 settings.RefreshStockPrice.Value = config.RefreshStockPrice;
                 settings.StorePickPrice.Value = config.StorePickPrice;
                 settings.StreetPickPrice.Value = config.StreetPickPrice;
@@ -227,6 +236,9 @@ namespace DuckovLuckyBox.Core.Settings
             var settings = SettingManager.Instance;
             settings.EnableAnimation.OnValueChanged += OnSettingChanged;
             settings.SettingsHotkey.OnValueChanged += OnSettingChanged;
+            settings.EnableDestroyButton.OnValueChanged += OnSettingChanged;
+            settings.EnableLotteryButton.OnValueChanged += OnSettingChanged;
+            settings.EnableDebug.OnValueChanged += OnSettingChanged;
             settings.RefreshStockPrice.OnValueChanged += OnSettingChanged;
             settings.StorePickPrice.OnValueChanged += OnSettingChanged;
             settings.StreetPickPrice.OnValueChanged += OnSettingChanged;
@@ -235,11 +247,16 @@ namespace DuckovLuckyBox.Core.Settings
         private void UnsubscribeFromSettingChanges()
         {
             var settings = SettingManager.Instance;
-            settings.EnableAnimation.OnValueChanged -= OnSettingChanged;
-            settings.SettingsHotkey.OnValueChanged -= OnSettingChanged;
-            settings.RefreshStockPrice.OnValueChanged -= OnSettingChanged;
-            settings.StorePickPrice.OnValueChanged -= OnSettingChanged;
-            settings.StreetPickPrice.OnValueChanged -= OnSettingChanged;
+#pragma warning disable CS8601
+            settings.EnableAnimation.OnValueChanged -= OnSettingChanged!;
+            settings.SettingsHotkey.OnValueChanged -= OnSettingChanged!;
+            settings.EnableDestroyButton.OnValueChanged -= OnSettingChanged!;
+            settings.EnableLotteryButton.OnValueChanged -= OnSettingChanged!;
+            settings.EnableDebug.OnValueChanged -= OnSettingChanged!;
+            settings.RefreshStockPrice.OnValueChanged -= OnSettingChanged!;
+            settings.StorePickPrice.OnValueChanged -= OnSettingChanged!;
+            settings.StreetPickPrice.OnValueChanged -= OnSettingChanged!;
+#pragma warning restore CS8601
         }
 
         private void OnSettingChanged(object value)
