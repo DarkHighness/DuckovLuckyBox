@@ -9,6 +9,7 @@ using SodaCraft.Localizations;
 using HarmonyLib;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using ItemStatsSystem;
 using System.Linq;
 using DuckovLuckyBox.Core;
@@ -17,20 +18,128 @@ using DuckovLuckyBox.UI;
 
 namespace DuckovLuckyBox.Patches
 {
+    /// <summary>
+    /// Lottery context for store pick operations
+    /// </summary>
+    public class StoreLotteryContext : ILotteryContext
+    {
+        private readonly StockShop _stockShop;
+        private readonly IList<StockShop.Entry> _stockEntries;
+        private const string SFX_BUY = "UI/buy";
+
+        public StoreLotteryContext(StockShop stockShop, IList<StockShop.Entry> stockEntries)
+        {
+            _stockShop = stockShop;
+            _stockEntries = stockEntries;
+        }
+
+        public async UniTask<bool> OnBeforeLotteryAsync()
+        {
+            if (_stockShop == null || _stockShop.Busy) return false;
+
+            // Mark shop as buying
+            try { AccessTools.Field(typeof(StockShop), "buying").SetValue(_stockShop, true); } catch { }
+
+            return await UniTask.FromResult(true);
+        }
+
+        public void OnLotterySuccess(Item resultItem, bool sentToStorage)
+        {
+            if (_stockShop == null || resultItem == null) return;
+
+            try
+            {
+                // Decrement stock of the entry matching the result item's TypeID
+                if (_stockEntries != null && _stockEntries.Count > 0)
+                {
+                    var matchingEntry = _stockEntries.FirstOrDefault(entry => entry?.ItemTypeID == resultItem.TypeID);
+                    if (matchingEntry != null)
+                    {
+                        matchingEntry.CurrentStock = Math.Max(0, matchingEntry.CurrentStock - 1);
+                    }
+                    else
+                    {
+                        Log.Error($"No matching stock entry found for item TypeID {resultItem.TypeID}");
+                    }
+                }
+
+                // Fire shop events
+                var onAfterItemSoldField = AccessTools.Field(typeof(StockShop), "OnAfterItemSold");
+                if (onAfterItemSoldField?.GetValue(null) is Action<StockShop> onAfterItemSold)
+                    onAfterItemSold(_stockShop);
+                var onItemPurchasedField = AccessTools.Field(typeof(StockShop), "OnItemPurchased");
+                if (onItemPurchasedField?.GetValue(null) is Action<StockShop, Item> onItemPurchased)
+                    onItemPurchased(_stockShop, resultItem);
+
+                // Show notification
+                var messageTemplate = Localizations.I18n.PickNotificationFormatKey.ToPlainText();
+                var message = messageTemplate.Replace("{itemDisplayName}", resultItem.DisplayName);
+                if (sentToStorage)
+                {
+                    message += " " + Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
+                }
+                NotificationText.Push(message);
+                AudioManager.Post(SFX_BUY);
+            }
+            finally
+            {
+                try { AccessTools.Field(typeof(StockShop), "buying").SetValue(_stockShop, false); } catch { }
+            }
+        }
+
+        public void OnLotteryFailed()
+        {
+            try { AccessTools.Field(typeof(StockShop), "buying").SetValue(_stockShop, false); } catch { }
+        }
+    }
+
+    /// <summary>
+    /// Lottery context for street pick operations
+    /// </summary>
+    public class StreetLotteryContext : ILotteryContext
+    {
+        private const string SFX_BUY = "UI/buy";
+
+        public async UniTask<bool> OnBeforeLotteryAsync()
+        {
+            // No special validation needed for street lottery
+            return await UniTask.FromResult(true);
+        }
+
+        public void OnLotterySuccess(Item resultItem, bool sentToStorage)
+        {
+            if (resultItem == null) return;
+
+            // Show notification
+            var messageTemplate = Localizations.I18n.PickNotificationFormatKey.ToPlainText();
+            var message = messageTemplate.Replace("{itemDisplayName}", resultItem.DisplayName);
+            if (sentToStorage)
+            {
+                message += " " + Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
+            }
+            NotificationText.Push(message);
+            AudioManager.Post(SFX_BUY);
+        }
+
+        public void OnLotteryFailed()
+        {
+            // No special cleanup needed for street lottery
+        }
+    }
 
     [HarmonyPatch(typeof(StockShopView), "Setup")]
     public class PatchStockShopView_Setup
     {
+        private static StockShop? _currentStockShop = null;
         private static TextMeshProUGUI? _refreshStockText;
         private static Button? _refreshButton;
-        private static TextMeshProUGUI? _pickOneText;
+        private static TextMeshProUGUI? _storePickText;
         private static Button? _storePickButton;
-        private static TextMeshProUGUI? _buyLuckyBoxText;
+        private static TextMeshProUGUI? _streetPickText;
         private static Button? _streetPickButton;
         private static RectTransform? _actionsContainer;
         private static bool _priceChangeSubscribed = false;
         private static readonly string SFX_BUY = "UI/buy";
-        private const float AnchorOffsetExtraPadding = 40f;
         private const float ActionsContainerFallbackWidth = 320f;
         private const float ActionsContainerHeight = 240f; // Increased height for vertical layout with larger spacing
         private const float ActionsLayoutSpacing = 24f; // Larger spacing between buttons to prevent overlap
@@ -51,16 +160,17 @@ namespace DuckovLuckyBox.Patches
         public static void Postfix(StockShopView __instance, TextMeshProUGUI ___merchantNameText, StockShop ___target)
         {
             if (___merchantNameText == null) return;
+            _currentStockShop = ___target;
 
             EnsureTexts(___merchantNameText);
-            EnsureButtons(__instance, ___target);
+            EnsureButtons(__instance);
             SubscribeToPriceChanges();
             UpdateButtonTexts();
         }
 
         private static void EnsureTexts(TextMeshProUGUI merchantNameText)
         {
-            if (_refreshStockText != null || _pickOneText != null) return;
+            if (_refreshStockText != null || _storePickText != null) return;
 
             if (_actionsContainer == null)
             {
@@ -73,7 +183,7 @@ namespace DuckovLuckyBox.Patches
                 var greatGrandParent = grandParent?.parent as RectTransform;
 
                 // Use the highest available parent (great-grandparent if available, otherwise grandparent, otherwise parent)
-                var targetParent = greatGrandParent != null ? greatGrandParent : (grandParent != null ? grandParent : parent);
+                var targetParent = greatGrandParent ?? grandParent ?? parent;
 
                 Log.Debug($"Button container parent hierarchy - Parent: {parent.name}, GrandParent: {grandParent?.name ?? "null"}, GreatGrandParent: {greatGrandParent?.name ?? "null"}");
                 Log.Debug($"Using target parent: {targetParent.name}");
@@ -110,35 +220,35 @@ namespace DuckovLuckyBox.Patches
             _refreshStockText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
             ConfigureActionLabel(_refreshStockText, Localizations.I18n.RefreshStockKey.ToPlainText());
 
-            _pickOneText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-            ConfigureActionLabel(_pickOneText, Localizations.I18n.StorePickKey.ToPlainText());
+            _storePickText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
+            ConfigureActionLabel(_storePickText, Localizations.I18n.StorePickKey.ToPlainText());
 
-            _buyLuckyBoxText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-            ConfigureActionLabel(_buyLuckyBoxText, Localizations.I18n.StreetPickKey.ToPlainText());
+            _streetPickText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
+            ConfigureActionLabel(_streetPickText, Localizations.I18n.StreetPickKey.ToPlainText());
         }
 
-        private static void EnsureButtons(StockShopView view, StockShop target)
+        private static void EnsureButtons(StockShopView view)
         {
             if (_refreshButton != null || _storePickButton != null || _streetPickButton != null) return;
-            if (_refreshStockText == null || _pickOneText == null || _buyLuckyBoxText == null) return;
+            if (_refreshStockText == null || _storePickText == null || _streetPickText == null) return;
 
             _refreshButton = _refreshStockText.gameObject.AddComponent<Button>();
             ConfigureActionButton(_refreshButton, _refreshStockText);
 
-            _storePickButton = _pickOneText.gameObject.AddComponent<Button>();
-            ConfigureActionButton(_storePickButton, _pickOneText);
+            _storePickButton = _storePickText.gameObject.AddComponent<Button>();
+            ConfigureActionButton(_storePickButton, _storePickText);
 
-            _streetPickButton = _buyLuckyBoxText.gameObject.AddComponent<Button>();
-            ConfigureActionButton(_streetPickButton, _buyLuckyBoxText);
+            _streetPickButton = _streetPickText.gameObject.AddComponent<Button>();
+            ConfigureActionButton(_streetPickButton, _streetPickText);
 
-            _refreshButton.onClick.AddListener(() => OnRefreshButtonClicked(target));
-            _storePickButton.onClick.AddListener(() => OnStorePickButtonClicked(target).Forget());
+            _refreshButton.onClick.AddListener(() => OnRefreshButtonClicked());
+            _storePickButton.onClick.AddListener(() => OnStorePickButtonClicked().Forget());
             _streetPickButton.onClick.AddListener(() => OnStreetPickButtonClicked().Forget());
         }
 
         private static void UpdateButtonTexts()
         {
-            if (_refreshStockText == null || _pickOneText == null || _buyLuckyBoxText == null) return;
+            if (_refreshStockText == null || _storePickText == null || _streetPickText == null) return;
 
             long refreshPrice = SettingManager.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
             long storePickPrice = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
@@ -150,8 +260,8 @@ namespace DuckovLuckyBox.Patches
             var freeText = Localizations.I18n.FreeKey.ToPlainText();
 
             _refreshStockText.text = refreshPrice > 0 ? $"{baseRefreshText} (${refreshPrice})" : $"{baseRefreshText} ({freeText})";
-            _pickOneText.text = storePickPrice > 0 ? $"{baseStorePickText} (${storePickPrice})" : $"{baseStorePickText} ({freeText})";
-            _buyLuckyBoxText.text = streetPickPrice > 0 ? $"{baseStreetPickText} (${streetPickPrice})" : $"{baseStreetPickText} ({freeText})";
+            _storePickText.text = storePickPrice > 0 ? $"{baseStorePickText} (${storePickPrice})" : $"{baseStorePickText} ({freeText})";
+            _streetPickText.text = streetPickPrice > 0 ? $"{baseStreetPickText} (${streetPickPrice})" : $"{baseStreetPickText} ({freeText})";
         }
 
         private static void SubscribeToPriceChanges()
@@ -172,73 +282,34 @@ namespace DuckovLuckyBox.Patches
         {
             Log.Debug("Street pick button clicked");
 
-            // Get price from settings and try to pay
+            // Get price from settings
             long price = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
 
-            // Skip payment if price is zero
-            if (price > 0 && !Pay(price))
+            try
             {
-                Log.Warning($"Failed to pay {price} for street pick");
-                var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
-                NotificationText.Push(notEnoughMoneyMessage);
-                return;
+                var context = new StreetLotteryContext();
+                await LotteryService.PerformLotteryWithContextAsync(
+                    candidateTypeIds: null, // Use default cache
+                    price: price,
+                    playAnimation: true,
+                    context: context);
             }
-
-            AudioManager.Post(SFX_BUY);
-
-            // Use LotteryService to pick a random item
-            var selectedItemTypeId = LotteryService.PickRandomItem(LotteryService.ItemTypeIdsCache);
-            if (selectedItemTypeId < 0)
+            catch (Exception ex)
             {
-                Log.Error("Failed to pick item for street lottery");
-                return;
+                Log.Error($"Street lottery failed: {ex.Message}");
             }
-
-            Item? obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
-            if (obj == null)
-            {
-                Log.Error($"Failed to instantiate lucky box item: {selectedItemTypeId}");
-                return;
-            }
-
-            // Play animation
-            await LotteryAnimation.PlayAsync(LotteryService.ItemTypeIdsCache, selectedItemTypeId, obj.DisplayName, obj.Icon);
-
-            var isSentToStorage = true;
-            if (!ItemUtilities.SendToPlayerCharacterInventory(obj))
-            {
-                Log.Warning($"Failed to send item to player inventory: {selectedItemTypeId}. Send to the player storage.");
-                ItemUtilities.SendToPlayerStorage(obj);
-                isSentToStorage = true;
-            }
-            else
-            {
-                isSentToStorage = false;
-            }
-
-            var messageTemplate = Localizations.I18n.PickNotificationFormatKey.ToPlainText();
-            var message = messageTemplate.Replace("{itemDisplayName}", obj.DisplayName);
-
-            if (isSentToStorage)
-            {
-                var inventoryFullMessage = Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
-                message = $"{message}({inventoryFullMessage})";
-            }
-
-            NotificationText.Push(message);
-            AudioManager.Post(SFX_BUY);
         }
 
-        private static void OnRefreshButtonClicked(StockShop stockShop)
+        private static void OnRefreshButtonClicked()
         {
             Log.Debug("Refresh button clicked");
-            if (stockShop == null) return;
+            if (_currentStockShop == null) return;
 
             // Get price from settings and try to pay
             long price = SettingManager.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
 
             // Skip payment if price is zero
-            if (price > 0 && !Pay(price))
+            if (price > 0 && !EconomyManager.Pay(new Cost(price), true, true))
             {
                 Log.Warning($"Failed to pay {price} for refresh stock");
                 var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
@@ -246,32 +317,22 @@ namespace DuckovLuckyBox.Patches
                 return;
             }
 
-            if (!TryInvokeRefresh(stockShop)) return;
+            if (!TryInvokeRefresh(_currentStockShop)) return;
             AudioManager.Post(SFX_BUY);
             Log.Debug("Stock refreshed");
         }
 
 
-        private static async UniTask<bool> OnStorePickButtonClicked(StockShop stockShop)
+        private static async UniTask<bool> OnStorePickButtonClicked()
         {
             Log.Debug("Store pick button clicked");
-            if (stockShop == null) return false;
+            if (_currentStockShop == null) return false;
+            if (_currentStockShop.Busy) return false;
 
-            if (stockShop.Busy) return false;
-
-            var itemEntries = stockShop.entries.Where(entry =>
-              entry != null &&
+            var itemEntries = _currentStockShop.entries.Where(entry =>
               entry.CurrentStock > 0 &&
               entry.Possibility > 0f &&
               entry.Show).ToList();
-
-            // If the length of itemEntries is too short, we randomly duplicate entries to ensure enough variety in the lottery animation
-            const int MIN_ANIMATION_SLOTS = 150;
-            while (itemEntries.Count < MIN_ANIMATION_SLOTS)
-            {
-                var randomEntry = itemEntries[UnityEngine.Random.Range(0, itemEntries.Count)];
-                itemEntries.Add(randomEntry);
-            }
 
             if (itemEntries.Count == 0)
             {
@@ -279,83 +340,36 @@ namespace DuckovLuckyBox.Patches
                 return false;
             }
 
-            // Get price from settings and try to pay
-            long price = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
-
-            // Skip payment if price is zero
-            if (price > 0 && !Pay(price))
+            // If the length of itemEntries is too short, we randomly duplicate entries to ensure enough variety in the lottery animation
+            const int MIN_ANIMATION_SLOTS = 150;
+            var animationEntries = new List<StockShop.Entry>(itemEntries);
+            while (animationEntries.Count < MIN_ANIMATION_SLOTS)
             {
-                Log.Warning($"Failed to pay {price} for store pick");
-                var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
-                NotificationText.Push(notEnoughMoneyMessage);
-                return false;
+                var randomEntry = itemEntries[UnityEngine.Random.Range(0, itemEntries.Count)];
+                animationEntries.Add(randomEntry);
             }
 
-            var randomIndex = UnityEngine.Random.Range(0, itemEntries.Count);
-            var pickedItem = itemEntries[randomIndex];
+            // Get price from settings
+            long price = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
 
-            if (!SetBuyingState(stockShop, true)) return false;
-
-            var candidateTypeIds = itemEntries.Select(entry => entry.ItemTypeID).ToList();
-            var success = false;
+            var candidateTypeIds = animationEntries.Select(entry => entry.ItemTypeID).ToList();
+            var context = new StoreLotteryContext(_currentStockShop, itemEntries);
 
             try
             {
-                Item? obj = await ItemAssetsCollection.InstantiateAsync(pickedItem.ItemTypeID);
-                if (obj == null)
-                {
-                    Log.Error("Failed to instantiate picked item for " + pickedItem.ItemTypeID);
-                    return false;
-                }
+                await LotteryService.PerformLotteryWithContextAsync(
+                    candidateTypeIds,
+                    price,
+                    playAnimation: true,
+                    context);
 
-                // Play animation using new service
-                await LotteryAnimation.PlayAsync(candidateTypeIds, pickedItem.ItemTypeID, obj.DisplayName, obj.Icon);
-
-                var isSentToStorage = false;
-                if (!ItemUtilities.SendToPlayerCharacterInventory(obj))
-                {
-                    Log.Warning($"Failed to send item to player inventory: {pickedItem.ItemTypeID}. Send to the player storage.");
-                    ItemUtilities.SendToPlayerStorage(obj);
-                    isSentToStorage = true;
-                }
-
-                pickedItem.CurrentStock = Math.Max(0, pickedItem.CurrentStock - 1);
-
-                var onAfterItemSoldField = AccessTools.Field(typeof(StockShop), "OnAfterItemSold");
-                if (onAfterItemSoldField?.GetValue(null) is Action<StockShop> onAfterItemSold)
-                    onAfterItemSold(stockShop);
-                var onItemPurchasedField = AccessTools.Field(typeof(StockShop), "OnItemPurchased");
-                if (onItemPurchasedField?.GetValue(null) is Action<StockShop, Item> onItemPurchased)
-                    onItemPurchased(stockShop, obj);
-
-                var messageTemplate = Localizations.I18n.PickNotificationFormatKey.ToPlainText();
-                var message = messageTemplate.Replace("{itemDisplayName}", obj.DisplayName);
-
-                if (isSentToStorage)
-                {
-                    var inventoryFullMessage = Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
-                    message = $"{message}({inventoryFullMessage})";
-                }
-
-                NotificationText.Push(message);
-                AudioManager.Post(SFX_BUY);
-
-                success = true;
+                return true;
             }
-            finally
+            catch (Exception ex)
             {
-                SetBuyingState(stockShop, false);
+                Log.Error($"Store lottery failed: {ex.Message}");
+                return false;
             }
-
-            return success;
-        }
-
-        private static bool SetBuyingState(StockShop? stockShop, bool buying)
-        {
-            if (stockShop == null) return false;
-
-            AccessTools.Field(typeof(StockShop), "buying").SetValue(stockShop, buying);
-            return true;
         }
 
         private static bool TryInvokeRefresh(StockShop? stockShop)
@@ -408,13 +422,6 @@ namespace DuckovLuckyBox.Patches
               ActionsLayoutPaddingHorizontal,
               ActionsLayoutPaddingTop,
               ActionsLayoutPaddingBottom);
-        }
-
-        private static bool Pay(long money)
-        {
-            return EconomyManager.Pay(
-                new Cost(money), true, true
-            );
         }
     }
 }

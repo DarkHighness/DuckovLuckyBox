@@ -4,9 +4,36 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using ItemStatsSystem;
 using UnityEngine;
+using SodaCraft.Localizations;
+using Duckov.UI;
+using Duckov.Economy;
+using HarmonyLib;
+using DuckovLuckyBox.Core.Settings;
+using DuckovLuckyBox.UI;
 
 namespace DuckovLuckyBox.Core
 {
+    /// <summary>
+    /// Interface for lottery context that defines custom behavior during lottery flow
+    /// </summary>
+    public interface ILotteryContext
+    {
+        /// <summary>
+        /// Called before payment to validate lottery can proceed
+        /// </summary>
+        UniTask<bool> OnBeforeLotteryAsync();
+
+        /// <summary>
+        /// Called after successful lottery to perform domain-specific actions (e.g., stock decrement, event firing)
+        /// </summary>
+        void OnLotterySuccess(Item resultItem, bool sentToStorage);
+
+        /// <summary>
+        /// Called when lottery fails
+        /// </summary>
+        void OnLotteryFailed();
+    }
+
     /// <summary>
     /// Provides lottery functionality for randomly selecting items from a pool
     /// </summary>
@@ -48,7 +75,7 @@ namespace DuckovLuckyBox.Core
         /// <returns>Selected item type ID</returns>
         public static int PickRandomItem(IEnumerable<int> candidateTypeIds)
         {
-            var pool = candidateTypeIds?.Distinct().Where(id => id > 0).ToList() ?? new List<int>();
+            var pool = candidateTypeIds?.ToList() ?? new List<int>();
 
             if (pool.Count == 0)
             {
@@ -205,6 +232,94 @@ namespace DuckovLuckyBox.Core
                 quality = 0;
             }
             return ItemQualityColors[quality];
+        }
+
+        /// <summary>
+        /// Performs a complete lottery flow with context support
+        /// </summary>
+        /// <param name="candidateTypeIds">Pool of item type IDs to choose from. If null/empty, uses ItemTypeIdsCache.</param>
+        /// <param name="price">Price to charge (0 for free)</param>
+        /// <param name="playAnimation">Whether to play lottery animation</param>
+        /// <param name="context">Context for handling payment, success/failure callbacks</param>
+        /// <returns>Tuple of (success, item, sentToStorage)</returns>
+        public static async UniTask<(bool success, Item? item, bool sentToStorage)> PerformLotteryWithContextAsync(
+            IEnumerable<int>? candidateTypeIds = null,
+            long price = 0,
+            bool playAnimation = true,
+            ILotteryContext? context = null)
+        {
+            var candidateList = candidateTypeIds?.ToList() ?? new List<int>();
+
+            // Use cached items if no candidates provided
+            if (candidateList.Count == 0)
+            {
+                candidateList = ItemTypeIdsCache;
+                Log.Debug("Using cached item type IDs for lottery candidates");
+            }
+
+            if (candidateList.Count == 0)
+            {
+                Log.Warning("No candidate items for lottery");
+                context?.OnLotteryFailed();
+                return (false, null, false);
+            }
+
+            // Call context pre-lottery hook
+            if (context != null && !await context.OnBeforeLotteryAsync())
+            {
+                context.OnLotteryFailed();
+                return (false, null, false);
+            }
+
+            // Charge player
+            if (price > 0)
+            {
+                if (!EconomyManager.Pay(new Cost(price), true, true))
+                {
+                    var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
+                    NotificationText.Push(notEnoughMoneyMessage);
+                    context?.OnLotteryFailed();
+                    return (false, null, false);
+                }
+            }
+
+            // Pick random item
+            var selectedItemTypeId = PickRandomItem(candidateList);
+            if (selectedItemTypeId < 0)
+            {
+                Log.Error("Failed to pick item for lottery");
+                context?.OnLotteryFailed();
+                return (false, null, false);
+            }
+
+            // Instantiate item
+            Item? item = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
+            if (item == null)
+            {
+                Log.Error($"Failed to instantiate lottery item: {selectedItemTypeId}");
+                context?.OnLotteryFailed();
+                return (false, null, false);
+            }
+
+            // Play animation if requested
+            if (playAnimation)
+            {
+                await LotteryAnimation.PlayAsync(candidateList, selectedItemTypeId, item.DisplayName, item.Icon);
+            }
+
+            // Send to inventory or storage
+            var sentToStorage = false;
+            if (!ItemUtilities.SendToPlayerCharacterInventory(item))
+            {
+                Log.Warning($"Failed to send item to player inventory: {selectedItemTypeId}. Sending to storage.");
+                ItemUtilities.SendToPlayerStorage(item);
+                sentToStorage = true;
+            }
+
+            // Call context success hook
+            context?.OnLotterySuccess(item, sentToStorage);
+
+            return (true, item, sentToStorage);
         }
     }
 }
