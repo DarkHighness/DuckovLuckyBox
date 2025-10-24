@@ -31,7 +31,8 @@ namespace DuckovLuckyBox.UI
         private const float ItemSpacing = 16f;
         private const float SlotPadding = 24f;
         private static readonly float SlotFullWidth = IconSize.x + SlotPadding + ItemSpacing;
-        private const int MinimumSlots = 150;
+        private const int MinimumSlotsBeforeFinal = 150; // Minimum slots before final to ensure no rollback
+        private const int SlotsAfterFinal = 20; // Extra slots after final for visual buffer
         private const float AnimationDuration = 7.0f; // matches the BGM
         private const float FadeDuration = 0.25f;
         private const float CelebrateDuration = 0.4f;
@@ -259,73 +260,28 @@ namespace DuckovLuckyBox.UI
             if (_itemsContainer == null) return false;
             if (_viewport == null) return false;
 
-            var baseSequenceData = BuildSequence(candidateTypeIds, finalTypeId);
-            var baseSequence = baseSequenceData.Slots;
-            if (baseSequence.Count == 0)
+            var slotWidth = SlotFullWidth;
+            var viewportWidth = _viewport.rect.width;
+
+            // Build complete slot sequence with finalSlot guaranteed to be beyond threshold
+            var slotSequence = BuildSlotSequence(candidateTypeIds, finalTypeId, out int finalSlotIndex);
+            if (slotSequence.Count == 0)
             {
                 return false;
             }
 
             ClearItems();
 
-            var slotWidth = SlotFullWidth;
-            var viewportWidth = _viewport.rect.width;
-            var viewportHalfWidth = viewportWidth * 0.5f;
-
-            var displaySequence = new List<int>(baseSequence);
-
-            // Find the final item index in the base sequence
-            int baselineFinalItemIndex = -1;
-            for (int i = 0; i < displaySequence.Count; i++)
-            {
-                if (displaySequence[i] == finalTypeId)
-                {
-                    baselineFinalItemIndex = i;
-                    break;
-                }
-            }
-
-            if (baselineFinalItemIndex < 0)
-            {
-                baselineFinalItemIndex = displaySequence.Count - 1;
-            }
-
-            // Add some items after the final item so there are visible items after it
-            int itemsAfterFinal = Mathf.CeilToInt(viewportWidth / slotWidth);
-            var random = new System.Random();
-            int? lastId = finalTypeId;
-            for (int i = 0; i < itemsAfterFinal; i++)
-            {
-                var pool = candidateTypeIds?.Distinct().Where(id => id > 0).ToList() ?? new List<int>();
-                if (pool.Count == 0) pool.Add(finalTypeId);
-
-                int pick;
-                if (pool.Count == 1)
-                {
-                    pick = pool[0];
-                }
-                else
-                {
-                    do
-                    {
-                        pick = pool[random.Next(pool.Count)];
-                    } while (lastId.HasValue && pool.Count > 1 && pick == lastId.Value);
-                }
-                displaySequence.Add(pick);
-                lastId = pick;
-            }
-
-            var totalWidth = displaySequence.Count * slotWidth;
+            var totalWidth = slotSequence.Count * slotWidth;
             _itemsContainer.sizeDelta = new Vector2(totalWidth, 200f);
 
-            var slots = new List<Slot>(displaySequence.Count);
-            int finalItemIndex = baselineFinalItemIndex;
+            var slots = new List<Slot>(slotSequence.Count);
 
             // Create UI slots for each item in the sequence
-            for (int i = 0; i < displaySequence.Count; i++)
+            for (int i = 0; i < slotSequence.Count; i++)
             {
-                var typeId = displaySequence[i];
-                var isFinal = (i == finalItemIndex);
+                var typeId = slotSequence[i];
+                var isFinal = (i == finalSlotIndex);
 
                 var sprite = isFinal ? (finalIcon ?? LotteryService.GetItemIcon(typeId)) : LotteryService.GetItemIcon(typeId);
                 var slot = CreateSlot(typeId, sprite, LotteryService.GetDisplayName(typeId), LotteryService.GetItemQualityColor(typeId));
@@ -337,23 +293,28 @@ namespace DuckovLuckyBox.UI
                 slots.Add(slot);
             }
 
-            var finalItemPos = slots[finalItemIndex].Rect.anchoredPosition.x;
+            var finalItemPos = slots[finalSlotIndex].Rect.anchoredPosition.x;
             var endOffset = -finalItemPos;
 
+            var viewportHalfWidth = viewportWidth * 0.5f;
             var firstItemPos = slots[0].Rect.anchoredPosition.x;
             var startOffset = -viewportHalfWidth - firstItemPos;
 
-            plan = new AnimationPlan(slots, finalItemIndex, startOffset, endOffset);
+            plan = new AnimationPlan(slots, finalSlotIndex, startOffset, endOffset);
             return true;
         }
 
-        private static SequenceData BuildSequence(IEnumerable<int> candidateTypeIds, int finalTypeId)
+        /// <summary>
+        /// Build slot sequence with finalSlot guaranteed to be at index >= MinimumSlotsBeforeFinal
+        /// </summary>
+        private static List<int> BuildSlotSequence(IEnumerable<int> candidateTypeIds, int finalTypeId, out int finalSlotIndex)
         {
-            var pool = candidateTypeIds?.ToList() ?? new List<int>();
+            var pool = candidateTypeIds?.Distinct().Where(id => id > 0).ToList() ?? new List<int>();
             if (!pool.Contains(finalTypeId)) pool.Add(finalTypeId);
             if (pool.Count == 0) pool.Add(finalTypeId);
 
             var random = new System.Random();
+
             int SampleNext(int? previous)
             {
                 if (pool.Count == 1) return pool[0];
@@ -366,19 +327,30 @@ namespace DuckovLuckyBox.UI
             }
 
             var sequence = new List<int>();
-
             int? lastId = null;
-            while (sequence.Count < MinimumSlots - 1)
+
+            // Build slots before final (ensure minimum threshold)
+            while (sequence.Count < MinimumSlotsBeforeFinal)
             {
                 var id = SampleNext(lastId);
                 sequence.Add(id);
                 lastId = id;
             }
 
-            var finalIndex = sequence.Count;
+            // Place final item
+            finalSlotIndex = sequence.Count;
             sequence.Add(finalTypeId);
+            lastId = finalTypeId;
 
-            return new SequenceData(sequence, finalIndex, 0);
+            // Add buffer slots after final for visual completeness
+            for (int i = 0; i < SlotsAfterFinal; i++)
+            {
+                var id = SampleNext(lastId);
+                sequence.Add(id);
+                lastId = id;
+            }
+
+            return sequence;
         }
 
         private static Slot CreateSlot(int typeId, Sprite? sprite, string displayName, Color frameColor)
@@ -599,20 +571,6 @@ namespace DuckovLuckyBox.UI
             }
 
             group.alpha = to;
-        }
-
-        private readonly struct SequenceData
-        {
-            public SequenceData(List<int> slots, int finalIndex, int leadCount)
-            {
-                Slots = slots;
-                FinalIndex = finalIndex;
-                LeadCount = leadCount;
-            }
-
-            public List<int> Slots { get; }
-            public int FinalIndex { get; }
-            public int LeadCount { get; }
         }
 
         private readonly struct Slot

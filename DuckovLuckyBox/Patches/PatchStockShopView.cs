@@ -340,19 +340,10 @@ namespace DuckovLuckyBox.Patches
                 return false;
             }
 
-            // If the length of itemEntries is too short, we randomly duplicate entries to ensure enough variety in the lottery animation
-            const int MIN_ANIMATION_SLOTS = 150;
-            var animationEntries = new List<StockShop.Entry>(itemEntries);
-            while (animationEntries.Count < MIN_ANIMATION_SLOTS)
-            {
-                var randomEntry = itemEntries[UnityEngine.Random.Range(0, itemEntries.Count)];
-                animationEntries.Add(randomEntry);
-            }
-
             // Get price from settings
             long price = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
 
-            var candidateTypeIds = animationEntries.Select(entry => entry.ItemTypeID).ToList();
+            var candidateTypeIds = itemEntries.Select(entry => entry.ItemTypeID).ToList();
             var context = new StoreLotteryContext(_currentStockShop, itemEntries);
 
             try
