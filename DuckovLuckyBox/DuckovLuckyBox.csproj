@@ -25,4 +25,10 @@
     <EmbeddedResource Include="Resources\lottery.mp3" />
     <EmbeddedResource Include="Resources\destroy.mp3" />
   </ItemGroup>
+
+  <!-- Copy DLL to mod folder after build -->
+  <Target Name="CopyDllToModFolder" AfterTargets="Build">
+    <Copy SourceFiles="$(OutputPath)DuckovLuckyBox.dll" DestinationFolder="$(DuckovPath)Duckov_Data\Mods\DuckovLuckyBox\" SkipUnchangedFiles="false" />
+    <Message Text="✓ DuckovLuckyBox.dll copied to mod folder" Importance="high" />
+  </Target>
 </Project>
