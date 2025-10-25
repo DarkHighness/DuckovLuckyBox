@@ -382,8 +382,11 @@ namespace DuckovLuckyBox.UI
             var finalItemPos = slots[finalSlotIndex].Rect.anchoredPosition.x;
             var endOffset = -finalItemPos;
 
-            var firstItemPos = slots[0].Rect.anchoredPosition.x;
-            var startOffset = -firstItemPos;
+            // Start the animation with about 10 slots already visible
+            // This avoids the initial empty space on the left
+            var startSlotIndex = Mathf.Max(0, Mathf.Min(10, slots.Count / 4));
+            var startItemPos = slots[startSlotIndex].Rect.anchoredPosition.x;
+            var startOffset = -startItemPos + viewportWidth * 0.2f; // Offset to show items from left
 
             plan = new AnimationPlan(slots, finalSlotIndex, startOffset, endOffset);
             return true;
@@ -412,18 +415,17 @@ namespace DuckovLuckyBox.UI
 
                 int pick;
 
-                // Allow up to 3 consecutive items, then force a different one
-                bool forceDifferent = consecutiveCount >= 3;
-
+                // Always force different - no consecutive items allowed
                 if (useWeightedLottery && weightedItemsCache != null)
                 {
                     // Use weighted random selection based on cached weighted items
                     var selectedId = LotteryService.PickRandomItemWeighted(weightedItemsCache);
 
-                    // If weighted selection fails or we need to force different, use uniform random
-                    if (selectedId < 0 || (forceDifferent && selectedId == previous))
+                    // If weighted selection failed, use first item as fallback
+                    if (selectedId < 0)
                     {
-                        pick = pool[UnityEngine.Random.Range(0, pool.Count)];
+                        pick = pool[0];
+                        Log.Warning("Weighted lottery selection failed, using fallback item.");
                     }
                     else
                     {
@@ -436,10 +438,10 @@ namespace DuckovLuckyBox.UI
                     pick = pool[UnityEngine.Random.Range(0, pool.Count)];
                 }
 
-                // If we need to force different and got the same item, retry
-                if (forceDifferent && previous.HasValue && pool.Count > 1 && pick == previous.Value)
+                // If got the same item as previous, retry with weighted selection until different
+                if (previous.HasValue && pool.Count > 1 && pick == previous.Value)
                 {
-                    return SampleNext(previous, consecutiveCount);  // Retry
+                    return SampleNext(previous, consecutiveCount);  // Retry until different
                 }
 
                 return pick;
