@@ -93,40 +93,6 @@ namespace DuckovLuckyBox.Patches
         }
     }
 
-    /// <summary>
-    /// Lottery context for street pick operations
-    /// </summary>
-    public class StreetLotteryContext : ILotteryContext
-    {
-        private const string SFX_BUY = "UI/buy";
-
-        public async UniTask<bool> OnBeforeLotteryAsync()
-        {
-            // No special validation needed for street lottery
-            return await UniTask.FromResult(true);
-        }
-
-        public void OnLotterySuccess(Item resultItem, bool sentToStorage)
-        {
-            if (resultItem == null) return;
-
-            // Show notification
-            var messageTemplate = Localizations.I18n.PickNotificationFormatKey.ToPlainText();
-            var message = messageTemplate.Replace("{itemDisplayName}", resultItem.DisplayName);
-            if (sentToStorage)
-            {
-                message += " " + Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
-            }
-            NotificationText.Push(message);
-            AudioManager.Post(SFX_BUY);
-        }
-
-        public void OnLotteryFailed()
-        {
-            // No special cleanup needed for street lottery
-        }
-    }
-
     [HarmonyPatch(typeof(StockShopView), "Setup")]
     public class PatchStockShopView_Setup
     {
@@ -211,9 +177,7 @@ namespace DuckovLuckyBox.Patches
                 layout.padding = CreateActionsPadding();
             }
 
-            // Initialize lottery animation UI
-            LotteryAnimation.Initialize(merchantNameText.canvas, merchantNameText);
-
+            // Create result text
             _refreshStockText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
             ConfigureActionLabel(_refreshStockText, Localizations.I18n.RefreshStockKey.ToPlainText());
 
@@ -284,7 +248,7 @@ namespace DuckovLuckyBox.Patches
 
             try
             {
-                var context = new StreetLotteryContext();
+                var context = new DefaultLotteryContext();
                 await LotteryService.PerformLotteryWithContextAsync(
                     candidateTypeIds: null, // Use default cache
                     price: price,

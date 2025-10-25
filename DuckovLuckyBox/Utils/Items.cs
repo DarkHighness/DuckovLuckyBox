@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using DuckovLuckyBox.Core;
 using ItemStatsSystem;
 
@@ -6,6 +8,27 @@ namespace DuckovLuckyBox
 {
   public static class ItemUtils
   {
+    public static async UniTask<Item?> CreateItemById(int typeId, int count = 1)
+    {
+      Item? item = await ItemAssetsCollection.InstantiateAsync(typeId);
+      if (item == null) return null;
+
+      item.StackCount = Math.Clamp(count, 1, item.MaxStackCount);
+      return item;
+    }
+
+    public static async UniTask SendItemToCharacterInventory(int typeId,int count = 1)
+    {
+      Item? item = await CreateItemById(typeId, count);
+      if (item == null)
+      {
+        Log.Warning($"Failed to create item with typeId {typeId}");
+        return;
+      }
+
+      ItemUtilities.SendToPlayer(item, dontMerge: false, sendToStorage: true);
+    }
+
     public static List<ItemMetaData> GetAllItemMetadata()
     {
       var itemMetadata = new List<ItemMetaData>();

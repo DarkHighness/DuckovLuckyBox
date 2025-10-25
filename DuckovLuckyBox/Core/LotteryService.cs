@@ -10,6 +10,7 @@ using Duckov.Economy;
 using HarmonyLib;
 using DuckovLuckyBox.Core.Settings;
 using DuckovLuckyBox.UI;
+using Duckov;
 
 namespace DuckovLuckyBox.Core
 {
@@ -32,6 +33,40 @@ namespace DuckovLuckyBox.Core
         /// Called when lottery fails
         /// </summary>
         void OnLotteryFailed();
+    }
+
+    /// <summary>
+    /// Lottery context for street pick operations
+    /// </summary>
+    public class DefaultLotteryContext : ILotteryContext
+    {
+        private const string SFX_BUY = "UI/buy";
+
+        public async UniTask<bool> OnBeforeLotteryAsync()
+        {
+            // No special validation needed for street lottery
+            return await UniTask.FromResult(true);
+        }
+
+        public void OnLotterySuccess(Item resultItem, bool sentToStorage)
+        {
+            if (resultItem == null) return;
+
+            // Show notification
+            var messageTemplate = Localizations.I18n.PickNotificationFormatKey.ToPlainText();
+            var message = messageTemplate.Replace("{itemDisplayName}", resultItem.DisplayName);
+            if (sentToStorage)
+            {
+                message += " " + Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
+            }
+            NotificationText.Push(message);
+            AudioManager.Post(SFX_BUY);
+        }
+
+        public void OnLotteryFailed()
+        {
+            // No special action needed on failure
+        }
     }
 
     /// <summary>

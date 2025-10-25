@@ -52,21 +52,31 @@ namespace DuckovLuckyBox.UI
         private static readonly Color FinalFrameColor = new Color(0.95f, 0.8f, 0.35f, 1f);
         private static readonly Color SlotFrameColor = new Color(1f, 1f, 1f, 0.25f);
 
+        private static Canvas? _canvas;
+
         /// <summary>
-        /// Initializes the lottery animation UI
+        /// Initializes the lottery animation UI with a full-screen canvas overlay
         /// </summary>
-        public static void Initialize(Canvas canvas, TextMeshProUGUI templateText)
+        public static void Initialize()
         {
             if (_overlayRoot != null) return;
-            if (canvas == null)
+
+            // Create full-screen canvas if it doesn't exist
+            if (_canvas == null)
             {
-                Log.Warning("Cannot initialize lottery animation: canvas is null");
-                return;
+                var canvasObj = new GameObject("LotteryAnimationCanvas", typeof(Canvas), typeof(GraphicRaycaster), typeof(CanvasScaler));
+                _canvas = canvasObj.GetComponent<Canvas>();
+                _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                _canvas.sortingOrder = short.MaxValue;
+
+                var scaler = canvasObj.GetComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920f, 1080f);
             }
 
             // Create full-screen overlay
             _overlayRoot = new GameObject("LotteryAnimationOverlay", typeof(RectTransform), typeof(CanvasGroup), typeof(Image)).GetComponent<RectTransform>();
-            _overlayRoot.SetParent(canvas.transform, false);
+            _overlayRoot.SetParent(_canvas.transform, false);
             _overlayRoot.anchorMin = Vector2.zero;
             _overlayRoot.anchorMax = Vector2.one;
             _overlayRoot.offsetMin = Vector2.zero;
@@ -83,7 +93,7 @@ namespace DuckovLuckyBox.UI
             overlayImage.raycastTarget = true;
 
             // Create viewport in center of screen
-            var canvasRect = canvas.GetComponent<RectTransform>();
+            var canvasRect = _canvas.GetComponent<RectTransform>();
             var canvasSize = canvasRect.rect.size;
             var viewportHeight = Mathf.Min(200f, canvasSize.y * 0.3f);
             var viewportWidth = canvasSize.x * 0.8f;
@@ -130,22 +140,18 @@ namespace DuckovLuckyBox.UI
             _centerPointer.raycastTarget = false;
 
             // Create result text
-            if (templateText != null)
-            {
-                _resultText = UnityEngine.Object.Instantiate(templateText, _overlayRoot);
-                _resultText.gameObject.name = "LotteryResultText";
-                _resultText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-                _resultText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-                _resultText.rectTransform.pivot = new Vector2(0.5f, 1f);
-                _resultText.rectTransform.anchoredPosition = new Vector2(0f, -viewportHeight * 0.75f);
-                _resultText.enableAutoSizing = false;
-                _resultText.fontSize = Mathf.Max(26f, templateText.fontSize * 0.9f);
-                _resultText.alignment = TextAlignmentOptions.Center;
-                _resultText.raycastTarget = false;
-                ResetResultText();
-            }
+            _resultText = new GameObject("LotteryResultText", typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+            _resultText.rectTransform.SetParent(_overlayRoot, false);
+            _resultText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            _resultText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            _resultText.rectTransform.pivot = new Vector2(0.5f, 1f);
+            _resultText.rectTransform.anchoredPosition = new Vector2(0f, -viewportHeight * 0.75f);
+            _resultText.fontSize = 36;
+            _resultText.alignment = TextAlignmentOptions.Center;
+            _resultText.raycastTarget = false;
+            ResetResultText();
 
-            Log.Debug("Lottery animation UI initialized");
+            Log.Debug("Lottery animation UI initialized with full-screen canvas");
         }
 
         /// <summary>
@@ -161,10 +167,11 @@ namespace DuckovLuckyBox.UI
                 return;
             }
 
+            // Auto-initialize if not already initialized
             if (_overlayRoot == null || _itemsContainer == null || _centerPointer == null || _canvasGroup == null)
             {
-                Log.Warning("Lottery animation UI is not initialized.");
-                return;
+                Initialize();
+                Log.Debug("Lottery animation UI auto-initialized.");
             }
 
             if (_isAnimating) return;
@@ -180,6 +187,12 @@ namespace DuckovLuckyBox.UI
 
             try
             {
+                if (_overlayRoot == null || _canvasGroup == null)
+                {
+                    Log.Error("Lottery animation failed to initialize properly.");
+                    return;
+                }
+
                 _overlayRoot.gameObject.SetActive(true);
                 _canvasGroup.blocksRaycasts = true;
 
@@ -236,9 +249,12 @@ namespace DuckovLuckyBox.UI
             {
                 _isAnimating = false;
 
-                _canvasGroup.alpha = 0f;
-                _canvasGroup.blocksRaycasts = false;
-                _overlayRoot.gameObject.SetActive(false);
+                if (_canvasGroup != null)
+                    _canvasGroup.alpha = 0f;
+                if (_canvasGroup != null)
+                    _canvasGroup.blocksRaycasts = false;
+                if (_overlayRoot != null)
+                    _overlayRoot.gameObject.SetActive(false);
 
                 // Hide Pointer after animation ends
                 if (_centerPointer != null)
@@ -250,7 +266,8 @@ namespace DuckovLuckyBox.UI
 
                 ResetResultText();
                 ClearItems();
-                _itemsContainer.anchoredPosition = Vector2.zero;
+                if (_itemsContainer != null)
+                    _itemsContainer.anchoredPosition = Vector2.zero;
             }
         }
 

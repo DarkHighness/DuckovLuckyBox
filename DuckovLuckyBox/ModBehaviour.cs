@@ -86,6 +86,14 @@ namespace DuckovLuckyBox
             {
                 settingsUI!.ToggleSettingsUI();
             }
+
+            if (SettingManager.Instance.EnableDebug.GetAsBool())
+            {
+                if (Input.GetKeyDown(KeyCode.F9))
+                {
+                    ItemUtils.SendItemToCharacterInventory(1178, 1).Forget(); // Send a KnifeBox item for testing
+                }
+            }
         }
     }
 }
