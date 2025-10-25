@@ -150,14 +150,14 @@ namespace DuckovLuckyBox.UI
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
             panelRect.anchoredPosition = Vector2.zero;
-            panelRect.sizeDelta = new Vector2(800f, 600f);
+            panelRect.sizeDelta = new Vector2(900f, 850f);
 
             var verticalLayout = settingsPanel.AddComponent<VerticalLayoutGroup>();
             verticalLayout.childAlignment = TextAnchor.UpperLeft;
             verticalLayout.childForceExpandHeight = false;
             verticalLayout.childForceExpandWidth = true;
-            verticalLayout.spacing = 16f;
-            verticalLayout.padding = new RectOffset(32, 32, 32, 32);
+            verticalLayout.spacing = 12f;
+            verticalLayout.padding = new RectOffset(24, 24, 24, 24);
 
             settingsPanel.SetActive(false);
         }
@@ -203,7 +203,7 @@ namespace DuckovLuckyBox.UI
             titleText.alignment = TextAlignmentOptions.Center;
 
             var layout = titleObj.AddComponent<LayoutElement>();
-            layout.preferredHeight = 60f;
+            layout.preferredHeight = 50f;
         }
 
         private void CreateCategoryLabel(string categoryKey)
@@ -219,7 +219,7 @@ namespace DuckovLuckyBox.UI
             categoryText.alignment = TextAlignmentOptions.Left;
 
             var layout = categoryObj.AddComponent<LayoutElement>();
-            layout.preferredHeight = 40f;
+            layout.preferredHeight = 32f;
         }
 
         private void CreateToggleSetting(SettingItem setting)
@@ -727,7 +727,7 @@ namespace DuckovLuckyBox.UI
 
             // Add some spacing above the button
             var containerLayout = buttonContainerObj.AddComponent<LayoutElement>();
-            containerLayout.preferredHeight = 60f;
+            containerLayout.preferredHeight = 50f;
 
             // Center the button using horizontal layout
             var horizontalLayout = buttonContainerObj.AddComponent<HorizontalLayoutGroup>();
