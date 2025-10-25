@@ -40,12 +40,11 @@ namespace DuckovLuckyBox.UI
         private const float PointerThickness = 12f;
 
         private static readonly AnimationCurve AnimationCurve = new AnimationCurve(
-            new Keyframe(0f, 0f, 0f, 3.0f),        // Start very fast
-            new Keyframe(0.2f, 0.5f, 2.0f, 2.0f),  // High speed, starting to slow
-            new Keyframe(0.5f, 0.8f, 1.0f, 1.0f),  // Continue slowing down
-            new Keyframe(0.75f, 0.93f, 0.4f, 0.4f), // Slow approach
-            new Keyframe(0.9f, 0.985f, 0.15f, 0.15f), // Very slow near end
-            new Keyframe(1f, 1f, 0f, 0f));         // Stop smoothly (pure deceleration curve)
+            new Keyframe(0f, 0f, 2.0f, 2.0f),      // Start with immediate acceleration
+            new Keyframe(0.15f, 0.35f, 1.5f, 1.5f), // Quick ramp up to high speed
+            new Keyframe(0.30f, 0.60f, 0.8f, 0.8f), // Begin smooth deceleration
+            new Keyframe(0.65f, 0.85f, 0.2f, 0.2f), // Extended gentle deceleration
+            new Keyframe(1f, 1f, 0f, 0f));         // End slow and stop
 
         private static readonly Color OverlayColor = new Color(0f, 0f, 0f, 0.7f);
         private static readonly Color PointerColor = new Color(1f, 1f, 1f, 0.95f);
@@ -126,18 +125,84 @@ namespace DuckovLuckyBox.UI
             _itemsContainer.anchorMax = new Vector2(0.5f, 0.5f);
             _itemsContainer.pivot = new Vector2(0.5f, 0.5f);
 
-            // Create center pointer
-            _centerPointer = new GameObject("LotteryPointer", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
-            _centerPointer.rectTransform.SetParent(_overlayRoot, false);
-            _centerPointer.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-            _centerPointer.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            _centerPointer.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            _centerPointer.rectTransform.sizeDelta = new Vector2(PointerThickness, viewportHeight + 64f);
-            _centerPointer.rectTransform.anchoredPosition = Vector2.zero;
-            _centerPointer.sprite = EnsureFallbackSprite();
-            _centerPointer.type = Image.Type.Simple;
-            _centerPointer.color = PointerColor;
-            _centerPointer.raycastTarget = false;
+            // Create center pointer with improved visuals - vertical line with diamond accent
+            var pointerContainer = new GameObject("LotteryPointerContainer", typeof(RectTransform)).GetComponent<RectTransform>();
+            pointerContainer.SetParent(_overlayRoot, false);
+            pointerContainer.anchorMin = new Vector2(0.5f, 0.5f);
+            pointerContainer.anchorMax = new Vector2(0.5f, 0.5f);
+            pointerContainer.pivot = new Vector2(0.5f, 0.5f);
+            pointerContainer.sizeDelta = Vector2.zero;
+            pointerContainer.anchoredPosition = Vector2.zero;
+
+            // Main vertical line pointer
+            var pointerLineObj = new GameObject("PointerLine", typeof(RectTransform), typeof(Image));
+            var pointerLineRect = pointerLineObj.GetComponent<RectTransform>();
+            pointerLineRect.SetParent(pointerContainer, false);
+            pointerLineRect.anchorMin = new Vector2(0.5f, 0.5f);
+            pointerLineRect.anchorMax = new Vector2(0.5f, 0.5f);
+            pointerLineRect.pivot = new Vector2(0.5f, 0.5f);
+            pointerLineRect.sizeDelta = new Vector2(PointerThickness * 1.5f, viewportHeight + 80f);
+            pointerLineRect.anchoredPosition = Vector2.zero;
+
+            var pointerLineImage = pointerLineObj.GetComponent<Image>();
+            pointerLineImage.sprite = EnsureFallbackSprite();
+            pointerLineImage.type = Image.Type.Simple;
+            pointerLineImage.color = new Color(1f, 1f, 1f, 0.7f);  // White with transparency
+            pointerLineImage.raycastTarget = false;
+
+            // Add outline effect to the pointer line - white glow
+            var pointerLineOutline = pointerLineObj.AddComponent<Outline>();
+            pointerLineOutline.effectColor = new Color(1f, 1f, 1f, 0.5f);  // White glow
+            pointerLineOutline.effectDistance = new Vector2(1.5f, -1.5f);
+            pointerLineOutline.useGraphicAlpha = false;
+
+            // Top diamond accent
+            var topDiamondObj = new GameObject("TopDiamond", typeof(RectTransform), typeof(Image));
+            var topDiamondRect = topDiamondObj.GetComponent<RectTransform>();
+            topDiamondRect.SetParent(pointerContainer, false);
+            topDiamondRect.anchorMin = new Vector2(0.5f, 0.5f);
+            topDiamondRect.anchorMax = new Vector2(0.5f, 0.5f);
+            topDiamondRect.pivot = new Vector2(0.5f, 0.5f);
+            topDiamondRect.sizeDelta = new Vector2(PointerThickness * 2.5f, PointerThickness * 2.5f);
+            topDiamondRect.anchoredPosition = new Vector2(0f, viewportHeight * 0.5f + 32f);
+            topDiamondRect.rotation = Quaternion.Euler(0f, 0f, 45f);  // Rotate 45 degrees to make diamond
+
+            var topDiamondImage = topDiamondObj.GetComponent<Image>();
+            topDiamondImage.sprite = EnsureFallbackSprite();
+            topDiamondImage.type = Image.Type.Simple;
+            topDiamondImage.color = new Color(1f, 1f, 1f, 0.8f);  // White diamond
+            topDiamondImage.raycastTarget = false;
+
+            // Add outline to top diamond - subtle white outline
+            var topDiamondOutline = topDiamondObj.AddComponent<Outline>();
+            topDiamondOutline.effectColor = new Color(1f, 1f, 1f, 0.4f);  // Subtle white outline
+            topDiamondOutline.effectDistance = new Vector2(0.5f, -0.5f);
+            topDiamondOutline.useGraphicAlpha = false;
+
+            // Bottom diamond accent
+            var bottomDiamondObj = new GameObject("BottomDiamond", typeof(RectTransform), typeof(Image));
+            var bottomDiamondRect = bottomDiamondObj.GetComponent<RectTransform>();
+            bottomDiamondRect.SetParent(pointerContainer, false);
+            bottomDiamondRect.anchorMin = new Vector2(0.5f, 0.5f);
+            bottomDiamondRect.anchorMax = new Vector2(0.5f, 0.5f);
+            bottomDiamondRect.pivot = new Vector2(0.5f, 0.5f);
+            bottomDiamondRect.sizeDelta = new Vector2(PointerThickness * 2.5f, PointerThickness * 2.5f);
+            bottomDiamondRect.anchoredPosition = new Vector2(0f, -viewportHeight * 0.5f - 32f);
+            bottomDiamondRect.rotation = Quaternion.Euler(0f, 0f, 45f);  // Rotate 45 degrees to make diamond
+
+            var bottomDiamondImage = bottomDiamondObj.GetComponent<Image>();
+            bottomDiamondImage.sprite = EnsureFallbackSprite();
+            bottomDiamondImage.type = Image.Type.Simple;
+            bottomDiamondImage.color = new Color(1f, 1f, 1f, 0.8f);  // White diamond
+            bottomDiamondImage.raycastTarget = false;
+
+            // Add outline to bottom diamond - subtle white outline
+            var bottomDiamondOutline = bottomDiamondObj.AddComponent<Outline>();
+            bottomDiamondOutline.effectColor = new Color(1f, 1f, 1f, 0.4f);  // Subtle white outline
+            bottomDiamondOutline.effectDistance = new Vector2(0.5f, -0.5f);
+            bottomDiamondOutline.useGraphicAlpha = false;
+
+            _centerPointer = pointerLineImage;  // Store the main line for visibility control
 
             // Create result text
             _resultText = new GameObject("LotteryResultText", typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();

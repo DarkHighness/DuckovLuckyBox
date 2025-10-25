@@ -133,18 +133,18 @@ namespace DuckovLuckyBox.Core
             var quality = GetItemQuality(itemTypeId);
 
             // Predefined weight mapping by quality level
-            // Quality 1 (common items): 30
-            // Quality 2 (uncommon items): 20
-            // Quality 3 (rare items): 15
-            // Quality 4 (epic items): 5
-            // Quality 5+ (legendary items): 1
+            // Quality 1 (common items): 35
+            // Quality 2 (uncommon items): 30
+            // Quality 3 (rare items): 20
+            // Quality 4 (epic items): 10
+            // Quality 5+ (legendary items): 5
             return quality switch
             {
-                1 => 30f,
-                2 => 20f,
-                3 => 15f,
-                4 => 5f,
-                _ => 1f  // Quality 5+ and quality 0/invalid default to 1
+                1 => 35f,
+                2 => 30f,
+                3 => 25f,
+                4 => 20f,
+                _ => 15f  // Quality 5+ and quality 0/invalid default to 15
             };
         }
 

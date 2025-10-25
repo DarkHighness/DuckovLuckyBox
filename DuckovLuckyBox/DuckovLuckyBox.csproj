@@ -24,6 +24,7 @@
     <EmbeddedResource Include="Resources\rolling.mp3" />
     <EmbeddedResource Include="Resources\lottery.mp3" />
     <EmbeddedResource Include="Resources\destroy.mp3" />
+    <EmbeddedResource Include="Resources\lottery_high_quality.mp3" />
   </ItemGroup>
 
   <!-- Copy DLL to mod folder after build -->
