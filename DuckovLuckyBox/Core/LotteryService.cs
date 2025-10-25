@@ -15,6 +15,23 @@ using Duckov;
 namespace DuckovLuckyBox.Core
 {
     /// <summary>
+    /// Represents an item with its weight for weighted lottery
+    /// </summary>
+    public struct WeightedItem
+    {
+        public int ItemTypeId { get; set; }
+        public float Weight { get; set; }
+
+        public WeightedItem(int itemTypeId, float weight = 1f)
+        {
+            ItemTypeId = itemTypeId;
+            Weight = weight > 0 ? weight : 1f;
+        }
+
+        public override string ToString() => $"ItemTypeId={ItemTypeId}, Weight={Weight}";
+    }
+
+    /// <summary>
     /// Interface for lottery context that defines custom behavior during lottery flow
     /// </summary>
     public interface ILotteryContext
@@ -106,6 +123,42 @@ namespace DuckovLuckyBox.Core
         }
 
         /// <summary>
+        /// Gets the default weight for an item based on its quality
+        /// Used when weighted lottery is enabled but no explicit weights are provided
+        /// Higher quality items are rarer (lower weight)
+        /// Uses a predefined weight mapping table
+        /// </summary>
+        public static float GetDefaultWeightByQuality(int itemTypeId)
+        {
+            var quality = GetItemQuality(itemTypeId);
+
+            // Predefined weight mapping by quality level
+            // Quality 1 (common items): 30
+            // Quality 2 (uncommon items): 20
+            // Quality 3 (rare items): 15
+            // Quality 4 (epic items): 5
+            // Quality 5+ (legendary items): 1
+            return quality switch
+            {
+                1 => 30f,
+                2 => 20f,
+                3 => 15f,
+                4 => 5f,
+                _ => 1f  // Quality 5+ and quality 0/invalid default to 1
+            };
+        }
+
+        /// <summary>
+        /// Converts a list of item IDs to weighted items based on their quality
+        /// </summary>
+        public static List<WeightedItem> ConvertToQualityWeightedItems(IEnumerable<int> itemTypeIds)
+        {
+            return itemTypeIds?
+                .Select(id => new WeightedItem(id, GetDefaultWeightByQuality(id)))
+                .ToList() ?? new List<WeightedItem>();
+        }
+
+        /// <summary>
         /// Picks a random item from the specified pool
         /// </summary>
         /// <param name="candidateTypeIds">Pool of item type IDs to choose from</param>
@@ -126,18 +179,75 @@ namespace DuckovLuckyBox.Core
                 return -1;
             }
 
-            var selectedIndex = UnityEngine.Random.Range(0, pool.Count);
-            return pool[selectedIndex];
+            // Convert to weighted items with equal weights and use weighted algorithm
+            var weightedItems = pool.Select(typeId => new WeightedItem(typeId, 1f)).ToList();
+            return PickRandomItemWeighted(weightedItems);
         }
 
         /// <summary>
-        /// Picks a random item and instantiates it
+        /// Picks a random item with weighted probability
+        /// When all weights are equal (1f), this is equivalent to uniform random selection
         /// </summary>
-        /// <param name="candidateTypeIds">Pool of item type IDs to choose from</param>
-        /// <returns>Instantiated item, or null if failed</returns>
-        public static async UniTask<Item?> PickRandomItemAsync(IEnumerable<int> candidateTypeIds)
+        /// <param name="weightedItems">Collection of items with their weights. Weight must be > 0.</param>
+        /// <returns>Selected item type ID, or -1 if failed</returns>
+        public static int PickRandomItemWeighted(IEnumerable<WeightedItem> weightedItems)
         {
-            var selectedItemTypeId = PickRandomItem(candidateTypeIds);
+            var items = weightedItems?.ToList() ?? new List<WeightedItem>();
+
+            if (items.Count == 0)
+            {
+                Log.Warning("Empty weighted item pool for lottery");
+                return -1;
+            }
+
+            // Calculate total weight, skipping invalid entries
+            float totalWeight = 0f;
+            var validItems = new List<WeightedItem>();
+
+            foreach (var item in items)
+            {
+                if (item.Weight > 0)
+                {
+                    validItems.Add(item);
+                    totalWeight += item.Weight;
+                }
+                else
+                {
+                    Log.Warning($"Skipping item {item.ItemTypeId} with invalid weight {item.Weight}");
+                }
+            }
+
+            if (validItems.Count == 0 || totalWeight <= 0)
+            {
+                Log.Error("No valid weighted items available for lottery");
+                return -1;
+            }
+
+            // Weighted random selection using cumulative probability
+            float randomValue = UnityEngine.Random.Range(0f, totalWeight);
+            float accumulatedWeight = 0f;
+
+            foreach (var item in validItems)
+            {
+                accumulatedWeight += item.Weight;
+                if (randomValue <= accumulatedWeight)
+                {
+                    return item.ItemTypeId;
+                }
+            }
+
+            // Fallback (should never reach here due to previous checks)
+            return validItems[validItems.Count - 1].ItemTypeId;
+        }
+
+        /// <summary>
+        /// Picks a random item with weighted probability and instantiates it
+        /// </summary>
+        /// <param name="weightedItems">Collection of items with their weights</param>
+        /// <returns>Instantiated item, or null if failed</returns>
+        public static async UniTask<Item?> PickRandomItemWeightedAsync(IEnumerable<WeightedItem> weightedItems)
+        {
+            var selectedItemTypeId = PickRandomItemWeighted(weightedItems);
 
             if (selectedItemTypeId < 0)
             {
@@ -152,6 +262,18 @@ namespace DuckovLuckyBox.Core
             }
 
             return obj;
+        }
+
+        /// <summary>
+        /// Picks a random item and instantiates it
+        /// </summary>
+        /// <param name="candidateTypeIds">Pool of item type IDs to choose from</param>
+        /// <returns>Instantiated item, or null if failed</returns>
+        public static async UniTask<Item?> PickRandomItemAsync(IEnumerable<int> candidateTypeIds)
+        {
+            var pool = candidateTypeIds?.ToList() ?? new List<int>();
+            var weightedItems = pool.Select(typeId => new WeightedItem(typeId, 1f)).ToList();
+            return await PickRandomItemWeightedAsync(weightedItems);
         }
 
         /// <summary>
@@ -272,29 +394,61 @@ namespace DuckovLuckyBox.Core
         }
 
         /// <summary>
-        /// Performs a complete lottery flow with context support
+        /// Performs a complete lottery flow with context support (internal implementation)
         /// </summary>
-        /// <param name="candidateTypeIds">Pool of item type IDs to choose from. If null/empty, uses ItemTypeIdsCache.</param>
-        /// <param name="price">Price to charge (0 for free)</param>
-        /// <param name="playAnimation">Whether to play lottery animation</param>
-        /// <param name="context">Context for handling payment, success/failure callbacks</param>
-        /// <returns>Tuple of (success, item, sentToStorage)</returns>
-        public static async UniTask<(bool success, Item? item, bool sentToStorage)> PerformLotteryWithContextAsync(
+        private static async UniTask<(bool success, Item? item, bool sentToStorage)> PerformLotteryInternalAsync(
+            IEnumerable<WeightedItem>? weightedItems = null,
             IEnumerable<int>? candidateTypeIds = null,
             long price = 0,
             bool playAnimation = true,
             ILotteryContext? context = null)
         {
-            var candidateList = candidateTypeIds?.ToList() ?? new List<int>();
+            // Prepare weighted items list
+            var itemList = new List<WeightedItem>();
+            var allCandidateIds = new List<int>();
+            bool useQualityWeights = SettingManager.Instance.EnableWeightedLottery.GetAsBool();
 
-            // Use cached items if no candidates provided
-            if (candidateList.Count == 0)
+            if (weightedItems != null)
             {
-                candidateList = ItemTypeIdsCache;
-                Log.Debug("Using cached item type IDs for lottery candidates");
+                itemList = weightedItems.ToList();
+                allCandidateIds = itemList.Select(x => x.ItemTypeId).ToList();
+            }
+            else if (candidateTypeIds != null)
+            {
+                var candidateList = candidateTypeIds.ToList();
+                if (candidateList.Count > 0)
+                {
+                    // If weighted lottery is enabled, use quality-based weights; otherwise use equal weights
+                    if (useQualityWeights)
+                    {
+                        itemList = ConvertToQualityWeightedItems(candidateList);
+                        Log.Debug($"Using quality-based weights for lottery ({itemList.Count} items)");
+                    }
+                    else
+                    {
+                        itemList = candidateList.Select(id => new WeightedItem(id, 1f)).ToList();
+                    }
+                    allCandidateIds = candidateList;
+                }
             }
 
-            if (candidateList.Count == 0)
+            // Use cached items if no candidates provided
+            if (itemList.Count == 0)
+            {
+                if (useQualityWeights)
+                {
+                    itemList = ConvertToQualityWeightedItems(ItemTypeIdsCache);
+                    Log.Debug($"Using cached item type IDs with quality-based weights ({itemList.Count} items)");
+                }
+                else
+                {
+                    itemList = ItemTypeIdsCache.Select(id => new WeightedItem(id, 1f)).ToList();
+                    Log.Debug("Using cached item type IDs for lottery candidates");
+                }
+                allCandidateIds = ItemTypeIdsCache;
+            }
+
+            if (itemList.Count == 0)
             {
                 Log.Warning("No candidate items for lottery");
                 context?.OnLotteryFailed();
@@ -320,8 +474,8 @@ namespace DuckovLuckyBox.Core
                 }
             }
 
-            // Pick random item
-            var selectedItemTypeId = PickRandomItem(candidateList);
+            // Pick random item with weights
+            var selectedItemTypeId = PickRandomItemWeighted(itemList);
             if (selectedItemTypeId < 0)
             {
                 Log.Error("Failed to pick item for lottery");
@@ -341,7 +495,7 @@ namespace DuckovLuckyBox.Core
             // Play animation if requested
             if (playAnimation)
             {
-                await LotteryAnimation.PlayAsync(candidateList, selectedItemTypeId, item.DisplayName, item.Icon);
+                await LotteryAnimation.PlayAsync(allCandidateIds, selectedItemTypeId, item.DisplayName, item.Icon);
             }
 
             // Send to inventory or storage
@@ -357,6 +511,40 @@ namespace DuckovLuckyBox.Core
             context?.OnLotterySuccess(item, sentToStorage);
 
             return (true, item, sentToStorage);
+        }
+
+        /// <summary>
+        /// Performs a complete lottery flow with context support
+        /// </summary>
+        /// <param name="candidateTypeIds">Pool of item type IDs to choose from. If null/empty, uses ItemTypeIdsCache.</param>
+        /// <param name="price">Price to charge (0 for free)</param>
+        /// <param name="playAnimation">Whether to play lottery animation</param>
+        /// <param name="context">Context for handling payment, success/failure callbacks</param>
+        /// <returns>Tuple of (success, item, sentToStorage)</returns>
+        public static async UniTask<(bool success, Item? item, bool sentToStorage)> PerformLotteryWithContextAsync(
+            IEnumerable<int>? candidateTypeIds = null,
+            long price = 0,
+            bool playAnimation = true,
+            ILotteryContext? context = null)
+        {
+            return await PerformLotteryInternalAsync(null, candidateTypeIds, price, playAnimation, context);
+        }
+
+        /// <summary>
+        /// Performs a complete weighted lottery flow with context support
+        /// </summary>
+        /// <param name="weightedItems">Collection of items with their weights. If null/empty, uses ItemTypeIdsCache with equal weights.</param>
+        /// <param name="price">Price to charge (0 for free)</param>
+        /// <param name="playAnimation">Whether to play lottery animation</param>
+        /// <param name="context">Context for handling payment, success/failure callbacks</param>
+        /// <returns>Tuple of (success, item, sentToStorage)</returns>
+        public static async UniTask<(bool success, Item? item, bool sentToStorage)> PerformWeightedLotteryWithContextAsync(
+            IEnumerable<WeightedItem>? weightedItems = null,
+            long price = 0,
+            bool playAnimation = true,
+            ILotteryContext? context = null)
+        {
+            return await PerformLotteryInternalAsync(weightedItems, null, price, playAnimation, context);
         }
     }
 }

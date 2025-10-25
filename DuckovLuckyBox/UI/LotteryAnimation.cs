@@ -218,7 +218,7 @@ namespace DuckovLuckyBox.UI
 
                 // Play rolling sound
                 RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
-                Utils.PlaySound(Constants.Sound.ROLLING_SOUND, sfxGroup);
+                SoundUtils.PlaySound(Constants.Sound.ROLLING_SOUND, sfxGroup);
 
                 // Single continuous roll animation
                 await PerformContinuousRoll(plan, AnimationDuration, AnimationCurve);
@@ -227,7 +227,7 @@ namespace DuckovLuckyBox.UI
                 if (!_skipRequested)
                 {
                     // Celebration on final slot
-                    await AnimateCelebration(plan);
+                    await AnimateCelebration(plan, finalTypeId, sfxGroup);
 
                     // Reveal result and hold
                     await RevealResult(finalDisplayName);
@@ -281,8 +281,11 @@ namespace DuckovLuckyBox.UI
             var slotWidth = SlotFullWidth;
             var viewportWidth = _viewport.rect.width;
 
+            // Check if weighted lottery is enabled
+            var enableWeightedLottery = Core.Settings.SettingManager.Instance.EnableWeightedLottery.GetAsBool();
+
             // Build complete slot sequence with finalSlot guaranteed to be beyond threshold
-            var slotSequence = BuildSlotSequence(candidateTypeIds, finalTypeId, out int finalSlotIndex);
+            var slotSequence = BuildSlotSequence(candidateTypeIds, finalTypeId, enableWeightedLottery, out int finalSlotIndex);
             if (slotSequence.Count == 0)
             {
                 return false;
@@ -324,34 +327,77 @@ namespace DuckovLuckyBox.UI
 
         /// <summary>
         /// Build slot sequence with finalSlot guaranteed to be at index >= MinimumSlotsBeforeFinal
+        /// Supports both uniform random and weighted random selection based on item quality
         /// </summary>
-        private static List<int> BuildSlotSequence(IEnumerable<int> candidateTypeIds, int finalTypeId, out int finalSlotIndex)
+        private static List<int> BuildSlotSequence(IEnumerable<int> candidateTypeIds, int finalTypeId, bool useWeightedLottery, out int finalSlotIndex)
         {
-            // no need to distinct here, we just need a pool to sample from
             var pool = candidateTypeIds?.ToList() ?? new List<int>();
             if (!pool.Contains(finalTypeId)) pool.Add(finalTypeId);
             if (pool.Count == 0) pool.Add(finalTypeId);
 
-            int SampleNext(int? previous)
-            {
-                if (pool.Count == 1) return pool[0];
-                int pick;
-                do
-                {
-                    pick = pool[UnityEngine.Random.Range(0, pool.Count)];
-                } while (previous.HasValue && pool.Count > 1 && pick == previous.Value);
-                return pick;
-            }
+            // Pre-convert to weighted items once if using weighted lottery to avoid repeated conversions
+            var weightedItemsCache = useWeightedLottery ? LotteryService.ConvertToQualityWeightedItems(pool) : null;
 
             var sequence = new List<int>();
             int? lastId = null;
+            int lastIdCount = 0;  // Track consecutive count of the same item
+
+            int SampleNext(int? previous, int consecutiveCount)
+            {
+                if (pool.Count == 1) return pool[0];
+
+                int pick;
+
+                // Allow up to 3 consecutive items, then force a different one
+                bool forceDifferent = consecutiveCount >= 3;
+
+                if (useWeightedLottery && weightedItemsCache != null)
+                {
+                    // Use weighted random selection based on cached weighted items
+                    var selectedId = LotteryService.PickRandomItemWeighted(weightedItemsCache);
+
+                    // If weighted selection fails or we need to force different, use uniform random
+                    if (selectedId < 0 || (forceDifferent && selectedId == previous))
+                    {
+                        pick = pool[UnityEngine.Random.Range(0, pool.Count)];
+                    }
+                    else
+                    {
+                        pick = selectedId;
+                    }
+                }
+                else
+                {
+                    // Use uniform random selection
+                    pick = pool[UnityEngine.Random.Range(0, pool.Count)];
+                }
+
+                // If we need to force different and got the same item, retry
+                if (forceDifferent && previous.HasValue && pool.Count > 1 && pick == previous.Value)
+                {
+                    return SampleNext(previous, consecutiveCount);  // Retry
+                }
+
+                return pick;
+            }
 
             // Build slots before final (ensure minimum threshold)
             var prefixCount = MinimumSlotsBeforeFinal + UnityEngine.Random.Range(0, 50);
             while (sequence.Count < prefixCount)
             {
-                var id = SampleNext(lastId);
+                var id = SampleNext(lastId, lastIdCount);
                 sequence.Add(id);
+
+                // Update consecutive count
+                if (lastId.HasValue && id == lastId.Value)
+                {
+                    lastIdCount++;
+                }
+                else
+                {
+                    lastIdCount = 1;
+                }
+
                 lastId = id;
             }
 
@@ -359,12 +405,24 @@ namespace DuckovLuckyBox.UI
             finalSlotIndex = sequence.Count;
             sequence.Add(finalTypeId);
             lastId = finalTypeId;
+            lastIdCount = 1;
 
             // Add buffer slots after final for visual completeness
             for (int i = 0; i < SlotsAfterFinal; i++)
             {
-                var id = SampleNext(lastId);
+                var id = SampleNext(lastId, lastIdCount);
                 sequence.Add(id);
+
+                // Update consecutive count
+                if (lastId.HasValue && id == lastId.Value)
+                {
+                    lastIdCount++;
+                }
+                else
+                {
+                    lastIdCount = 1;
+                }
+
                 lastId = id;
             }
 
@@ -505,7 +563,7 @@ namespace DuckovLuckyBox.UI
             return closestIndex;
         }
 
-        private static async UniTask AnimateCelebration(AnimationPlan plan)
+        private static async UniTask AnimateCelebration(AnimationPlan plan, int finalTypeId, ChannelGroup sfxGroup)
         {
             var slot = plan.FinalSlot;
             var frame = slot.Frame;
@@ -526,6 +584,14 @@ namespace DuckovLuckyBox.UI
             }
 
             frame.color = targetColor;
+
+            // Play high-quality lottery sound if the final item has high quality (quality >= 5 and < 99)
+            var finalItemQuality = LotteryService.GetItemQuality(finalTypeId);
+            if (finalItemQuality >= 5 && finalItemQuality < 99)
+            {
+                Log.Debug($"Playing high-quality lottery sound for item {finalTypeId} with quality {finalItemQuality}");
+                SoundUtils.PlaySound(Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND, sfxGroup);
+            }
         }
 
         private static void ResetResultText()

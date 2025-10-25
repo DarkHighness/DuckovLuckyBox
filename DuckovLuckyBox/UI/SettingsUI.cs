@@ -176,6 +176,7 @@ namespace DuckovLuckyBox.UI
             CreateToggleSetting(settings.EnableLotteryButton);
             CreateToggleSetting(settings.EnableDebug);
             CreateToggleSetting(settings.EnableUseToCreateItemPatch);
+            CreateToggleSetting(settings.EnableWeightedLottery);
 
             // Pricing category
             CreateCategoryLabel(Localizations.I18n.SettingsCategoryPricingKey);

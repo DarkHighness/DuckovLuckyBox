@@ -128,6 +128,7 @@ namespace DuckovLuckyBox.Core.Settings
     public const bool EnableLotteryButton = true;
     public const bool EnableDebug = false;
     public const bool EnableUseToCreateItemPatch = true;
+    public const bool EnableWeightedLottery = true;
 
     // Pricing Settings
     public const long RefreshStockPrice = 100L;
@@ -202,6 +203,16 @@ namespace DuckovLuckyBox.Core.Settings
       DefaultValue = DefaultSettings.EnableUseToCreateItemPatch,
     };
 
+    public SettingItem EnableWeightedLottery { get; set; } = new SettingItem
+    {
+      Key = "DuckovLuckyBox.Settings.EnableWeightedLottery",
+      Label = Localizations.I18n.SettingsEnableWeightedLotteryKey,
+      Description = "DuckovLuckyBox.Settings.EnableWeightedLottery.Description",
+      Type = Type.Toggle,
+      Category = Category.General,
+      DefaultValue = DefaultSettings.EnableWeightedLottery,
+    };
+
     public SettingItem RefreshStockPrice { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.RefreshStockPrice",
@@ -254,6 +265,7 @@ namespace DuckovLuckyBox.Core.Settings
         yield return EnableLotteryButton;
         yield return EnableDebug;
         yield return EnableUseToCreateItemPatch;
+        yield return EnableWeightedLottery;
         yield return RefreshStockPrice;
         yield return StorePickPrice;
         yield return StreetPickPrice;

@@ -218,7 +218,7 @@ namespace DuckovLuckyBox.Patches
 
       // Play destroy sound
       RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
-      Utils.PlaySound(Constants.Sound.DESTROY_SOUND, sfxGroup);
+      SoundUtils.PlaySound(Constants.Sound.DESTROY_SOUND, sfxGroup);
 
       // Get the target item using reflection
       var targetDisplayField = AccessTools.Field(typeof(ItemOperationMenu), "TargetDisplay");
@@ -257,7 +257,7 @@ namespace DuckovLuckyBox.Patches
 
       // Play lottery sound
       RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
-      Utils.PlaySound(Constants.Sound.LOTTERY_SOUND, sfxGroup);
+      SoundUtils.PlaySound(Constants.Sound.LOTTERY_SOUND, sfxGroup);
 
       // Get the target item using reflection
       var targetDisplayField = AccessTools.Field(typeof(ItemOperationMenu), "TargetDisplay");

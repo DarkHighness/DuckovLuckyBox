@@ -14,6 +14,7 @@ namespace DuckovLuckyBox.Core.Settings
         public bool EnableLotteryButton = DefaultSettings.EnableLotteryButton;
         public bool EnableDebug = DefaultSettings.EnableDebug;
         public bool EnableUseToCreateItemPatch = DefaultSettings.EnableUseToCreateItemPatch;
+        public bool EnableWeightedLottery = DefaultSettings.EnableWeightedLottery;
         public long RefreshStockPrice = DefaultSettings.RefreshStockPrice;
         public long StorePickPrice = DefaultSettings.StorePickPrice;
         public long StreetPickPrice = DefaultSettings.StreetPickPrice;
@@ -200,6 +201,7 @@ namespace DuckovLuckyBox.Core.Settings
                 EnableLotteryButton = settings.EnableLotteryButton.GetAsBool(),
                 EnableDebug = settings.EnableDebug.GetAsBool(),
                 EnableUseToCreateItemPatch = settings.EnableUseToCreateItemPatch.GetAsBool(),
+                EnableWeightedLottery = settings.EnableWeightedLottery.GetAsBool(),
                 RefreshStockPrice = settings.RefreshStockPrice.GetAsLong(),
                 StorePickPrice = settings.StorePickPrice.GetAsLong(),
                 StreetPickPrice = settings.StreetPickPrice.GetAsLong(),
@@ -224,6 +226,7 @@ namespace DuckovLuckyBox.Core.Settings
                 settings.EnableLotteryButton.Value = config.EnableLotteryButton;
                 settings.EnableDebug.Value = config.EnableDebug;
                 settings.EnableUseToCreateItemPatch.Value = config.EnableUseToCreateItemPatch;
+                settings.EnableWeightedLottery.Value = config.EnableWeightedLottery;
                 settings.RefreshStockPrice.Value = config.RefreshStockPrice;
                 settings.StorePickPrice.Value = config.StorePickPrice;
                 settings.StreetPickPrice.Value = config.StreetPickPrice;
@@ -244,6 +247,7 @@ namespace DuckovLuckyBox.Core.Settings
             settings.EnableLotteryButton.OnValueChanged += OnSettingChanged;
             settings.EnableDebug.OnValueChanged += OnSettingChanged;
             settings.EnableUseToCreateItemPatch.OnValueChanged += OnSettingChanged;
+            settings.EnableWeightedLottery.OnValueChanged += OnSettingChanged;
             settings.RefreshStockPrice.OnValueChanged += OnSettingChanged;
             settings.StorePickPrice.OnValueChanged += OnSettingChanged;
             settings.StreetPickPrice.OnValueChanged += OnSettingChanged;
@@ -259,6 +263,7 @@ namespace DuckovLuckyBox.Core.Settings
             settings.EnableLotteryButton.OnValueChanged -= OnSettingChanged!;
             settings.EnableDebug.OnValueChanged -= OnSettingChanged!;
             settings.EnableUseToCreateItemPatch.OnValueChanged -= OnSettingChanged!;
+            settings.EnableWeightedLottery.OnValueChanged -= OnSettingChanged!;
             settings.RefreshStockPrice.OnValueChanged -= OnSettingChanged!;
             settings.StorePickPrice.OnValueChanged -= OnSettingChanged!;
             settings.StreetPickPrice.OnValueChanged -= OnSettingChanged!;
