@@ -21,6 +21,9 @@ namespace DuckovLuckyBox
     // Track last write time to debounce file change events
     private static readonly Dictionary<string, DateTime> _fileLastWriteTime = new Dictionary<string, DateTime>();
 
+    // Store event handlers to properly remove them later
+    private static readonly Dictionary<string, FileSystemEventHandler> _fileEventHandlers = new Dictionary<string, FileSystemEventHandler>();
+
     public static Sound? CreateSound(string soundFileName)
     {
       Assembly assembly = Assembly.GetExecutingAssembly();
@@ -195,8 +198,13 @@ namespace DuckovLuckyBox
           EnableRaisingEvents = true
         };
 
-        watcher.Changed += (sender, e) => OnSoundFileChanged(filePath, e);
+        // Create event handler that captures filePath
+        FileSystemEventHandler handler = (sender, e) => OnSoundFileChanged(filePath);
+        watcher.Changed += handler;
+
+        // Store both watcher and handler for proper cleanup
         _fileWatchers[filePath] = watcher;
+        _fileEventHandlers[filePath] = handler;
         _fileLastWriteTime[filePath] = File.GetLastWriteTime(filePath);
 
         Log.Debug($"Started watching sound file: {filePath}");
@@ -216,7 +224,13 @@ namespace DuckovLuckyBox
       {
         try
         {
-          _fileWatchers[filePath].Changed -= OnSoundFileChanged;
+          // Remove event handler using the stored handler
+          if (_fileEventHandlers.ContainsKey(filePath))
+          {
+            _fileWatchers[filePath].Changed -= _fileEventHandlers[filePath];
+            _fileEventHandlers.Remove(filePath);
+          }
+
           _fileWatchers[filePath].EnableRaisingEvents = false;
           _fileWatchers[filePath].Dispose();
           _fileWatchers.Remove(filePath);
@@ -234,14 +248,12 @@ namespace DuckovLuckyBox
     /// <summary>
     /// Handle file change events with debouncing
     /// </summary>
-    private static void OnSoundFileChanged(object sender, FileSystemEventArgs e)
+    private static void OnSoundFileChanged(string filePath)
     {
-      if (e == null || e.FullPath == null)
+      if (string.IsNullOrEmpty(filePath))
       {
         return;
       }
-
-      string filePath = e.FullPath;
 
       try
       {
@@ -309,17 +321,24 @@ namespace DuckovLuckyBox
     /// </summary>
     public static void StopAllFileWatchers()
     {
-      foreach (var watcher in _fileWatchers.Values)
+      foreach (var filePath in new List<string>(_fileWatchers.Keys))
       {
+        var watcher = _fileWatchers[filePath];
         try
         {
-          watcher.Changed -= OnSoundFileChanged;
+          // Remove event handler using the stored handler
+          if (_fileEventHandlers.ContainsKey(filePath))
+          {
+            watcher.Changed -= _fileEventHandlers[filePath];
+            _fileEventHandlers.Remove(filePath);
+          }
+
           watcher.EnableRaisingEvents = false;
           watcher.Dispose();
         }
         catch (Exception ex)
         {
-          Log.Warning($"Failed to dispose file watcher: {ex.Message}");
+          Log.Warning($"Failed to dispose file watcher for {filePath}: {ex.Message}");
         }
       }
       _fileWatchers.Clear();
