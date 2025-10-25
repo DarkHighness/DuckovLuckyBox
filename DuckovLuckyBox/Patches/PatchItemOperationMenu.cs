@@ -239,7 +239,7 @@ namespace DuckovLuckyBox.Patches
       Log.Info($"Destroying item: {targetItem.DisplayName}");
 
       var mainCharacter = LevelManager.Instance?.MainCharacter;
-      if (mainCharacter != null && (UnityEngine.Object)mainCharacter != null)
+      if (mainCharacter != null && (Object)mainCharacter != null)
       {
         targetItem.Detach();
       }
@@ -282,7 +282,7 @@ namespace DuckovLuckyBox.Patches
 
       // Drop the original item (properly handle inventory removal) then destroy it
       var mainCharacter = LevelManager.Instance?.MainCharacter;
-      if (mainCharacter != null && (UnityEngine.Object)mainCharacter != null)
+      if (mainCharacter != null && (Object)mainCharacter != null)
       {
         targetItem.Detach();
       }

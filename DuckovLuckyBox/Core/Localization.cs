@@ -33,6 +33,8 @@ namespace DuckovLuckyBox.Core
             public static readonly string SettingsEnableDebugKey = "UI_SettingsEnableDebug";
             public static readonly string SettingsEnableUseToCreateItemPatchKey = "UI_SettingsEnableUseToCreateItemPatch";
             public static readonly string SettingsEnableWeightedLotteryKey = "UI_SettingsEnableWeightedLottery";
+            public static readonly string SettingsEnableHighQualitySoundKey = "UI_SettingsEnableHighQualitySound";
+            public static readonly string SettingsHighQualitySoundFilePathKey = "UI_SettingsHighQualitySoundFilePath";
 
             // Item Operation Menu I18n keys
             public static readonly string ItemMenuDestroyKey = "UI_ItemMenuDestroy";
@@ -64,6 +66,8 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableDebugKey, "Enable Debug Mode" },
             { I18n.SettingsEnableUseToCreateItemPatchKey, "Enable In—Game Lottery Patch" },
             { I18n.SettingsEnableWeightedLotteryKey, "Enable Weighted Lottery" },
+            { I18n.SettingsEnableHighQualitySoundKey, "Enable High Quality Item Sound" },
+            { I18n.SettingsHighQualitySoundFilePathKey, "High Quality Item Sound File" },
             { I18n.ItemMenuDestroyKey, "Destroy" },
             { I18n.ItemMenuLotteryKey, "Lottery" },
             { I18n.LotteryResultFormatKey, "You got {itemDisplayName}!" }
@@ -91,6 +95,8 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableDebugKey, "启用调试模式" },
             { I18n.SettingsEnableUseToCreateItemPatchKey, "启用游戏内抽奖补丁" },
             { I18n.SettingsEnableWeightedLotteryKey, "启用权重抽奖" },
+            { I18n.SettingsEnableHighQualitySoundKey, "启用高等级物品音效" },
+            { I18n.SettingsHighQualitySoundFilePathKey, "高等级物品音效文件" },
             { I18n.ItemMenuDestroyKey, "销毁" },
             { I18n.ItemMenuLotteryKey, "抽奖" },
             { I18n.LotteryResultFormatKey, "你抽中了 {itemDisplayName}！" }

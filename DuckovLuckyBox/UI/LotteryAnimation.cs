@@ -32,22 +32,22 @@ namespace DuckovLuckyBox.UI
         private const float ItemSpacing = 16f;
         private const float SlotPadding = 24f;
         private static readonly float SlotFullWidth = IconSize.x + SlotPadding + ItemSpacing;
-        private const int MinimumSlotsBeforeFinal = 150; // Minimum slots before final to ensure no rollback
-        private const int SlotsAfterFinal = 20; // Extra slots after final for visual buffer
+        private const int MinimumSlotsBeforeFinal = 100; // Minimum slots before final to ensure smooth deceleration
+        private const int SlotsAfterFinal = 10; // Extra slots after final for visual buffer
         private const float AnimationDuration = 7.0f; // matches the BGM
         private const float FadeDuration = 0.25f;
         private const float CelebrateDuration = 0.4f;
         private const float PointerThickness = 12f;
 
         private static readonly AnimationCurve AnimationCurve = new AnimationCurve(
-            new Keyframe(0f, 0f, 2.0f, 2.0f),      // Start with immediate acceleration
-            new Keyframe(0.15f, 0.35f, 1.5f, 1.5f), // Quick ramp up to high speed
-            new Keyframe(0.30f, 0.60f, 0.8f, 0.8f), // Begin smooth deceleration
-            new Keyframe(0.65f, 0.85f, 0.2f, 0.2f), // Extended gentle deceleration
-            new Keyframe(1f, 1f, 0f, 0f));         // End slow and stop
+            new Keyframe(0f, 0f, 1.8f, 1.8f),       // Start with smooth acceleration
+            new Keyframe(0.12f, 0.25f, 1.6f, 1.6f), // Continue acceleration
+            new Keyframe(0.25f, 0.50f, 1.2f, 1.2f), // Peak speed reached
+            new Keyframe(0.45f, 0.75f, 0.6f, 0.6f), // Begin deceleration
+            new Keyframe(0.75f, 0.92f, 0.2f, 0.2f), // Final gentle deceleration
+            new Keyframe(1f, 1f, 0f, 0f));          // Complete stop
 
         private static readonly Color OverlayColor = new Color(0f, 0f, 0f, 0.7f);
-        private static readonly Color PointerColor = new Color(1f, 1f, 1f, 0.95f);
         private static readonly Color FinalFrameColor = new Color(0.95f, 0.8f, 0.35f, 1f);
         private static readonly Color SlotFrameColor = new Color(1f, 1f, 1f, 0.25f);
 
@@ -367,7 +367,7 @@ namespace DuckovLuckyBox.UI
             for (int i = 0; i < slotSequence.Count; i++)
             {
                 var typeId = slotSequence[i];
-                var isFinal = (i == finalSlotIndex);
+                var isFinal = i == finalSlotIndex;
 
                 var sprite = isFinal ? (finalIcon ?? LotteryService.GetItemIcon(typeId)) : LotteryService.GetItemIcon(typeId);
                 var slot = CreateSlot(typeId, sprite, LotteryService.GetDisplayName(typeId), LotteryService.GetItemQualityColor(typeId));
@@ -382,9 +382,8 @@ namespace DuckovLuckyBox.UI
             var finalItemPos = slots[finalSlotIndex].Rect.anchoredPosition.x;
             var endOffset = -finalItemPos;
 
-            var viewportHalfWidth = viewportWidth * 0.5f;
             var firstItemPos = slots[0].Rect.anchoredPosition.x;
-            var startOffset = -viewportHalfWidth - firstItemPos;
+            var startOffset = -firstItemPos;
 
             plan = new AnimationPlan(slots, finalSlotIndex, startOffset, endOffset);
             return true;
@@ -447,7 +446,7 @@ namespace DuckovLuckyBox.UI
             }
 
             // Build slots before final (ensure minimum threshold)
-            var prefixCount = MinimumSlotsBeforeFinal + UnityEngine.Random.Range(0, 50);
+            var prefixCount = MinimumSlotsBeforeFinal + UnityEngine.Random.Range(0, 20);
             while (sequence.Count < prefixCount)
             {
                 var id = SampleNext(lastId, lastIdCount);
@@ -539,7 +538,7 @@ namespace DuckovLuckyBox.UI
             return new Slot(rect, frame, icon, iconOutline, displayName);
         }
 
-        private static async UniTask PerformContinuousRoll(AnimationPlan plan, float duration, UnityEngine.AnimationCurve curve)
+        private static async UniTask PerformContinuousRoll(AnimationPlan plan, float duration, AnimationCurve curve)
         {
             if (_itemsContainer == null) return;
 
@@ -650,12 +649,26 @@ namespace DuckovLuckyBox.UI
 
             frame.color = targetColor;
 
-            // Play high-quality lottery sound if the final item has high quality (quality >= 5 and < 99)
+            // Play high-quality lottery sound if enabled and the final item has high quality (quality >= 5 and < 99)
+            var enableHighQualitySound = Core.Settings.SettingManager.Instance.EnableHighQualitySound.GetAsBool();
             var finalItemQuality = LotteryService.GetItemQuality(finalTypeId);
-            if (finalItemQuality >= 5 && finalItemQuality < 99)
+
+            if (enableHighQualitySound && finalItemQuality >= 5 && finalItemQuality < 99)
             {
-                Log.Debug($"Playing high-quality lottery sound for item {finalTypeId} with quality {finalItemQuality}");
-                SoundUtils.PlaySound(Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND, sfxGroup);
+                var customSoundPath = Core.Settings.SettingManager.Instance.HighQualitySoundFilePath.GetAsString();
+
+                if (!string.IsNullOrEmpty(customSoundPath) && System.IO.File.Exists(customSoundPath))
+                {
+                    // Play custom sound from file path
+                    Log.Debug($"Playing custom high-quality lottery sound from: {customSoundPath}");
+                    SoundUtils.PlaySoundFromFile(customSoundPath, sfxGroup);
+                }
+                else
+                {
+                    // Play default sound
+                    Log.Debug($"Playing default high-quality lottery sound for item {finalTypeId} with quality {finalItemQuality}");
+                    SoundUtils.PlaySound(Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND, sfxGroup);
+                }
             }
         }
 
@@ -759,8 +772,16 @@ namespace DuckovLuckyBox.UI
             {
                 get
                 {
-                    var safeIndex = Mathf.Clamp(FinalSlotIndex, 0, Mathf.Max(0, Slots.Count - 1));
-                    return Slots[safeIndex];
+                    // FinalSlotIndex should always be valid since it's set during BuildSlotSequence
+                    // and is guaranteed to be within Slots.Count
+                    if (FinalSlotIndex >= 0 && FinalSlotIndex < Slots.Count)
+                    {
+                        return Slots[FinalSlotIndex];
+                    }
+
+                    // Fallback to last slot if something goes wrong (should never happen)
+                    Log.Warning($"Invalid FinalSlotIndex: {FinalSlotIndex}, Slots.Count: {Slots.Count}. Returning last slot.");
+                    return Slots[Slots.Count - 1];
                 }
             }
         }

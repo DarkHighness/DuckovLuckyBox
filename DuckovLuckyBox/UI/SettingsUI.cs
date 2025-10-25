@@ -177,6 +177,8 @@ namespace DuckovLuckyBox.UI
             CreateToggleSetting(settings.EnableDebug);
             CreateToggleSetting(settings.EnableUseToCreateItemPatch);
             CreateToggleSetting(settings.EnableWeightedLottery);
+            CreateToggleSetting(settings.EnableHighQualitySound);
+            CreateTextSetting(settings.HighQualitySoundFilePath);
 
             // Pricing category
             CreateCategoryLabel(Localizations.I18n.SettingsCategoryPricingKey);
@@ -333,6 +335,79 @@ namespace DuckovLuckyBox.UI
 
             var entryLayout = entryObj.AddComponent<LayoutElement>();
             entryLayout.preferredHeight = 48f;
+        }
+
+        private void CreateTextSetting(SettingItem setting)
+        {
+            GameObject entryObj = new GameObject($"DuckovLuckyBox.UI.Entry.{setting.Key}");
+            entryObj.transform.SetParent(settingsPanel!.transform, false);
+
+            // Background
+            Image entryBg = entryObj.AddComponent<Image>();
+            entryBg.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
+
+            var verticalLayout = entryObj.AddComponent<VerticalLayoutGroup>();
+            verticalLayout.childAlignment = TextAnchor.UpperLeft;
+            verticalLayout.childForceExpandHeight = false;
+            verticalLayout.childForceExpandWidth = true;
+            verticalLayout.spacing = 8f;
+            verticalLayout.padding = new RectOffset(16, 16, 8, 8);
+
+            // Label
+            GameObject labelObj = new GameObject("Label");
+            labelObj.transform.SetParent(entryObj.transform, false);
+            TextMeshProUGUI labelText = labelObj.AddComponent<TextMeshProUGUI>();
+            labelText.text = setting.Label.ToPlainText();
+            labelText.fontSize = 18;
+            labelText.color = Color.white;
+            labelText.alignment = TextAlignmentOptions.Left;
+
+            var labelLayout = labelObj.AddComponent<LayoutElement>();
+            labelLayout.preferredHeight = 30f;
+
+            // Input field
+            GameObject inputFieldObj = new GameObject("InputField");
+            inputFieldObj.transform.SetParent(entryObj.transform, false);
+
+            Image inputFieldBg = inputFieldObj.AddComponent<Image>();
+            inputFieldBg.color = new Color(0.25f, 0.25f, 0.25f, 1f);
+
+            TMP_InputField inputField = inputFieldObj.AddComponent<TMP_InputField>();
+            inputField.contentType = TMP_InputField.ContentType.Standard;
+            inputField.lineType = TMP_InputField.LineType.SingleLine;
+
+            GameObject textObj = new GameObject("Text");
+            textObj.transform.SetParent(inputFieldObj.transform, false);
+            TextMeshProUGUI inputText = textObj.AddComponent<TextMeshProUGUI>();
+            inputText.fontSize = 16;
+            inputText.color = Color.white;
+            inputText.alignment = TextAlignmentOptions.Left;
+
+            RectTransform textRect = textObj.GetComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = new Vector2(12, 0);
+            textRect.offsetMax = new Vector2(-12, 0);
+
+            inputField.textComponent = inputText;
+            inputField.targetGraphic = inputFieldBg;
+
+            // Set initial value
+            string currentValue = setting.Value is string s ? s : string.Empty;
+            inputField.SetTextWithoutNotify(currentValue);
+
+            // Add listener
+            inputField.onEndEdit.AddListener(text =>
+            {
+                setting.Value = text;
+                Log.Debug($"TextSetting changed - Setting: {setting.Key}, New value: {text}");
+            });
+
+            var inputFieldLayout = inputFieldObj.AddComponent<LayoutElement>();
+            inputFieldLayout.preferredHeight = 50f;
+
+            var entryLayout = entryObj.AddComponent<LayoutElement>();
+            entryLayout.preferredHeight = 110f;
         }
 
         private void CreateSliderSetting(SettingItem setting)

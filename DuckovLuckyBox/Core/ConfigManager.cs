@@ -15,6 +15,8 @@ namespace DuckovLuckyBox.Core.Settings
         public bool EnableDebug = DefaultSettings.EnableDebug;
         public bool EnableUseToCreateItemPatch = DefaultSettings.EnableUseToCreateItemPatch;
         public bool EnableWeightedLottery = DefaultSettings.EnableWeightedLottery;
+        public bool EnableHighQualitySound = DefaultSettings.EnableHighQualitySound;
+        public string HighQualitySoundFilePath = DefaultSettings.HighQualitySoundFilePath;
         public long RefreshStockPrice = DefaultSettings.RefreshStockPrice;
         public long StorePickPrice = DefaultSettings.StorePickPrice;
         public long StreetPickPrice = DefaultSettings.StreetPickPrice;
@@ -202,6 +204,8 @@ namespace DuckovLuckyBox.Core.Settings
                 EnableDebug = settings.EnableDebug.GetAsBool(),
                 EnableUseToCreateItemPatch = settings.EnableUseToCreateItemPatch.GetAsBool(),
                 EnableWeightedLottery = settings.EnableWeightedLottery.GetAsBool(),
+                EnableHighQualitySound = settings.EnableHighQualitySound.GetAsBool(),
+                HighQualitySoundFilePath = settings.HighQualitySoundFilePath.GetAsString(),
                 RefreshStockPrice = settings.RefreshStockPrice.GetAsLong(),
                 StorePickPrice = settings.StorePickPrice.GetAsLong(),
                 StreetPickPrice = settings.StreetPickPrice.GetAsLong(),
@@ -227,6 +231,8 @@ namespace DuckovLuckyBox.Core.Settings
                 settings.EnableDebug.Value = config.EnableDebug;
                 settings.EnableUseToCreateItemPatch.Value = config.EnableUseToCreateItemPatch;
                 settings.EnableWeightedLottery.Value = config.EnableWeightedLottery;
+                settings.EnableHighQualitySound.Value = config.EnableHighQualitySound;
+                settings.HighQualitySoundFilePath.Value = config.HighQualitySoundFilePath ?? DefaultSettings.HighQualitySoundFilePath;
                 settings.RefreshStockPrice.Value = config.RefreshStockPrice;
                 settings.StorePickPrice.Value = config.StorePickPrice;
                 settings.StreetPickPrice.Value = config.StreetPickPrice;
@@ -248,6 +254,8 @@ namespace DuckovLuckyBox.Core.Settings
             settings.EnableDebug.OnValueChanged += OnSettingChanged;
             settings.EnableUseToCreateItemPatch.OnValueChanged += OnSettingChanged;
             settings.EnableWeightedLottery.OnValueChanged += OnSettingChanged;
+            settings.EnableHighQualitySound.OnValueChanged += OnSettingChanged;
+            settings.HighQualitySoundFilePath.OnValueChanged += OnSettingChanged;
             settings.RefreshStockPrice.OnValueChanged += OnSettingChanged;
             settings.StorePickPrice.OnValueChanged += OnSettingChanged;
             settings.StreetPickPrice.OnValueChanged += OnSettingChanged;
@@ -264,6 +272,8 @@ namespace DuckovLuckyBox.Core.Settings
             settings.EnableDebug.OnValueChanged -= OnSettingChanged!;
             settings.EnableUseToCreateItemPatch.OnValueChanged -= OnSettingChanged!;
             settings.EnableWeightedLottery.OnValueChanged -= OnSettingChanged!;
+            settings.EnableHighQualitySound.OnValueChanged -= OnSettingChanged!;
+            settings.HighQualitySoundFilePath.OnValueChanged -= OnSettingChanged!;
             settings.RefreshStockPrice.OnValueChanged -= OnSettingChanged!;
             settings.StorePickPrice.OnValueChanged -= OnSettingChanged!;
             settings.StreetPickPrice.OnValueChanged -= OnSettingChanged!;

@@ -13,7 +13,8 @@ namespace DuckovLuckyBox.Core.Settings
   {
     Toggle,
     Number,
-    Hotkey
+    Hotkey,
+    Text
   }
 
   public class SettingItem
@@ -111,6 +112,14 @@ namespace DuckovLuckyBox.Core.Settings
       throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to long.");
     }
 
+    public string GetAsString()
+    {
+      if (Value is string s)
+        return s;
+
+      throw new System.InvalidCastException($"Cannot cast setting value of type {Value?.GetType()} to string.");
+    }
+
     private object _value = null!;
     private object _defaultValue = null!;
     private bool _hasValue;
@@ -129,6 +138,8 @@ namespace DuckovLuckyBox.Core.Settings
     public const bool EnableDebug = false;
     public const bool EnableUseToCreateItemPatch = true;
     public const bool EnableWeightedLottery = true;
+    public const bool EnableHighQualitySound = true;
+    public static readonly string HighQualitySoundFilePath = string.Empty;  // Empty means use default sound
 
     // Pricing Settings
     public const long RefreshStockPrice = 100L;
@@ -213,6 +224,26 @@ namespace DuckovLuckyBox.Core.Settings
       DefaultValue = DefaultSettings.EnableWeightedLottery,
     };
 
+    public SettingItem EnableHighQualitySound { get; set; } = new SettingItem
+    {
+      Key = "DuckovLuckyBox.Settings.EnableHighQualitySound",
+      Label = Localizations.I18n.SettingsEnableHighQualitySoundKey,
+      Description = "DuckovLuckyBox.Settings.EnableHighQualitySound.Description",
+      Type = Type.Toggle,
+      Category = Category.General,
+      DefaultValue = DefaultSettings.EnableHighQualitySound,
+    };
+
+    public SettingItem HighQualitySoundFilePath { get; set; } = new SettingItem
+    {
+      Key = "DuckovLuckyBox.Settings.HighQualitySoundFilePath",
+      Label = Localizations.I18n.SettingsHighQualitySoundFilePathKey,
+      Description = "Custom sound file path for high-quality items (leave empty to use default)",
+      Type = Type.Text,
+      Category = Category.General,
+      DefaultValue = DefaultSettings.HighQualitySoundFilePath,
+    };
+
     public SettingItem RefreshStockPrice { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.RefreshStockPrice",
@@ -266,6 +297,8 @@ namespace DuckovLuckyBox.Core.Settings
         yield return EnableDebug;
         yield return EnableUseToCreateItemPatch;
         yield return EnableWeightedLottery;
+        yield return EnableHighQualitySound;
+        yield return HighQualitySoundFilePath;
         yield return RefreshStockPrice;
         yield return StorePickPrice;
         yield return StreetPickPrice;
