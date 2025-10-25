@@ -32,20 +32,24 @@ namespace DuckovLuckyBox.UI
         private const float ItemSpacing = 16f;
         private const float SlotPadding = 24f;
         private static readonly float SlotFullWidth = IconSize.x + SlotPadding + ItemSpacing;
-        private const int MinimumSlotsBeforeFinal = 100; // Minimum slots before final to ensure smooth deceleration
-        private const int SlotsAfterFinal = 10; // Extra slots after final for visual buffer
-        private const float AnimationDuration = 7.0f; // matches the BGM
-        private const float FadeDuration = 0.25f;
-        private const float CelebrateDuration = 0.4f;
-        private const float PointerThickness = 12f;
+        private const int MinimumSlotsBeforeFinal = 140; // Minimum slots before final - adapted for 20 slots/s speed (requires more slots)
+        private const int SlotsAfterFinal = 20; // Extra slots after final for visual buffer
 
-        private static readonly AnimationCurve AnimationCurve = new AnimationCurve(
-            new Keyframe(0f, 0f, 1.8f, 1.8f),       // Start with smooth acceleration
-            new Keyframe(0.12f, 0.25f, 1.6f, 1.6f), // Continue acceleration
-            new Keyframe(0.25f, 0.50f, 1.2f, 1.2f), // Peak speed reached
-            new Keyframe(0.45f, 0.75f, 0.6f, 0.6f), // Begin deceleration
-            new Keyframe(0.75f, 0.92f, 0.2f, 0.2f), // Final gentle deceleration
-            new Keyframe(1f, 1f, 0f, 0f));          // Complete stop
+        // Physics-based animation parameters (CSGO-style) - using slot as the unit
+        private const float InitialVelocityInSlots = 20f; // Initial scroll speed (slots/second) - scroll 20 slots per second initially
+        private const float MinVelocityInSlots = 0.01f; // Minimum velocity before final positioning (slots/second) - decelerate to 0.01 slots/s at the end
+        private const float TargetAnimationDurationInSeconds = 6.8f; // Target animation total duration (seconds) - physics-based rolling phase must last this long (decelerate to 0 after 6.8s)
+
+        // Pre-calculated velocity curve for smooth deceleration
+        private static float[]? _velocityCurve = null;
+
+        // Visual effect constants
+        private const float GlowPulseSpeed = 3f; // Glow pulse frequency (Hz)
+        private const float HighlightIntensity = 1.5f; // Highlight glow intensity multiplier
+
+        private const float FadeDuration = 0.25f;
+        private const float CelebrateDuration = 0.5f;
+        private const float PointerThickness = 12f;
 
         private static readonly Color OverlayColor = new Color(0f, 0f, 0f, 0.7f);
         private static readonly Color FinalFrameColor = new Color(0.95f, 0.8f, 0.35f, 1f);
@@ -285,8 +289,8 @@ namespace DuckovLuckyBox.UI
                 RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
                 SoundUtils.PlaySound(Constants.Sound.ROLLING_SOUND, sfxGroup);
 
-                // Single continuous roll animation
-                await PerformContinuousRoll(plan, AnimationDuration, AnimationCurve);
+                // Physics-based continuous roll animation (CSGO-style)
+                await PerformPhysicsBasedRoll(plan, sfxGroup);
 
                 // If skip was requested, jump directly to celebration
                 if (!_skipRequested)
@@ -343,14 +347,39 @@ namespace DuckovLuckyBox.UI
             if (_itemsContainer == null) return false;
             if (_viewport == null) return false;
 
+            // Generate velocity curve if not already generated
+            if (_velocityCurve == null)
+            {
+                _velocityCurve = GenerateVelocityCurve();
+                Log.Debug($"[BuildPlan] Generated velocity curve with {_velocityCurve.Length} steps");
+            }
+
+            // Calculate total distance based on velocity curve
+            float totalDistanceInSlots = CalculateTotalDistanceInSlots(_velocityCurve);
+
+            // Start slot index (used to fill the left side of viewport)
+            const int startSlotIndex = 20;
+
+            // Final slot index = start slot + distance calculated from velocity curve
+            // Use RoundToInt instead of CeilToInt because we want to match the calculated distance as precisely as possible
+            // If distance is 70.3 slots, final slot should be 90 (20 + 70), not 91
+            int finalSlotIndex = startSlotIndex + Mathf.RoundToInt(totalDistanceInSlots);
+
+            // Total slots needed = final slot index + buffer slots after + 1
+            // +1 because index starts from 0, so index N means N+1 total slots are needed
+            int totalSlotsNeeded = finalSlotIndex + SlotsAfterFinal + 1;
+
+            Log.Debug($"[BuildPlan] Start slot: {startSlotIndex}, Total distance: {totalDistanceInSlots:F2} slots");
+            Log.Debug($"[BuildPlan] Final slot index: {finalSlotIndex}, Total slots needed: {totalSlotsNeeded}");
+
             var slotWidth = SlotFullWidth;
             var viewportWidth = _viewport.rect.width;
 
             // Check if weighted lottery is enabled
             var enableWeightedLottery = Core.Settings.SettingManager.Instance.EnableWeightedLottery.GetAsBool();
 
-            // Build complete slot sequence with finalSlot guaranteed to be beyond threshold
-            var slotSequence = BuildSlotSequence(candidateTypeIds, finalTypeId, enableWeightedLottery, out int finalSlotIndex);
+            // Build complete slot sequence
+            var slotSequence = BuildSlotSequenceWithFixedFinal(candidateTypeIds, finalTypeId, enableWeightedLottery, totalSlotsNeeded, finalSlotIndex);
             if (slotSequence.Count == 0)
             {
                 return false;
@@ -382,32 +411,32 @@ namespace DuckovLuckyBox.UI
             var finalItemPos = slots[finalSlotIndex].Rect.anchoredPosition.x;
             var endOffset = -finalItemPos;
 
-            // Start the animation with about 10 slots already visible
-            // This avoids the initial empty space on the left
-            var startSlotIndex = Mathf.Max(0, Mathf.Min(10, slots.Count / 4));
+            // Start position: place start slot in the center
             var startItemPos = slots[startSlotIndex].Rect.anchoredPosition.x;
-            var startOffset = -startItemPos + viewportWidth * 0.2f; // Offset to show items from left
+            var startOffset = -startItemPos;
+
+            Log.Debug($"[BuildPlan] Start offset: {startOffset:F2}, End offset: {endOffset:F2}");
+            Log.Debug($"[BuildPlan] Actual distance to travel: {(endOffset - startOffset) / SlotFullWidth:F2} slots");
 
             plan = new AnimationPlan(slots, finalSlotIndex, startOffset, endOffset);
             return true;
         }
 
         /// <summary>
-        /// Build slot sequence with finalSlot guaranteed to be at index >= MinimumSlotsBeforeFinal
-        /// Supports both uniform random and weighted random selection based on item quality
+        /// Build slot sequence with final item at a specific index
         /// </summary>
-        private static List<int> BuildSlotSequence(IEnumerable<int> candidateTypeIds, int finalTypeId, bool useWeightedLottery, out int finalSlotIndex)
+        private static List<int> BuildSlotSequenceWithFixedFinal(IEnumerable<int> candidateTypeIds, int finalTypeId, bool useWeightedLottery, int totalSlots, int finalSlotIndex)
         {
             var pool = candidateTypeIds?.ToList() ?? new List<int>();
             if (!pool.Contains(finalTypeId)) pool.Add(finalTypeId);
             if (pool.Count == 0) pool.Add(finalTypeId);
 
-            // Pre-convert to weighted items once if using weighted lottery to avoid repeated conversions
+            // Pre-convert to weighted items once if using weighted lottery
             var weightedItemsCache = useWeightedLottery ? LotteryService.ConvertToQualityWeightedItems(pool) : null;
 
             var sequence = new List<int>();
             int? lastId = null;
-            int lastIdCount = 0;  // Track consecutive count of the same item
+            int lastIdCount = 0;
 
             int SampleNext(int? previous, int consecutiveCount)
             {
@@ -415,13 +444,9 @@ namespace DuckovLuckyBox.UI
 
                 int pick;
 
-                // Always force different - no consecutive items allowed
                 if (useWeightedLottery && weightedItemsCache != null)
                 {
-                    // Use weighted random selection based on cached weighted items
                     var selectedId = LotteryService.PickRandomItemWeighted(weightedItemsCache);
-
-                    // If weighted selection failed, use first item as fallback
                     if (selectedId < 0)
                     {
                         pick = pool[0];
@@ -434,49 +459,33 @@ namespace DuckovLuckyBox.UI
                 }
                 else
                 {
-                    // Use uniform random selection
                     pick = pool[UnityEngine.Random.Range(0, pool.Count)];
                 }
 
-                // If got the same item as previous, retry with weighted selection until different
                 if (previous.HasValue && pool.Count > 1 && pick == previous.Value)
                 {
-                    return SampleNext(previous, consecutiveCount);  // Retry until different
+                    return SampleNext(previous, consecutiveCount);
                 }
 
                 return pick;
             }
 
-            // Build slots before final (ensure minimum threshold)
-            var prefixCount = MinimumSlotsBeforeFinal + UnityEngine.Random.Range(0, 20);
-            while (sequence.Count < prefixCount)
+            // Build all slots
+            for (int i = 0; i < totalSlots; i++)
             {
-                var id = SampleNext(lastId, lastIdCount);
-                sequence.Add(id);
+                int id;
 
-                // Update consecutive count
-                if (lastId.HasValue && id == lastId.Value)
+                if (i == finalSlotIndex)
                 {
-                    lastIdCount++;
+                    // Place final item at specific index
+                    id = finalTypeId;
                 }
                 else
                 {
-                    lastIdCount = 1;
+                    // Fill with random items
+                    id = SampleNext(lastId, lastIdCount);
                 }
 
-                lastId = id;
-            }
-
-            // Place final item
-            finalSlotIndex = sequence.Count;
-            sequence.Add(finalTypeId);
-            lastId = finalTypeId;
-            lastIdCount = 1;
-
-            // Add buffer slots after final for visual completeness
-            for (int i = 0; i < SlotsAfterFinal; i++)
-            {
-                var id = SampleNext(lastId, lastIdCount);
                 sequence.Add(id);
 
                 // Update consecutive count
@@ -540,18 +549,98 @@ namespace DuckovLuckyBox.UI
             return new Slot(rect, frame, icon, iconOutline, displayName);
         }
 
-        private static async UniTask PerformContinuousRoll(AnimationPlan plan, float duration, AnimationCurve curve)
+        /// <summary>
+        /// Generate velocity curve for smooth deceleration from initial to minimum velocity over target duration
+        /// Custom curve: velocity at 6s is 0.1 slots/s, velocity at 6.8s is 0 (complete stop)
+        /// </summary>
+        private static float[] GenerateVelocityCurve()
+        {
+            const int stepsPerSecond = 20; // 20 samples per second (every 0.05s)
+            // 6.8 * 20 = 136
+            int totalSteps = (int)(TargetAnimationDurationInSeconds * stepsPerSecond);
+            var curve = new float[totalSteps];
+
+            // At 6s (index 120) should be 0.1
+            // At 6.8s (index 135, the last one) should be 0.0 (complete stop)
+            const float velocityAt6s = 0.1f;
+
+            for (int i = 0; i < totalSteps; i++)
+            {
+                // Current sample point corresponding time
+                // i=0 → 0.00s, i=1 → 0.05s, ..., i=120 → 6.00s, i=135 → 6.75s
+                float timeInSeconds = (float)i / stepsPerSecond;
+
+                if (timeInSeconds < 6.0f)
+                {
+                    // First 6 seconds: decelerate from 20 to 0.1, using ease-out cubic curve
+                    float t = timeInSeconds / 6.0f; // 0.0 to 1.0
+                    float easeT = 1f - Mathf.Pow(1f - t, 3f);
+                    curve[i] = Mathf.Lerp(InitialVelocityInSlots, velocityAt6s, easeT);
+                }
+                else
+                {
+                    // 6-6.8 seconds: linearly decelerate from 0.1 to 0.0 (complete stop)
+                    float t = (timeInSeconds - 6.0f) / 0.8f; // 0.0 to 1.0
+                    curve[i] = Mathf.Lerp(velocityAt6s, 0f, t);
+                }
+            }
+
+            // Debug: output velocity at key time points
+            Log.Debug($"[VelocityCurve] Steps: {totalSteps}, 0.0s: {curve[0]:F2}, 3.0s: {curve[60]:F2}, 6.0s: {curve[120]:F2}, 6.75s: {curve[135]:F2}");
+
+            return curve;
+        }
+
+        /// <summary>
+        /// Calculate total distance traveled based on velocity curve
+        /// </summary>
+        private static float CalculateTotalDistanceInSlots(float[] velocityCurve)
+        {
+            const float timeStepInSeconds = 0.05f; // Each sample point is 0.05 seconds apart
+            float totalDistance = 0f;
+
+            for (int i = 0; i < velocityCurve.Length; i++)
+            {
+                // Distance = velocity × time
+                totalDistance += velocityCurve[i] * timeStepInSeconds;
+            }
+
+            return totalDistance;
+        }
+
+        /// <summary>
+        /// Physics-based rolling animation (CSGO-style smooth deceleration)
+        /// </summary>
+        private static async UniTask PerformPhysicsBasedRoll(AnimationPlan plan, ChannelGroup sfxGroup)
         {
             if (_itemsContainer == null) return;
 
-            _itemsContainer.anchoredPosition = new Vector2(plan.StartOffset, 0f);
+            // Generate velocity curve if not already generated
+            if (_velocityCurve == null)
+            {
+                _velocityCurve = GenerateVelocityCurve();
+                Log.Debug($"[Animation] Generated velocity curve with {_velocityCurve.Length} steps");
+            }
+
+            // Convert pixel position to slot unit for physics calculation
+            float currentPositionInPixels = plan.StartOffset;
+            float targetPositionInPixels = plan.FinalOffset;
+
+            _itemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
 
             int lastHighlightedIndex = -1;
+            float elapsedTime = 0f; // Track elapsed time
 
-            var elapsed = 0f;
-            while (elapsed < duration)
+            // Add debug info
+            Log.Debug($"[Animation] Start - Current: {currentPositionInPixels}, Target: {targetPositionInPixels}, Distance: {(targetPositionInPixels - currentPositionInPixels) / SlotFullWidth} slots");
+
+            // Determine velocity direction
+            float velocityDirection = targetPositionInPixels < currentPositionInPixels ? -1f : 1f;
+            Log.Debug($"[Animation] Velocity direction: {velocityDirection} (container moves from {currentPositionInPixels} to {targetPositionInPixels})");
+
+            while (true)
             {
-                // Check for mouse click to skip animation
+                // Check for skip request
                 if (Input.GetMouseButtonDown(0))
                 {
                     _skipRequested = true;
@@ -559,27 +648,67 @@ namespace DuckovLuckyBox.UI
                 }
 
                 await UniTask.Yield(PlayerLoopTiming.Update);
-                elapsed += Time.deltaTime;
+                float deltaTime = Time.deltaTime;
+                elapsedTime += deltaTime;
 
-                var t = Mathf.Clamp01(elapsed / duration);
-                var progress = curve?.Evaluate(t) ?? t;
+                // Force stop after target duration (regardless of whether target position is reached)
+                if (elapsedTime >= TargetAnimationDurationInSeconds)
+                {
+                    break;
+                }
 
-                var currentOffset = Mathf.Lerp(plan.StartOffset, plan.FinalOffset, progress);
-                _itemsContainer.anchoredPosition = new Vector2(currentOffset, 0f);
+                // Look up current velocity from pre-generated velocity curve
+                // Use FloorToInt: round down to nearest sample point
+                // Example: time 0.12s → index Floor(0.12 * 20) = Floor(2.4) = 2 → use velocity at 0.10s
+                // This avoids array bounds and ensures we use "current or previous" velocity value
+                int curveIndex = Mathf.FloorToInt(elapsedTime * 20f); // One sample every 0.05s
+                curveIndex = Mathf.Clamp(curveIndex, 0, _velocityCurve.Length - 1);
+                float currentVelocityInSlots = _velocityCurve[curveIndex] * velocityDirection;
 
-                int currentIndex = FindCenteredSlotIndex(plan, currentOffset);
+                // Calculate distance to target
+                float distanceInPixels = targetPositionInPixels - currentPositionInPixels;
+                float distanceInSlots = distanceInPixels / SlotFullWidth;
+
+                if (Core.Settings.SettingManager.Instance.EnableDebug.GetAsBool())
+                {
+                    // Detailed debug: output every 0.1s or every frame after 5.8s
+                    bool shouldLog = (Mathf.FloorToInt(elapsedTime * 10) % 10 == 0) || (elapsedTime > 5.8f);
+                    if (shouldLog && deltaTime > 0)
+                    {
+                        Log.Debug($"[Animation] Time: {elapsedTime:F3}s, Velocity: {currentVelocityInSlots:F4} slots/s, Distance: {distanceInSlots:F3} slots, Pos: {currentPositionInPixels:F2}, Target: {targetPositionInPixels:F2}, CurveIdx: {curveIndex}");
+                    }
+                }
+
+                // Convert slot/s to pixel/s, then calculate displacement
+                float velocityInPixels = currentVelocityInSlots * SlotFullWidth;
+                float movementInPixels = velocityInPixels * deltaTime;
+                currentPositionInPixels += movementInPixels;
+
+                // Set base position first
+                _itemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
+
+                // Update highlighting with smooth transitions
+                int currentIndex = FindCenteredSlotIndex(plan, currentPositionInPixels);
                 if (currentIndex != lastHighlightedIndex)
                 {
+                    // Remove previous highlight
                     if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count)
                     {
                         var prevSlot = plan.Slots[lastHighlightedIndex];
                         prevSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 0f);
+
+                        // Reset scale
+                        prevSlot.Rect.localScale = Vector3.one;
                     }
 
+                    // Apply new highlight
                     if (currentIndex >= 0 && currentIndex < plan.Slots.Count)
                     {
                         var currentSlot = plan.Slots[currentIndex];
                         currentSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f);
+
+                        // Slight scale up for emphasis
+                        currentSlot.Rect.localScale = Vector3.one * 1.05f;
 
                         if (_resultText != null)
                         {
@@ -591,16 +720,17 @@ namespace DuckovLuckyBox.UI
                 }
             }
 
-            // Jump to final position
-            _itemsContainer.anchoredPosition = new Vector2(plan.FinalOffset, 0f);
-
+            // Ensure final position and highlight
             if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count && lastHighlightedIndex != plan.FinalSlotIndex)
             {
                 var prevSlot = plan.Slots[lastHighlightedIndex];
                 prevSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 0f);
+                prevSlot.Rect.localScale = Vector3.one;
             }
+
             var finalSlot = plan.FinalSlot;
             finalSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f);
+            finalSlot.Rect.localScale = Vector3.one * 1.05f;
 
             if (_resultText != null)
             {
@@ -633,23 +763,52 @@ namespace DuckovLuckyBox.UI
         {
             var slot = plan.FinalSlot;
             var frame = slot.Frame;
+            var icon = slot.Icon;
 
-            var initialColor = SlotFrameColor;
-            var targetColor = FinalFrameColor;
+            var initialFrameColor = SlotFrameColor;
+            var targetFrameColor = FinalFrameColor;
 
-            frame.color = initialColor;
+            frame.color = initialFrameColor;
 
-            var elapsed = 0f;
-            while (elapsed < CelebrateDuration)
+            // Multi-stage celebration effect
+            const int pulseCount = 3;
+            const float pulseDuration = CelebrateDuration / pulseCount;
+
+            for (int pulse = 0; pulse < pulseCount; pulse++)
             {
-                await UniTask.Yield(PlayerLoopTiming.Update);
-                elapsed += Time.deltaTime;
-                var t = Mathf.Clamp01(elapsed / CelebrateDuration);
-                t = Mathf.SmoothStep(0f, 1f, t);
-                frame.color = Color.Lerp(initialColor, targetColor, t);
+                // Scale pulse
+                var elapsed = 0f;
+                while (elapsed < pulseDuration)
+                {
+                    await UniTask.Yield(PlayerLoopTiming.Update);
+                    elapsed += Time.deltaTime;
+                    var t = Mathf.Clamp01(elapsed / pulseDuration);
+
+                    // Frame color transition
+                    frame.color = Color.Lerp(initialFrameColor, targetFrameColor, t);
+
+                    // Pulsing scale effect
+                    float scaleProgress = Mathf.Sin(t * Mathf.PI);
+                    float scale = 1.05f + scaleProgress * 0.15f; // Pulse from 1.05 to 1.20 and back
+                    slot.Rect.localScale = Vector3.one * scale;
+
+                    // Glow intensity on icon outline
+                    float glowIntensity = Mathf.Lerp(1f, HighlightIntensity, scaleProgress);
+                    slot.IconOutline.effectColor = new Color(1f, 1f, 1f, glowIntensity);
+
+                    // Icon brightness pulse
+                    icon.color = Color.Lerp(Color.white, new Color(1.2f, 1.2f, 1.2f), scaleProgress * 0.5f);
+                }
             }
 
-            frame.color = targetColor;
+            // Final state
+            frame.color = targetFrameColor;
+            slot.Rect.localScale = Vector3.one * 1.1f;
+            slot.IconOutline.effectColor = new Color(1f, 1f, 1f, HighlightIntensity);
+            icon.color = Color.white;
+
+            // Continuous glow effect
+            StartContinuousGlow(slot);
 
             // Play high-quality lottery sound if enabled and the final item has high quality (quality >= 5 and < 99)
             var enableHighQualitySound = Core.Settings.SettingManager.Instance.EnableHighQualitySound.GetAsBool();
@@ -670,6 +829,29 @@ namespace DuckovLuckyBox.UI
                     // Play default sound
                     Log.Debug($"Playing default high-quality lottery sound for item {finalTypeId} with quality {finalItemQuality}");
                     SoundUtils.PlaySound(Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND, sfxGroup);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Continuous glow effect on final slot
+        /// </summary>
+        private static async void StartContinuousGlow(Slot slot)
+        {
+            float startTime = Time.time;
+            const float glowDuration = 2f; // Glow for 2 seconds
+
+            while (Time.time - startTime < glowDuration)
+            {
+                await UniTask.Yield(PlayerLoopTiming.Update);
+
+                float elapsed = Time.time - startTime;
+                float glowCycle = Mathf.Sin(elapsed * GlowPulseSpeed * Mathf.PI);
+                float glowAlpha = Mathf.Lerp(1f, HighlightIntensity, (glowCycle + 1f) * 0.5f);
+
+                if (slot.IconOutline != null)
+                {
+                    slot.IconOutline.effectColor = new Color(1f, 1f, 0.8f, glowAlpha);
                 }
             }
         }
@@ -774,7 +956,7 @@ namespace DuckovLuckyBox.UI
             {
                 get
                 {
-                    // FinalSlotIndex should always be valid since it's set during BuildSlotSequence
+                    // FinalSlotIndex is calculated based on velocity curve distance
                     // and is guaranteed to be within Slots.Count
                     if (FinalSlotIndex >= 0 && FinalSlotIndex < Slots.Count)
                     {
