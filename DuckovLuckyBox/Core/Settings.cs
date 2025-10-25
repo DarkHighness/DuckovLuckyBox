@@ -127,6 +127,7 @@ namespace DuckovLuckyBox.Core.Settings
     public const bool EnableDestroyButton = true;
     public const bool EnableLotteryButton = true;
     public const bool EnableDebug = false;
+    public const bool EnableUseToCreateItemPatch = true;
 
     // Pricing Settings
     public const long RefreshStockPrice = 100L;
@@ -191,6 +192,16 @@ namespace DuckovLuckyBox.Core.Settings
       DefaultValue = DefaultSettings.EnableDebug,
     };
 
+    public SettingItem EnableUseToCreateItemPatch { get; set; } = new SettingItem
+    {
+      Key = "DuckovLuckyBox.Settings.EnableUseToCreateItemPatch",
+      Label = Localizations.I18n.SettingsEnableUseToCreateItemPatchKey,
+      Description = "DuckovLuckyBox.Settings.EnableUseToCreateItemPatch.Description",
+      Type = Type.Toggle,
+      Category = Category.General,
+      DefaultValue = DefaultSettings.EnableUseToCreateItemPatch,
+    };
+
     public SettingItem RefreshStockPrice { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.RefreshStockPrice",
@@ -242,6 +253,7 @@ namespace DuckovLuckyBox.Core.Settings
         yield return EnableDestroyButton;
         yield return EnableLotteryButton;
         yield return EnableDebug;
+        yield return EnableUseToCreateItemPatch;
         yield return RefreshStockPrice;
         yield return StorePickPrice;
         yield return StreetPickPrice;

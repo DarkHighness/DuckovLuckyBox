@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Duckov.Utilities;
 using DuckovLuckyBox.Core;
+using DuckovLuckyBox.Core.Settings;
 using HarmonyLib;
 
 namespace DuckovLuckyBox.Patches
@@ -75,7 +76,13 @@ namespace DuckovLuckyBox.Patches
     }
     public static bool Prefix(UseToCreateItem __instance, object? user)
     {
-      Log.Debug("PatchUseToCreateItem_OnUse Prefix called.");
+      // Check if the patch is enabled in settings
+      if (!SettingManager.Instance.EnableUseToCreateItemPatch.GetAsBool())
+      {
+        Log.Debug("UseToCreateItem patch is disabled in settings, skipping patch.");
+        return true; // Allow the original method to execute
+      }
+
       // Prevent the original OnUse method from executing
       // This disables the default behavior of UseToCreateItem
       var character = user as CharacterMainControl;
