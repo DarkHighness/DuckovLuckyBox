@@ -26,7 +26,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
   {
     private const int ContractSize = 5;
     private const float ContractVerticalOffset = -120f;
-    public static bool IsOpened { get; private set; } = false;
+    public static bool IsOpen { get; private set; } = false;
 
     private static readonly Dictionary<StockShopView, ContractSession> Sessions = new Dictionary<StockShopView, ContractSession>();
 
@@ -55,7 +55,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
       if (Sessions.TryGetValue(view, out var session))
       {
         session.OnViewOpened();
-        IsOpened = true;
+        IsOpen = true;
       }
     }
 
@@ -69,7 +69,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
       if (Sessions.TryGetValue(view, out var session))
       {
         session.OnViewClosed();
-        IsOpened = false;
+        IsOpen = false;
       }
     }
 
@@ -214,6 +214,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         }
 
         UpdateActionButtonsState();
+        IsOpen = true;
       }
 
       private void Hide(bool force)
@@ -229,7 +230,6 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         }
 
         _visible = false;
-
         if (_contractDisplay != null)
         {
           _contractDisplay.onDisplayDoubleClicked -= OnContractDoubleClicked;
@@ -240,6 +240,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         ReturnAllItems();
 
         _contractRoot?.gameObject.SetActive(false);
+        IsOpen = false;
       }
 
       private void EnsureInitialized()
@@ -1184,12 +1185,6 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         if (_clearButtonLabel != null)
         {
           var clearText = Localizations.I18n.TrashBinClearKey.ToPlainText();
-          if (!hasItems)
-          {
-            var freeText = Localizations.I18n.FreeKey.ToPlainText();
-            clearText = $"{clearText} ({freeText})";
-          }
-
           _clearButtonLabel.text = clearText;
         }
       }
