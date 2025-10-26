@@ -26,19 +26,28 @@ A mod for "Escape from Duckov" that allows players to use additional features in
    - Draws the same number of items with the same **Quality** based on the item's **Quality** and **StackCount**
    - Example: Using 5 quality-3 items will give you 5 random quality-3 items
 
+### Recycling Contract Feature
+
+7. 🗂️ "Recycling Contract": Put items into the trash bin to get rewards based on item value
+   - **Supported Item Types**: Weapons, Melee Weapons, Helmets, Medical Supplies, Face Masks, Armor, Luxury Items, Injectors, Electronics, Totems, Tools
+   - Support dragging items into the trash bin
+   - Calculate reward level based on item quality and value
+   - High-quality items trigger special reward animations and sound effects
+   - Reward items are of equal or higher quality than the original items
+
 ### Special Items
 
 - 🎁 **Knife Box** and other specific items: Triggers lottery animation when opened, automatically draws random items from that item
 
 ### Settings
 
-7. ⚙️ Press F1 to open the settings panel
-   - Enable/disable lottery animation
-   - Enable/disable high-quality item sound effects (customize sound file path)
-   - Customize the cost of shop features (default: 100) (both account balance and cash can be used for payment)
-   - Enable/disable the Destroy and Lottery buttons in the item menu
-   - Enable/disable weighted lottery (weight by item quality)
-   - Enable/disable in-game item lottery animation
+- ⚙️ Press F1 to open the settings panel
+  - Enable/disable lottery animation
+  - Enable/disable high-quality item sound effects (customize sound file path)
+  - Customize the cost of shop features (default: 100) (both account balance and cash can be used for payment)
+  - Enable/disable the Destroy and Lottery buttons in the item menu
+  - Enable/disable weighted lottery (weight by item quality)
+  - Enable/disable in-game item lottery animation
 
 ⚠️ Warning: "Pick One from Roadside" and "Lottery" features may draw illegal items that are not available in the game (although "most" have been filtered out). Please use it carefully❗ Especially for recipes that "look very abnormal"❗ This may corrupt your save file. Please backup your save before using❗
 ⚠️ Note: If there are key conflicts, please manually modify the key settings in the configuration file. Composite keys such as "Ctrl+F1" are supported (Note: cannot conflict with system shortcuts or in-game shortcuts, otherwise the key cannot be recorded properly).
@@ -70,11 +79,12 @@ The configuration file supports:
 The mod will automatically reload settings when the config file is modified externally.
 
 Sample configuration files:
+
 - Basic configuration: [config.example.json](config.example.json)
 - With modifier keys: [config.with-modifiers.example.json](config.with-modifiers.example.json)
 
 ## Links
 
-Source Code: https://github.com/DarkHighness/DuckovLuckyBox
+Source Code: <https://github.com/DarkHighness/DuckovLuckyBox>
 
-Steam Workshop: https://steamcommunity.com/sharedfiles/filedetails/?id=3589741459
+Steam Workshop: <https://steamcommunity.com/sharedfiles/filedetails/?id=3589741459>

@@ -22,17 +22,24 @@
    - 根据物品的**品质(Quality)**和**堆叠数量(StackCount)**抽取相同数量的相同品质物品
    - 例如：用 5 个品质为 3 的物品抽奖，会得到 5 个随机的品质 3 物品
 
+### 汰换合同功能
+7. 🗂️ "汰换合同"：将物品放入垃圾箱，根据物品价值获得奖励
+   - **支持的物品类型**：武器、近战武器、头盔、医疗用品、面罩、护甲、奢侈品、注射器、电器、图腾、工具
+   - 高品质物品会触发特殊的奖励动画和音效
+
 ### 特殊物品
+
 - 🎁 **战术刀具箱**、等特定物品：打开时触发抽奖动画，自动从该物品内抽取随机物品
 
 ### 设置
-7. ⚙️ 按 F1 可打开设置面板
-   - 开启或关闭抽奖动画
-   - 开启或关闭高等级物品音效（自定义音效文件路径）
-   - 自定义商店功能的花费（默认值：100）（账户和现金均可支付花费）
-   - 开启或关闭物品菜单的销毁和抽奖按钮
-   - 启用/关闭加权抽奖（按物品品质加权）
-   - 开启或关闭游戏内物品抽奖动画
+
+- ⚙️ 按 F1 可打开设置面板
+  - 开启或关闭抽奖动画
+  - 开启或关闭高等级物品音效（自定义音效文件路径）
+  - 自定义商店功能的花费（默认值：100）（账户和现金均可支付花费）
+  - 开启或关闭物品菜单的销毁和抽奖按钮
+  - 启用/关闭加权抽奖（按物品品质加权）
+  - 开启或关闭游戏内物品抽奖动画
 
 ⚠️ 警告："路边拾一个" 和 "抽奖" 功能有可能抽到游戏内未开放的非法物品（尽管已经尽力过滤了 "绝大部分"），请仔细斟酌使用❗特别是对于 "看起来就很异常的" 配方❗可能会导致存档损坏，使用前请务必备份存档❗
 ⚠️ 注意：如果按键存在冲突，请前往配置文件中手动修改按键设置。支持形如 "Ctrl+F1" 的复合按键（注：不能与系统快捷键或游戏内快捷键冲突，否则会无法正常录入按键）。
@@ -51,6 +58,7 @@ Minecraft "幸运方块"
 设置会自动保存到 `{Application.persistentDataPath}/Duckov.LuckyBox/config.json`。 典型值为：`C:/Users/$USER/AppData/LocalLow/TeamSoda/Duckov\Duckov.LuckyBox\config.json`
 
 配置文件支持：
+
 - **EnableAnimation**: 启用/关闭抽奖动画（默认：`true`）
 - **SettingsHotkey**: 打开设置面板的快捷键（默认：`"F1"`）
   - 支持复合按键，例如：`"Ctrl+F1"`, `"Shift+F2"`, `"Alt+F3"`, `"Ctrl+Shift+F4"`
@@ -67,11 +75,12 @@ Minecraft "幸运方块"
 当配置文件被外部修改时，Mod 会自动重新加载设置。
 
 配置文件示例：
+
 - 基础配置: [config.example.json](config.example.json)
 - 复合按键配置: [config.with-modifiers.example.json](config.with-modifiers.example.json)
 
 ## 相关链接
 
-源代码仓库: https://github.com/DarkHighness/DuckovLuckyBox
+源代码仓库: <https://github.com/DarkHighness/DuckovLuckyBox>
 
-Steam 创意工坊: https://steamcommunity.com/sharedfiles/filedetails/?id=3589741459
+Steam 创意工坊: <https://steamcommunity.com/sharedfiles/filedetails/?id=3589741459>

@@ -5,7 +5,7 @@ namespace DuckovLuckyBox.Core
         public const string ModId = "Duckov.LuckyBox";
         public const string ModName = "Duckov Lucky Box";
         public const string AnimationOnlyModId = "Duckov.LuckyAnimation";
-        public const string AnimationOnlyModName = "Duckov Lucky Animation";
+        public static readonly string AnimationOnlyModName = "Duckov Lucky Animation";
 
         public static class Sound
         {

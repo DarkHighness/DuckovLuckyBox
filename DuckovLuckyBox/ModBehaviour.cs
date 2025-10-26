@@ -97,7 +97,7 @@ namespace DuckovLuckyBox
             {
                 if (Input.GetKeyDown(KeyCode.F9))
                 {
-                    int[] items = { 1172, 1173, 1177, 95, 31 };
+                    int[] items = { 1172, 1173, 1177, 95, 31, 1178 };
                     foreach (var itemId in items)
                     {
                         // send 5 of each item for testing
