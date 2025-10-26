@@ -229,5 +229,10 @@ namespace DuckovLuckyBox
           return White;
       }
     }
+
+    public static bool IsHighQuality(this ItemValueLevel level)
+    {
+      return level >= ItemValueLevel.Orange;
+    }
   }
 }

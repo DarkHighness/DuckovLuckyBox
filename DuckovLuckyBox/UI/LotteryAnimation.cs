@@ -793,23 +793,11 @@ namespace DuckovLuckyBox.UI
             StartContinuousGlow(slot);
 
             // Play high-quality lottery sound if enabled and the final item has high quality (quality >= 5 and < 99)
-            var enableHighQualitySound = Core.Settings.SettingManager.Instance.EnableHighQualitySound.GetAsBool();
             var finalItemQuality = LotteryService.GetItemQuality(finalTypeId);
 
-            if (enableHighQualitySound && finalItemQuality >= ItemValueLevel.Orange)
+            if (finalItemQuality.IsHighQuality())
             {
-                var customSoundPath = Core.Settings.SettingManager.Instance.HighQualitySoundFilePath.GetAsString();
-
-                if (!string.IsNullOrEmpty(customSoundPath) && System.IO.File.Exists(customSoundPath))
-                {
-                    // Play custom sound from file path
-                    SoundUtils.PlaySoundFromFile(customSoundPath, sfxGroup);
-                }
-                else
-                {
-                    // Play default sound
-                    SoundUtils.PlaySound(Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND, sfxGroup);
-                }
+                SoundUtils.PlayHighQualitySound(sfxGroup, Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND);
             }
         }
 

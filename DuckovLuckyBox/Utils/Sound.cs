@@ -345,5 +345,31 @@ namespace DuckovLuckyBox
       _fileLastWriteTime.Clear();
       Log.Debug("All file watchers stopped");
     }
+
+    /// <summary>
+    /// Play high-quality sound with custom file path support
+    /// </summary>
+    public static bool PlayHighQualitySound(ChannelGroup channelGroup, Sound? defaultSound)
+    {
+      var enableHighQualitySound = Core.Settings.SettingManager.Instance.EnableHighQualitySound.GetAsBool();
+
+      if (!enableHighQualitySound)
+      {
+        return false;
+      }
+
+      var customSoundPath = Core.Settings.SettingManager.Instance.HighQualitySoundFilePath.GetAsString();
+
+      if (!string.IsNullOrEmpty(customSoundPath) && File.Exists(customSoundPath))
+      {
+        // Play custom sound from file path
+        return PlaySoundFromFile(customSoundPath, channelGroup);
+      }
+      else
+      {
+        // Play default sound
+        return PlaySound(defaultSound, channelGroup);
+      }
+    }
   }
 }

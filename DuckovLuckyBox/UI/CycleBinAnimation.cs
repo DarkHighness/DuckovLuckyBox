@@ -167,20 +167,19 @@ namespace DuckovLuckyBox.UI
     {
       if (item == null) return;
 
-      var itemQuality = item.Quality;
-      var enableHighQualitySound = Core.Settings.SettingManager.Instance.EnableHighQualitySound.GetAsBool();
+      var itemQuality = QualityUtils.GetCachedItemValueLevel(item);
 
       ChannelGroup sfxGroup = default;
       RuntimeManager.CoreSystem.createChannelGroup("CycleBinSFX", out sfxGroup);
 
-      if (enableHighQualitySound && (ItemValueLevel)itemQuality >= ItemValueLevel.Orange)
+      if (itemQuality.IsHighQuality())
       {
-        // Play high-value sound
-        SoundUtils.PlaySound(Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND, sfxGroup);
+        // Play high-quality sound for high-value items
+        SoundUtils.PlayHighQualitySound(sfxGroup, Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND);
       }
       else
       {
-        // Play normal reward sound
+        // Play normal reward sound for regular items
         SoundUtils.PlaySound(Constants.Sound.LOTTERY_SOUND, sfxGroup);
       }
 

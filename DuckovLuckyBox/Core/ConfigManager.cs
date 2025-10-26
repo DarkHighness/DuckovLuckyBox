@@ -258,6 +258,7 @@ namespace DuckovLuckyBox.Core.Settings
             settings.EnableUseToCreateItemPatch.OnValueChanged += OnSettingChanged;
             settings.EnableWeightedLottery.OnValueChanged += OnSettingChanged;
             settings.EnableHighQualitySound.OnValueChanged += OnSettingChanged;
+            settings.EnableStockShopActions.OnValueChanged += OnSettingChanged;
             settings.HighQualitySoundFilePath.OnValueChanged += OnSettingChanged;
             settings.RefreshStockPrice.OnValueChanged += OnSettingChanged;
             settings.StorePickPrice.OnValueChanged += OnSettingChanged;
@@ -276,6 +277,7 @@ namespace DuckovLuckyBox.Core.Settings
             settings.EnableUseToCreateItemPatch.OnValueChanged -= OnSettingChanged!;
             settings.EnableWeightedLottery.OnValueChanged -= OnSettingChanged!;
             settings.EnableHighQualitySound.OnValueChanged -= OnSettingChanged!;
+            settings.EnableStockShopActions.OnValueChanged -= OnSettingChanged!;
             settings.HighQualitySoundFilePath.OnValueChanged -= OnSettingChanged!;
             settings.RefreshStockPrice.OnValueChanged -= OnSettingChanged!;
             settings.StorePickPrice.OnValueChanged -= OnSettingChanged!;

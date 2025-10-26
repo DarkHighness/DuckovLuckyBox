@@ -24,7 +24,7 @@ namespace DuckovLuckyBox.Core.Settings
     public string Description { get; internal set; } = string.Empty;
     public Type Type { get; internal set; }
     public Category Category { get; internal set; }
-    public System.Action<object> OnValueChanged { get; set; } = delegate { };
+    public event System.Action<object> OnValueChanged = delegate { };
 
     // For Number type settings
     public float MinValue { get; internal set; } = 0f;
