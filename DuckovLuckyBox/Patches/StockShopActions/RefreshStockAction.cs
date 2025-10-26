@@ -22,8 +22,6 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
         public async UniTask ExecuteAsync(StockShopView stockShopView)
         {
-            Log.Debug("Refresh stock action executed");
-
             var target = AccessTools.Field(typeof(StockShopView), "target").GetValue(stockShopView) as Duckov.Economy.StockShop;
             if (target == null) return;
 
@@ -41,7 +39,6 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
             if (!TryInvokeRefresh(target)) return;
             AudioManager.Post(SFX_BUY);
-            Log.Debug("Stock refreshed");
 
             await UniTask.CompletedTask;
         }

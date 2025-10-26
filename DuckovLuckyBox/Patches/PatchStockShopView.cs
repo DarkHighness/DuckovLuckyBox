@@ -331,4 +331,18 @@ namespace DuckovLuckyBox.Patches
             CycleBinAction.OnViewClosed(__instance);
         }
     }
+
+    [HarmonyPatch(typeof(StockShopView), "OnSelectionChanged")]
+    public static class PatchStockShopView_OnSelectionChanged
+    {
+        public static bool Prefix(StockShopView __instance)
+        {
+            // Prevent selection changes when Cycle Bin view is open
+            if (CycleBinAction.IsOpened)
+            {
+                return false; // Skip original method
+            }
+            return true; // Proceed with original method
+        }
+    }
 }

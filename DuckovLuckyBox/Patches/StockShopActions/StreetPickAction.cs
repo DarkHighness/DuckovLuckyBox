@@ -17,7 +17,6 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
         public async UniTask ExecuteAsync(StockShopView stockShopView)
         {
-            Log.Debug("Street pick action executed");
 
             // Get price from settings
             long price = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;

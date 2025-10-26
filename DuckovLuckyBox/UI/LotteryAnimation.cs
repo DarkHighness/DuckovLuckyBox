@@ -219,8 +219,6 @@ namespace DuckovLuckyBox.UI
             _resultText.alignment = TextAlignmentOptions.Center;
             _resultText.raycastTarget = false;
             ResetResultText();
-
-            Log.Debug("Lottery animation UI initialized with full-screen canvas");
         }
 
         /// <summary>
@@ -232,7 +230,6 @@ namespace DuckovLuckyBox.UI
             var enableAnimationValue = Core.Settings.SettingManager.Instance.EnableAnimation.Value;
             if (enableAnimationValue is bool enabled && !enabled)
             {
-                Log.Debug("Lottery animation is disabled in settings. Skipping animation.");
                 return;
             }
 
@@ -240,7 +237,6 @@ namespace DuckovLuckyBox.UI
             if (_overlayRoot == null || _itemsContainer == null || _centerPointer == null || _canvasGroup == null)
             {
                 Initialize();
-                Log.Debug("Lottery animation UI auto-initialized.");
             }
 
             if (_isAnimating) return;
@@ -350,7 +346,6 @@ namespace DuckovLuckyBox.UI
             if (_velocityCurve == null)
             {
                 _velocityCurve = GenerateVelocityCurve();
-                Log.Debug($"[BuildPlan] Generated velocity curve with {_velocityCurve.Length} steps");
             }
 
             // Calculate total distance based on velocity curve
@@ -367,9 +362,6 @@ namespace DuckovLuckyBox.UI
             // Total slots needed = final slot index + buffer slots after + 1
             // +1 because index starts from 0, so index N means N+1 total slots are needed
             int totalSlotsNeeded = finalSlotIndex + SlotsAfterFinal + 1;
-
-            Log.Debug($"[BuildPlan] Start slot: {startSlotIndex}, Total distance: {totalDistanceInSlots:F2} slots");
-            Log.Debug($"[BuildPlan] Final slot index: {finalSlotIndex}, Total slots needed: {totalSlotsNeeded}");
 
             var slotWidth = SlotFullWidth;
             var viewportWidth = _viewport.rect.width;
@@ -413,9 +405,6 @@ namespace DuckovLuckyBox.UI
             // Start position: place start slot in the center
             var startItemPos = slots[startSlotIndex].Rect.anchoredPosition.x;
             var startOffset = -startItemPos;
-
-            Log.Debug($"[BuildPlan] Start offset: {startOffset:F2}, End offset: {endOffset:F2}");
-            Log.Debug($"[BuildPlan] Actual distance to travel: {(endOffset - startOffset) / SlotFullWidth:F2} slots");
 
             plan = new AnimationPlan(slots, finalSlotIndex, startOffset, endOffset);
             return true;
@@ -584,9 +573,6 @@ namespace DuckovLuckyBox.UI
                 }
             }
 
-            // Debug: output velocity at key time points
-            Log.Debug($"[VelocityCurve] Steps: {totalSteps}, 0.0s: {curve[0]:F2}, 3.0s: {curve[60]:F2}, 6.0s: {curve[120]:F2}, 6.75s: {curve[135]:F2}");
-
             return curve;
         }
 
@@ -618,7 +604,6 @@ namespace DuckovLuckyBox.UI
             if (_velocityCurve == null)
             {
                 _velocityCurve = GenerateVelocityCurve();
-                Log.Debug($"[Animation] Generated velocity curve with {_velocityCurve.Length} steps");
             }
 
             // Convert pixel position to slot unit for physics calculation
@@ -635,7 +620,6 @@ namespace DuckovLuckyBox.UI
 
             // Determine velocity direction
             float velocityDirection = targetPositionInPixels < currentPositionInPixels ? -1f : 1f;
-            Log.Debug($"[Animation] Velocity direction: {velocityDirection} (container moves from {currentPositionInPixels} to {targetPositionInPixels})");
 
             while (true)
             {
@@ -674,7 +658,6 @@ namespace DuckovLuckyBox.UI
                     bool shouldLog = (Mathf.FloorToInt(elapsedTime * 10) % 10 == 0) || (elapsedTime > 5.8f);
                     if (shouldLog && deltaTime > 0)
                     {
-                        Log.Debug($"[Animation] Time: {elapsedTime:F3}s, Velocity: {currentVelocityInSlots:F4} slots/s, Distance: {distanceInSlots:F3} slots, Pos: {currentPositionInPixels:F2}, Target: {targetPositionInPixels:F2}, CurveIdx: {curveIndex}");
                     }
                 }
 
@@ -813,20 +796,18 @@ namespace DuckovLuckyBox.UI
             var enableHighQualitySound = Core.Settings.SettingManager.Instance.EnableHighQualitySound.GetAsBool();
             var finalItemQuality = LotteryService.GetItemQuality(finalTypeId);
 
-            if (enableHighQualitySound && finalItemQuality >= 5 && finalItemQuality < 99)
+            if (enableHighQualitySound && finalItemQuality >= ItemValueLevel.Orange)
             {
                 var customSoundPath = Core.Settings.SettingManager.Instance.HighQualitySoundFilePath.GetAsString();
 
                 if (!string.IsNullOrEmpty(customSoundPath) && System.IO.File.Exists(customSoundPath))
                 {
                     // Play custom sound from file path
-                    Log.Debug($"Playing custom high-quality lottery sound from: {customSoundPath}");
                     SoundUtils.PlaySoundFromFile(customSoundPath, sfxGroup);
                 }
                 else
                 {
                     // Play default sound
-                    Log.Debug($"Playing default high-quality lottery sound for item {finalTypeId} with quality {finalItemQuality}");
                     SoundUtils.PlaySound(Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND, sfxGroup);
                 }
             }

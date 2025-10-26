@@ -122,6 +122,37 @@ namespace DuckovLuckyBox.Core
             }
         }
 
+        private static Dictionary<string, Dictionary<ItemValueLevel, Item>>? _itemLookupByCategoryAndQuality = null;
+
+        public static Dictionary<string, Dictionary<ItemValueLevel, Item>> ItemLookupByCategoryAndQuality
+        {
+            get
+            {
+                if (_itemLookupByCategoryAndQuality == null)
+                {
+                    _itemLookupByCategoryAndQuality = new Dictionary<string, Dictionary<ItemValueLevel, Item>>();
+
+                    foreach (var entry in ItemAssetsCollection.Instance.entries)
+                    {
+                        var item = entry.prefab;
+                        var category = entry.metaData.Catagory;
+                        var quality = QualityUtils.GetCachedItemValueLevel(item);
+
+                        if (!_itemLookupByCategoryAndQuality.ContainsKey(category))
+                        {
+                            _itemLookupByCategoryAndQuality[category] = new Dictionary<ItemValueLevel, Item>();
+                        }
+
+                        if (!_itemLookupByCategoryAndQuality[category].ContainsKey(quality))
+                        {
+                            _itemLookupByCategoryAndQuality[category][quality] = item;
+                        }
+                    }
+                }
+                return _itemLookupByCategoryAndQuality;
+            }
+        }
+
         /// <summary>
         /// Gets the default weight for an item based on its quality
         /// Used when weighted lottery is enabled but no explicit weights are provided
@@ -140,11 +171,11 @@ namespace DuckovLuckyBox.Core
             // Quality 5+ (legendary items): 10
             return quality switch
             {
-                1 => 30f,
-                2 => 25f,
-                3 => 20f,
-                4 => 15f,
-                _ => 10f  // Quality 5+ and quality 0/invalid default to 10
+                ItemValueLevel.White => 30f,
+                ItemValueLevel.Green => 25f,
+                ItemValueLevel.Blue => 20f,
+                ItemValueLevel.Purple => 15f,
+                _ => 10f,
             };
         }
 
@@ -282,24 +313,24 @@ namespace DuckovLuckyBox.Core
         /// <param name="quality">Quality level to filter items by</param>
         /// <param name="count">Number of items to pick</param>
         /// <returns>List of instantiated items</returns>
-        public static async UniTask<List<Item>> PickRandomItemsByQualityAsync(int quality, int count)
+        public static async UniTask<List<Item>> PickRandomItemsByQualityAsync(ItemValueLevel level, int count)
         {
             var result = new List<Item>();
 
             // Get all valid items of the specified quality from cache
             var qualityItems = ItemTypeIdsCache
                 .Select(typeId => new { TypeId = typeId, Item = GetItem(typeId) })
-                .Where(x => x.Item != null && x.Item.Quality == quality)
+                .Where(x => x.Item != null && QualityUtils.GetCachedItemValueLevel(x.Item) == level)
                 .Select(x => x.TypeId)
                 .ToList();
 
             if (qualityItems.Count == 0)
             {
-                Log.Warning($"No items found with quality {quality}");
+                Log.Warning($"No items found with value level {level}");
                 return result;
             }
 
-            Log.Debug($"Found {qualityItems.Count} items with quality {quality}");
+            Log.Debug($"Found {qualityItems.Count} items with value level {level}");
 
             // Pick random items
             for (int i = 0; i < count; i++)
@@ -315,7 +346,7 @@ namespace DuckovLuckyBox.Core
                 }
 
                 result.Add(obj);
-                Log.Debug($"Picked item {i + 1}/{count}: {obj.DisplayName} (quality {quality})");
+                Log.Debug($"Picked item {i + 1}/{count}: {obj.DisplayName} (value level {level})");
             }
 
             return result;
@@ -350,10 +381,112 @@ namespace DuckovLuckyBox.Core
         /// <summary>
         /// Gets item quality level
         /// </summary>
-        public static int GetItemQuality(int typeId)
+        public static ItemValueLevel GetItemQuality(int typeId)
         {
             var item = GetItem(typeId);
-            return item?.Quality ?? 0;
+            if (item == null)
+            {
+                return ItemValueLevel.White;
+            }
+            return QualityUtils.GetCachedItemValueLevel(item);
+        }
+
+        /// <summary>
+        /// Gets item category
+        /// </summary>
+        public static string GetItemCategory(int typeId)
+        {
+            var entry = ItemAssetsCollection.Instance.entries.FirstOrDefault(e => e != null && e.typeID == typeId);
+            return entry?.metaData.Catagory ?? "Unknown";
+        }
+
+        /// <summary>
+        /// Determines whether a given category contains an item whose value level is exactly one tier higher than the provided baseline.
+        /// </summary>
+        public static bool HasHigherQualityItemInCategory(string category, ItemValueLevel baseQuality)
+        {
+            if (string.IsNullOrEmpty(category))
+            {
+                return false;
+            }
+
+            if (!ItemLookupByCategoryAndQuality.TryGetValue(category, out var qualityMap) || qualityMap == null)
+            {
+                return false;
+            }
+
+            int nextLevelValue = (int)baseQuality + 1;
+            if (!Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue))
+            {
+                return false;
+            }
+
+            var nextLevel = (ItemValueLevel)nextLevelValue;
+            return qualityMap.TryGetValue(nextLevel, out var nextItem) && nextItem != null;
+        }
+
+        /// <summary>
+        /// Determines whether any of the specified categories contains an item at the provided value level.
+        /// </summary>
+        public static bool HasCategoryItemAtLevel(IEnumerable<string> categories, ItemValueLevel level)
+        {
+            if (categories == null)
+            {
+                return false;
+            }
+
+            var categorySet = new HashSet<string>(categories.Where(c => !string.IsNullOrWhiteSpace(c)), StringComparer.OrdinalIgnoreCase);
+            if (categorySet.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var kvp in ItemLookupByCategoryAndQuality)
+            {
+                if (!categorySet.Contains(kvp.Key))
+                {
+                    continue;
+                }
+
+                var qualityMap = kvp.Value;
+                if (qualityMap != null && qualityMap.TryGetValue(level, out var item) && item != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Picks a random item from the specified categories that matches the desired value level.
+        /// </summary>
+        public static async UniTask<Item?> PickRandomItemByCategoriesAndQualityAsync(IEnumerable<string> categories, ItemValueLevel level)
+        {
+            if (categories == null)
+            {
+                return null;
+            }
+
+            var categorySet = new HashSet<string>(categories.Where(c => !string.IsNullOrWhiteSpace(c)), StringComparer.OrdinalIgnoreCase);
+            if (categorySet.Count == 0)
+            {
+                return null;
+            }
+
+            var candidateTypeIds = ItemAssetsCollection.Instance.entries
+                .Where(entry => entry != null && entry.prefab != null && categorySet.Contains(entry.metaData.Catagory))
+                .Where(entry => QualityUtils.GetCachedItemValueLevel(entry.prefab) == level)
+                .Select(entry => entry.typeID)
+                .ToList();
+
+            if (candidateTypeIds.Count == 0)
+            {
+                return null;
+            }
+
+            var weightedItems = candidateTypeIds.Select(id => new WeightedItem(id, 1f)).ToList();
+            return await PickRandomItemWeightedAsync(weightedItems);
         }
 
         /// <summary>
@@ -366,31 +499,16 @@ namespace DuckovLuckyBox.Core
         }
 
         /// <summary>
-        /// Item quality color palette
-        /// </summary>
-        private static readonly Color[] ItemQualityColors = new Color[]
-        {
-            // Reference: https://github.com/shiquda/duckov-fancy-items/blob/7d3094cf40f1b01bbd08f0c8e05d341672b4fb33/fancy-items/Constants/FancyItemsConstants.cs#L56
-            new Color(0.5f, 0.5f, 0.5f, 0.5f),      // Quality 0: 灰色
-            new Color(0.9f, 0.9f, 0.9f, 0.24f),     // Quality 1: 浅白色
-            new Color(0.6f, 0.9f, 0.6f, 0.24f),     // Quality 2: 柔和浅绿
-            new Color(0.6f, 0.8f, 1.0f, 0.30f),     // Quality 3: 天蓝浅色
-            new Color(1.0f, 0.50f, 1.0f, 0.40f),   // Quality 4: 亮浅紫（提亮,略粉）
-            new Color(1.0f, 0.75f, 0.2f, 0.60f),   // Quality 5: 柔亮橙（更偏橙、更暖）
-            new Color(1.0f, 0.3f, 0.3f, 0.4f),     // Quality 6+: 明亮红（亮度提升、透明度降低）
-        };
-
-        /// <summary>
         /// Gets color associated with item quality
         /// </summary>
         public static Color GetItemQualityColor(int typeId)
         {
-            var quality = GetItemQuality(typeId);
-            if (quality < 0 || quality >= ItemQualityColors.Length)
+            var item = GetItem(typeId);
+            if (item == null)
             {
-                quality = 0;
+                return Color.white;
             }
-            return ItemQualityColors[quality];
+            return QualityUtils.GetItemValueLevelColor(QualityUtils.GetCachedItemValueLevel(item));
         }
 
         /// <summary>

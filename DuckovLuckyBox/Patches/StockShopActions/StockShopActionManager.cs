@@ -39,7 +39,6 @@ namespace DuckovLuckyBox.Patches.StockShopActions
                 return;
             }
             _actions[actionName] = action;
-            Log.Debug($"Registered stock shop action: {actionName}");
         }
 
         /// <summary>

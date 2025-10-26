@@ -91,7 +91,7 @@ namespace DuckovLuckyBox
             {
                 if (Input.GetKeyDown(KeyCode.F9))
                 {
-                    ItemUtils.SendItemToCharacterInventory(1178, 1).Forget(); // Send a KnifeBox item for testing
+                    ItemUtils.SendItemToCharacterInventory(1177, 5).Forget(); // Send a 1177 item for testing
                 }
             }
         }

@@ -20,7 +20,6 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
         public async UniTask ExecuteAsync(StockShopView stockShopView)
         {
-            Log.Debug("Store pick action executed");
 
             var target = AccessTools.Field(typeof(StockShopView), "target").GetValue(stockShopView) as Duckov.Economy.StockShop;
             if (target == null) return;

@@ -288,7 +288,7 @@ namespace DuckovLuckyBox.Patches
       Object.Destroy(targetItem.gameObject);
 
       // Get original item quality and stack count
-      var originalQuality = targetItem.Quality;
+      var originalQuality = QualityUtils.GetCachedItemValueLevel(targetItem);
       var originalStackCount = targetItem.StackCount;
 
       Log.Info($"Lottery: destroying {originalStackCount}x quality {originalQuality} item(s)");
