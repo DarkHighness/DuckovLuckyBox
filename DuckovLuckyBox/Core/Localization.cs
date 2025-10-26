@@ -81,8 +81,8 @@ namespace DuckovLuckyBox.Core
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { I18n.RefreshStockKey, "刷新" },
             { I18n.StorePickKey, "商人那拾一个" },
-            { I18n.TrashBinKey, "回收站" },
-            { I18n.TrashBinConfirmKey, "确认回收" },
+            { I18n.TrashBinKey, "\"汰换合同\"" },
+            { I18n.TrashBinConfirmKey, "确认" },
             { I18n.TrashBinClearKey, "清空" },
             { I18n.PickNotificationFormatKey, "俺拾到了 {itemDisplayName}" },
             { I18n.StreetPickKey, "路边拾一个" },

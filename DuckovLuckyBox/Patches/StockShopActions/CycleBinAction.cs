@@ -9,6 +9,7 @@ using Duckov.Economy.UI;
 using Duckov.UI;
 using Duckov.UI.Animations;
 using DuckovLuckyBox.Core;
+using DuckovLuckyBox.UI;
 using HarmonyLib;
 using ItemStatsSystem;
 using SodaCraft.Localizations;
@@ -55,8 +56,9 @@ namespace DuckovLuckyBox.Patches.StockShopActions
       if (Sessions.TryGetValue(view, out var session))
       {
         session.OnViewOpened();
-        IsOpen = true;
       }
+
+      IsOpen = true;
     }
 
     internal static void OnViewClosed(StockShopView view)
@@ -69,8 +71,9 @@ namespace DuckovLuckyBox.Patches.StockShopActions
       if (Sessions.TryGetValue(view, out var session))
       {
         session.OnViewClosed();
-        IsOpen = false;
       }
+
+      IsOpen = false;
     }
 
     private static ContractSession GetOrCreateSession(StockShopView view)
@@ -1237,6 +1240,9 @@ namespace DuckovLuckyBox.Patches.StockShopActions
             NotificationText.Push("Recycling failed.");
             return;
           }
+
+          // Play reward animation
+          await CycleBinAnimation.PlayAsync(reward);
 
           if (!ItemUtilities.SendToPlayerCharacterInventory(reward))
           {

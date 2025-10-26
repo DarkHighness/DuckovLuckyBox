@@ -337,11 +337,9 @@ namespace DuckovLuckyBox.Patches
     {
         public static bool Prefix(StockShopView __instance)
         {
-            Log.Debug("StockShopView OnSelectionChanged intercepted");
             // Prevent selection changes when Cycle Bin view is open
             if (CycleBinAction.IsOpen)
             {
-                Log.Debug("Cycle Bin is opened, skipping selection change");
                 return false; // Skip original method
             }
             return true; // Proceed with original method

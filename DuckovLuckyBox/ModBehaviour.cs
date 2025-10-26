@@ -91,7 +91,15 @@ namespace DuckovLuckyBox
             {
                 if (Input.GetKeyDown(KeyCode.F9))
                 {
-                    ItemUtils.SendItemToCharacterInventory(1177, 5).Forget(); // Send a 1177 item for testing
+                    int[] items = { 1172, 1173, 1177, 95, 31 };
+                    foreach (var itemId in items)
+                    {
+                        // send 5 of each item for testing
+                        for (int i = 0; i < 5; i++)
+                        {
+                            ItemUtils.SendItemToCharacterInventory(itemId, 1).Forget();
+                        }
+                    }
                 }
             }
         }
