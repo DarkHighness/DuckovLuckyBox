@@ -2,8 +2,10 @@ namespace DuckovLuckyBox.Core
 {
     public static class Constants
     {
-        public static readonly string ModId = "Duckov.LuckyBox";
-        public static readonly string ModName = "Duckov Lucky Box";
+        public const string ModId = "Duckov.LuckyBox";
+        public const string ModName = "Duckov Lucky Box";
+        public const string AnimationOnlyModId = "Duckov.LuckyAnimation";
+        public const string AnimationOnlyModName = "Duckov Lucky Animation";
 
         public static class Sound
         {

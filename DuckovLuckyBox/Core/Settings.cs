@@ -133,12 +133,12 @@ namespace DuckovLuckyBox.Core.Settings
     // General Settings
     public const bool EnableAnimation = true;
     public static readonly Hotkey SettingsHotkey = new Hotkey(KeyCode.F1, false, false, false);
-    public const bool EnableDestroyButton = true;
-    public const bool EnableLotteryButton = true;
+    public const bool EnableDestroyButton = Constants.ModId != Constants.AnimationOnlyModId;
+    public const bool EnableLotteryButton = Constants.ModId != Constants.AnimationOnlyModId;
     public const bool EnableDebug = false;
     public const bool EnableUseToCreateItemPatch = true;
     public const bool EnableWeightedLottery = true;
-    public const bool EnableStockShopActions = true;
+    public const bool EnableStockShopActions = Constants.ModId != Constants.AnimationOnlyModId;
     public const bool EnableHighQualitySound = true;
     public const string HighQualitySoundFilePath = "";
 

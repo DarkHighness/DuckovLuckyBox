@@ -9,6 +9,7 @@ using Duckov.Economy.UI;
 using Duckov.UI;
 using Duckov.UI.Animations;
 using DuckovLuckyBox.Core;
+using DuckovLuckyBox.Core.Settings;
 using DuckovLuckyBox.UI;
 using HarmonyLib;
 using ItemStatsSystem;
@@ -46,6 +47,16 @@ namespace DuckovLuckyBox.Patches.StockShopActions
       await UniTask.CompletedTask;
     }
 
+    private static void SetOpenState(bool isOpen)
+    {
+      if (!SettingManager.Instance.EnableStockShopActions.GetAsBool()) {
+        IsOpen = false;
+        return;
+      }
+
+      IsOpen = isOpen;
+    }
+
     internal static void OnViewOpened(StockShopView view)
     {
       if (view == null)
@@ -58,7 +69,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         session.OnViewOpened();
       }
 
-      IsOpen = true;
+      SetOpenState(true);
     }
 
     internal static void OnViewClosed(StockShopView view)
@@ -73,7 +84,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         session.OnViewClosed();
       }
 
-      IsOpen = false;
+      SetOpenState(false);
     }
 
     private static ContractSession GetOrCreateSession(StockShopView view)
@@ -217,7 +228,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         }
 
         UpdateActionButtonsState();
-        IsOpen = true;
+        SetOpenState(true);
       }
 
       private void Hide(bool force)
@@ -243,7 +254,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         ReturnAllItems();
 
         _contractRoot?.gameObject.SetActive(false);
-        IsOpen = false;
+        SetOpenState(false);
       }
 
       private void EnsureInitialized()
