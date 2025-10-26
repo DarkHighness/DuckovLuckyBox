@@ -11,6 +11,12 @@ using DuckovLuckyBox.Core.Settings;
 using DuckovLuckyBox.UI;
 using Cysharp.Threading.Tasks;
 
+namespace DuckovLuckyAnimation
+{
+    public class ModBehaviour : DuckovLuckyBox.ModBehaviour { }
+
+}
+
 namespace DuckovLuckyBox
 {
 
