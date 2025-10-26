@@ -37,7 +37,15 @@ namespace DuckovLuckyBox.Core
             public static readonly string SettingsEnableUseToCreateItemPatchKey = "UI_SettingsEnableUseToCreateItemPatch";
             public static readonly string SettingsEnableWeightedLotteryKey = "UI_SettingsEnableWeightedLottery";
             public static readonly string SettingsEnableHighQualitySoundKey = "UI_SettingsEnableHighQualitySound";
-            public static readonly string SettingsHighQualitySoundFilePathKey = "UI_SettingsHighQualitySoundFilePath";
+            public static readonly string SettingsHighQualitySoundFilePathKey = "UI_SettingsHighQualitySoundFile";
+            public static readonly string SettingsEnableStockShopActionsKey = "UI_SettingsEnableStockShopActions";
+            public static readonly string RecyclingFailedKey = "UI_RecyclingFailed";
+            public static readonly string ItemIsNullKey = "UI_ItemIsNull";
+            public static readonly string ContractInventoryNotAvailableKey = "UI_ContractInventoryNotAvailable";
+            public static readonly string ItemNotValidForContractKey = "UI_ItemNotValidForContract";
+            public static readonly string ContractFullKey = "UI_ContractFull";
+            public static readonly string NoRewardAvailableKey = "UI_NoRewardAvailable";
+            public static readonly string ItemQualityMismatchKey = "UI_ItemQualityMismatch";
 
             // Item Operation Menu I18n keys
             public static readonly string ItemMenuDestroyKey = "UI_ItemMenuDestroy";
@@ -74,6 +82,14 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableWeightedLotteryKey, "Enable Weighted Lottery" },
             { I18n.SettingsEnableHighQualitySoundKey, "Enable High Quality Item Sound" },
             { I18n.SettingsHighQualitySoundFilePathKey, "High Quality Item Sound File" },
+            { I18n.SettingsEnableStockShopActionsKey, "Enable Shop Actions" },
+            { I18n.RecyclingFailedKey, "Recycling failed." },
+            { I18n.ItemIsNullKey, "Item is null." },
+            { I18n.ContractInventoryNotAvailableKey, "Contract inventory not available." },
+            { I18n.ItemNotValidForContractKey, "Item is not valid for this contract." },
+            { I18n.ContractFullKey, "Contract is full." },
+            { I18n.NoRewardAvailableKey, "No reward available for this quality." },
+            { I18n.ItemQualityMismatchKey, "Item quality does not match contract requirements." },
             { I18n.ItemMenuDestroyKey, "Destroy" },
             { I18n.ItemMenuLotteryKey, "Lottery" },
             { I18n.LotteryResultFormatKey, "You got {itemDisplayName}!" }
@@ -106,6 +122,14 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableWeightedLotteryKey, "启用权重抽奖" },
             { I18n.SettingsEnableHighQualitySoundKey, "启用高等级物品音效" },
             { I18n.SettingsHighQualitySoundFilePathKey, "高等级物品音效文件" },
+            { I18n.SettingsEnableStockShopActionsKey, "启用商店动作" },
+            { I18n.RecyclingFailedKey, "回收失败。" },
+            { I18n.ItemIsNullKey, "物品为空。" },
+            { I18n.ContractInventoryNotAvailableKey, "合同库存不可用。" },
+            { I18n.ItemNotValidForContractKey, "物品对该合同无效。" },
+            { I18n.ContractFullKey, "合同已满。" },
+            { I18n.NoRewardAvailableKey, "此品质无可用奖励。" },
+            { I18n.ItemQualityMismatchKey, "物品品质不符合合同要求。" },
             { I18n.ItemMenuDestroyKey, "销毁" },
             { I18n.ItemMenuLotteryKey, "抽奖" },
             { I18n.LotteryResultFormatKey, "你抽中了 {itemDisplayName}！" }

@@ -16,6 +16,7 @@ namespace DuckovLuckyBox.Core.Settings
         public bool EnableUseToCreateItemPatch = DefaultSettings.EnableUseToCreateItemPatch;
         public bool EnableWeightedLottery = DefaultSettings.EnableWeightedLottery;
         public bool EnableHighQualitySound = DefaultSettings.EnableHighQualitySound;
+        public bool EnableStockShopActions = DefaultSettings.EnableStockShopActions;
         public string HighQualitySoundFilePath = DefaultSettings.HighQualitySoundFilePath;
         public long RefreshStockPrice = DefaultSettings.RefreshStockPrice;
         public long StorePickPrice = DefaultSettings.StorePickPrice;
@@ -205,6 +206,7 @@ namespace DuckovLuckyBox.Core.Settings
                 EnableUseToCreateItemPatch = settings.EnableUseToCreateItemPatch.GetAsBool(),
                 EnableWeightedLottery = settings.EnableWeightedLottery.GetAsBool(),
                 EnableHighQualitySound = settings.EnableHighQualitySound.GetAsBool(),
+                EnableStockShopActions = settings.EnableStockShopActions.GetAsBool(),
                 HighQualitySoundFilePath = settings.HighQualitySoundFilePath.GetAsString(),
                 RefreshStockPrice = settings.RefreshStockPrice.GetAsLong(),
                 StorePickPrice = settings.StorePickPrice.GetAsLong(),
@@ -232,6 +234,7 @@ namespace DuckovLuckyBox.Core.Settings
                 settings.EnableUseToCreateItemPatch.Value = config.EnableUseToCreateItemPatch;
                 settings.EnableWeightedLottery.Value = config.EnableWeightedLottery;
                 settings.EnableHighQualitySound.Value = config.EnableHighQualitySound;
+                settings.EnableStockShopActions.Value = config.EnableStockShopActions;
                 settings.HighQualitySoundFilePath.Value = config.HighQualitySoundFilePath ?? DefaultSettings.HighQualitySoundFilePath;
                 settings.RefreshStockPrice.Value = config.RefreshStockPrice;
                 settings.StorePickPrice.Value = config.StorePickPrice;

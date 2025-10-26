@@ -831,12 +831,12 @@ namespace DuckovLuckyBox.Patches.StockShopActions
       {
         if (item == null)
         {
-          return ContractValidationResult.Invalid(string.Empty, ItemValueLevel.White, true, "物品为空");
+          return ContractValidationResult.Invalid(string.Empty, ItemValueLevel.White, true, Localizations.I18n.ItemIsNullKey.ToPlainText());
         }
 
         if (_contractInventory == null)
         {
-          return ContractValidationResult.Invalid(string.Empty, ItemValueLevel.White, true, null);
+          return ContractValidationResult.Invalid(string.Empty, ItemValueLevel.White, true, Localizations.I18n.ContractInventoryNotAvailableKey.ToPlainText());
         }
 
         string category = LotteryService.GetItemCategory(item.TypeID) ?? string.Empty;
@@ -847,12 +847,12 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
         if (string.IsNullOrEmpty(category) || !RewardCategories.Contains(category))
         {
-          return ContractValidationResult.Invalid(category, quality, isFirstItem, "只能放入指定类型的物品。");
+          return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.ItemNotValidForContractKey.ToPlainText());
         }
 
         if (currentCount >= ContractSize)
         {
-          return ContractValidationResult.Invalid(category, quality, isFirstItem, "汰换合同已满。");
+          return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.ContractFullKey.ToPlainText());
         }
 
         if (isFirstItem)
@@ -872,7 +872,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         }
         else if (!MatchesContractRequirements(quality))
         {
-          return ContractValidationResult.Invalid(category, quality, false, "只能放入与首件相同等级的物品。");
+          return ContractValidationResult.Invalid(category, quality, false, Localizations.I18n.ItemQualityMismatchKey.ToPlainText());
         }
         else
         {
@@ -1237,7 +1237,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
           if (reward == null)
           {
-            NotificationText.Push("Recycling failed.");
+            NotificationText.Push(Localizations.I18n.RecyclingFailedKey.ToPlainText());
             return;
           }
 

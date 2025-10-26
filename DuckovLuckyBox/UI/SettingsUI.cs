@@ -178,6 +178,7 @@ namespace DuckovLuckyBox.UI
             CreateToggleSetting(settings.EnableUseToCreateItemPatch);
             CreateToggleSetting(settings.EnableWeightedLottery);
             CreateToggleSetting(settings.EnableHighQualitySound);
+            CreateToggleSetting(settings.EnableStockShopActions);
             CreateTextSetting(settings.HighQualitySoundFilePath);
 
             // Pricing category

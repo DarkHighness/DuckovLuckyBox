@@ -145,6 +145,12 @@ namespace DuckovLuckyBox.Patches
 
             EnsureActionContainer(merchantNameText);
             CreateActionButtons(merchantNameText);
+
+            // Hide if disabled
+            if (!SettingManager.Instance.EnableStockShopActions.GetAsBool())
+            {
+                _actionsContainer?.gameObject.SetActive(false);
+            }
         }
 
         private static void EnsureActionContainer(TextMeshProUGUI merchantNameText)
@@ -264,9 +270,16 @@ namespace DuckovLuckyBox.Patches
             settings.RefreshStockPrice.OnValueChanged += _ => UpdateButtonTexts();
             settings.StorePickPrice.OnValueChanged += _ => UpdateButtonTexts();
             settings.StreetPickPrice.OnValueChanged += _ => UpdateButtonTexts();
+            settings.EnableStockShopActions.OnValueChanged += OnEnableStockShopActionsChanged;
 
             _priceChangeSubscribed = true;
             Log.Debug("Subscribed to price change events");
+        }
+
+        private static void OnEnableStockShopActionsChanged(object value)
+        {
+            bool enabled = value is bool b && b;
+            _actionsContainer?.gameObject.SetActive(enabled);
         }
 
         private static void ConfigureActionLabel(TextMeshProUGUI label, string text)

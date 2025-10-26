@@ -138,8 +138,9 @@ namespace DuckovLuckyBox.Core.Settings
     public const bool EnableDebug = false;
     public const bool EnableUseToCreateItemPatch = true;
     public const bool EnableWeightedLottery = true;
+    public const bool EnableStockShopActions = true;
     public const bool EnableHighQualitySound = true;
-    public static readonly string HighQualitySoundFilePath = string.Empty;  // Empty means use default sound
+    public const string HighQualitySoundFilePath = "";
 
     // Pricing Settings
     public const long RefreshStockPrice = 100L;
@@ -234,6 +235,16 @@ namespace DuckovLuckyBox.Core.Settings
       DefaultValue = DefaultSettings.EnableHighQualitySound,
     };
 
+    public SettingItem EnableStockShopActions { get; set; } = new SettingItem
+    {
+      Key = "DuckovLuckyBox.Settings.EnableStockShopActions",
+      Label = Localizations.I18n.SettingsEnableStockShopActionsKey,
+      Description = "DuckovLuckyBox.Settings.EnableStockShopActions.Description",
+      Type = Type.Toggle,
+      Category = Category.General,
+      DefaultValue = DefaultSettings.EnableStockShopActions,
+    };
+
     public SettingItem HighQualitySoundFilePath { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.HighQualitySoundFilePath",
@@ -298,6 +309,7 @@ namespace DuckovLuckyBox.Core.Settings
         yield return EnableUseToCreateItemPatch;
         yield return EnableWeightedLottery;
         yield return EnableHighQualitySound;
+        yield return EnableStockShopActions;
         yield return HighQualitySoundFilePath;
         yield return RefreshStockPrice;
         yield return StorePickPrice;
