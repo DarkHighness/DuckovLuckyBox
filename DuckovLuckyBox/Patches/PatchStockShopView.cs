@@ -15,6 +15,7 @@ using System.Linq;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
 using DuckovLuckyBox.UI;
+using DuckovLuckyBox.Patches.StockShopActions;
 
 namespace DuckovLuckyBox.Patches
 {
@@ -97,19 +98,15 @@ namespace DuckovLuckyBox.Patches
     public class PatchStockShopView_Setup
     {
         private static StockShop? _currentStockShop = null;
-        private static TextMeshProUGUI? _refreshStockText;
-        private static Button? _refreshButton;
-        private static TextMeshProUGUI? _storePickText;
-        private static Button? _storePickButton;
-        private static TextMeshProUGUI? _streetPickText;
-        private static Button? _streetPickButton;
+        private static StockShopActionManager? _actionManager = null;
+        private static Dictionary<string, TextMeshProUGUI> _actionTexts = new Dictionary<string, TextMeshProUGUI>();
+        private static Dictionary<string, Button> _actionButtons = new Dictionary<string, Button>();
         private static RectTransform? _actionsContainer;
         private static bool _priceChangeSubscribed = false;
-        private static readonly string SFX_BUY = "UI/buy";
         private const float ActionsContainerFallbackWidth = 320f;
-        private const float ActionsContainerHeight = 240f; // Increased height for vertical layout with larger spacing
-        private const float ActionsLayoutSpacing = 24f; // Larger spacing between buttons to prevent overlap
-        private const int ActionsLayoutPaddingHorizontal = 0; // No horizontal padding for left alignment
+        private const float ActionsContainerHeight = 240f;
+        private const float ActionsLayoutSpacing = 24f;
+        private const int ActionsLayoutPaddingHorizontal = 0;
         private const int ActionsLayoutPaddingTop = 16;
         private const int ActionsLayoutPaddingBottom = 16;
         private const float ActionLabelPreferredHeight = 40f;
@@ -122,107 +119,141 @@ namespace DuckovLuckyBox.Patches
         private static readonly Color ActionButtonPressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
         private static readonly Color ActionButtonDisabledColor = new Color(1f, 1f, 1f, 0.35f);
 
-
         public static void Postfix(StockShopView __instance, TextMeshProUGUI ___merchantNameText, StockShop ___target)
         {
             if (___merchantNameText == null) return;
             _currentStockShop = ___target;
 
-            EnsureTexts(___merchantNameText);
-            EnsureButtons(__instance);
+            InitializeActionManager();
+            EnsureUIElements(___merchantNameText);
             SubscribeToPriceChanges();
             UpdateButtonTexts();
         }
 
-        private static void EnsureTexts(TextMeshProUGUI merchantNameText)
+        private static void InitializeActionManager()
         {
-            if (_refreshStockText != null || _storePickText != null) return;
+            if (_actionManager == null)
+            {
+                _actionManager = new StockShopActionManager();
+                Log.Debug("Stock shop action manager initialized");
+            }
+        }
 
+        private static void EnsureUIElements(TextMeshProUGUI merchantNameText)
+        {
+            if (_actionTexts.Count > 0) return;
+
+            EnsureActionContainer(merchantNameText);
+            CreateActionButtons(merchantNameText);
+        }
+
+        private static void EnsureActionContainer(TextMeshProUGUI merchantNameText)
+        {
             if (_actionsContainer == null)
             {
                 var parent = merchantNameText.transform.parent as RectTransform;
                 if (parent == null) return;
 
-                // Navigate up the hierarchy to find the appropriate container
-                // Goal: place buttons below the item grid
                 var grandParent = parent.parent as RectTransform;
                 var greatGrandParent = grandParent?.parent as RectTransform;
-
-                // Use the highest available parent (great-grandparent if available, otherwise grandparent, otherwise parent)
                 var targetParent = greatGrandParent ?? grandParent ?? parent;
 
                 _actionsContainer = new GameObject("ExtraActionsContainer", typeof(RectTransform)).GetComponent<RectTransform>();
                 _actionsContainer.SetParent(targetParent, false);
-
-                // Anchor to bottom instead of top to place below items
                 _actionsContainer.anchorMin = new Vector2(0.5f, 0f);
                 _actionsContainer.anchorMax = new Vector2(0.5f, 0f);
                 _actionsContainer.pivot = new Vector2(0.5f, 0f);
-                _actionsContainer.anchoredPosition = new Vector2(0f, 20f); // Small offset from bottom
+                _actionsContainer.anchoredPosition = new Vector2(0f, 20f);
 
                 float width = merchantNameText.rectTransform.rect.width;
                 if (width <= 0f) width = ActionsContainerFallbackWidth;
                 _actionsContainer.sizeDelta = new Vector2(width, ActionsContainerHeight);
-
-                // Move to the end of sibling list to ensure proper rendering order
                 _actionsContainer.SetAsLastSibling();
 
                 var layout = _actionsContainer.gameObject.AddComponent<VerticalLayoutGroup>();
                 layout.childAlignment = TextAnchor.UpperCenter;
-                layout.childControlHeight = false; // Don't control height - let buttons keep their fixed size
+                layout.childControlHeight = false;
                 layout.childControlWidth = true;
                 layout.childForceExpandHeight = false;
                 layout.childForceExpandWidth = false;
                 layout.spacing = ActionsLayoutSpacing;
                 layout.padding = CreateActionsPadding();
             }
-
-            // Create result text
-            _refreshStockText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-            ConfigureActionLabel(_refreshStockText, Localizations.I18n.RefreshStockKey.ToPlainText());
-
-            _storePickText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-            ConfigureActionLabel(_storePickText, Localizations.I18n.StorePickKey.ToPlainText());
-
-            _streetPickText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-            ConfigureActionLabel(_streetPickText, Localizations.I18n.StreetPickKey.ToPlainText());
         }
 
-        private static void EnsureButtons(StockShopView view)
+        private static void CreateActionButtons(TextMeshProUGUI merchantNameText)
         {
-            if (_refreshButton != null || _storePickButton != null || _streetPickButton != null) return;
-            if (_refreshStockText == null || _storePickText == null || _streetPickText == null) return;
+            if (_actionManager == null) return;
 
-            _refreshButton = _refreshStockText.gameObject.AddComponent<Button>();
-            ConfigureActionButton(_refreshButton, _refreshStockText);
+            foreach (var action in _actionManager.GetAllActions())
+            {
+                var actionText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
+                ConfigureActionLabel(actionText, action.GetLocalizationKey().ToPlainText());
 
-            _storePickButton = _storePickText.gameObject.AddComponent<Button>();
-            ConfigureActionButton(_storePickButton, _storePickText);
+                var button = actionText.gameObject.AddComponent<Button>();
+                ConfigureActionButton(button, actionText);
 
-            _streetPickButton = _streetPickText.gameObject.AddComponent<Button>();
-            ConfigureActionButton(_streetPickButton, _streetPickText);
+                string actionName = action.GetType().Name;
+                _actionTexts[actionName] = actionText;
+                _actionButtons[actionName] = button;
 
-            _refreshButton.onClick.AddListener(() => OnRefreshButtonClicked());
-            _storePickButton.onClick.AddListener(() => OnStorePickButtonClicked().Forget());
-            _streetPickButton.onClick.AddListener(() => OnStreetPickButtonClicked().Forget());
+                // Bind click event
+                button.onClick.AddListener(() => ExecuteActionAsync(actionName).Forget());
+            }
+
+            Log.Debug($"Created {_actionTexts.Count} action buttons");
+        }
+
+        private static async UniTaskVoid ExecuteActionAsync(string actionName)
+        {
+            if (_actionManager == null) return;
+
+            var view = FindStockShopView();
+            if (view != null)
+            {
+                await _actionManager.ExecuteAsync(actionName, view);
+            }
+        }
+
+        private static StockShopView? FindStockShopView()
+        {
+            // Find the currently active StockShopView
+            var allViews = UnityEngine.Object.FindObjectsOfType<StockShopView>();
+            return allViews.Length > 0 ? allViews[0] : null;
         }
 
         private static void UpdateButtonTexts()
         {
-            if (_refreshStockText == null || _storePickText == null || _streetPickText == null) return;
+            if (_actionTexts.Count == 0) return;
 
             long refreshPrice = SettingManager.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
             long storePickPrice = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
             long streetPickPrice = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
 
-            var baseRefreshText = Localizations.I18n.RefreshStockKey.ToPlainText();
-            var baseStorePickText = Localizations.I18n.StorePickKey.ToPlainText();
-            var baseStreetPickText = Localizations.I18n.StreetPickKey.ToPlainText();
             var freeText = Localizations.I18n.FreeKey.ToPlainText();
 
-            _refreshStockText.text = refreshPrice > 0 ? $"{baseRefreshText} (${refreshPrice})" : $"{baseRefreshText} ({freeText})";
-            _storePickText.text = storePickPrice > 0 ? $"{baseStorePickText} (${storePickPrice})" : $"{baseStorePickText} ({freeText})";
-            _streetPickText.text = streetPickPrice > 0 ? $"{baseStreetPickText} (${streetPickPrice})" : $"{baseStreetPickText} ({freeText})";
+            if (_actionTexts.TryGetValue(nameof(RefreshStockAction), out var refreshText))
+            {
+                var baseText = Localizations.I18n.RefreshStockKey.ToPlainText();
+                refreshText.text = refreshPrice > 0 ? $"{baseText} (${refreshPrice})" : $"{baseText} ({freeText})";
+            }
+
+            if (_actionTexts.TryGetValue(nameof(StorePickAction), out var storePickText))
+            {
+                var baseText = Localizations.I18n.StorePickKey.ToPlainText();
+                storePickText.text = storePickPrice > 0 ? $"{baseText} (${storePickPrice})" : $"{baseText} ({freeText})";
+            }
+
+            if (_actionTexts.TryGetValue(nameof(StreetPickAction), out var streetPickText))
+            {
+                var baseText = Localizations.I18n.StreetPickKey.ToPlainText();
+                streetPickText.text = streetPickPrice > 0 ? $"{baseText} (${streetPickPrice})" : $"{baseText} ({freeText})";
+            }
+
+            if (_actionTexts.TryGetValue(nameof(CycleBinAction), out var cycleBinText))
+            {
+                cycleBinText.text = Localizations.I18n.TrashBinKey.ToPlainText();
+            }
         }
 
         private static void SubscribeToPriceChanges()
@@ -230,7 +261,6 @@ namespace DuckovLuckyBox.Patches
             if (_priceChangeSubscribed) return;
 
             var settings = SettingManager.Instance;
-
             settings.RefreshStockPrice.OnValueChanged += _ => UpdateButtonTexts();
             settings.StorePickPrice.OnValueChanged += _ => UpdateButtonTexts();
             settings.StreetPickPrice.OnValueChanged += _ => UpdateButtonTexts();
@@ -239,104 +269,11 @@ namespace DuckovLuckyBox.Patches
             Log.Debug("Subscribed to price change events");
         }
 
-        private static async UniTask OnStreetPickButtonClicked()
-        {
-            Log.Debug("Street pick button clicked");
-
-            // Get price from settings
-            long price = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
-
-            try
-            {
-                var context = new DefaultLotteryContext();
-                await LotteryService.PerformLotteryWithContextAsync(
-                    candidateTypeIds: null, // Use default cache
-                    price: price,
-                    playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
-                    context: context);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Street lottery failed: {ex.Message}");
-            }
-        }
-
-        private static void OnRefreshButtonClicked()
-        {
-            Log.Debug("Refresh button clicked");
-            if (_currentStockShop == null) return;
-
-            // Get price from settings and try to pay
-            long price = SettingManager.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
-
-            // Skip payment if price is zero
-            if (price > 0 && !EconomyManager.Pay(new Cost(price), true, true))
-            {
-                Log.Warning($"Failed to pay {price} for refresh stock");
-                var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
-                NotificationText.Push(notEnoughMoneyMessage);
-                return;
-            }
-
-            if (!TryInvokeRefresh(_currentStockShop)) return;
-            AudioManager.Post(SFX_BUY);
-            Log.Debug("Stock refreshed");
-        }
-
-
-        private static async UniTask<bool> OnStorePickButtonClicked()
-        {
-            Log.Debug("Store pick button clicked");
-            if (_currentStockShop == null) return false;
-            if (_currentStockShop.Busy) return false;
-
-            var itemEntries = _currentStockShop.entries.Where(entry =>
-              entry.CurrentStock > 0 &&
-              entry.Possibility > 0f &&
-              entry.Show).ToList();
-
-            if (itemEntries.Count == 0)
-            {
-                Log.Warning("No available items to pick");
-                return false;
-            }
-
-            // Get price from settings
-            long price = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
-
-            var candidateTypeIds = itemEntries.Select(entry => entry.ItemTypeID).ToList();
-            var context = new StoreLotteryContext(_currentStockShop, itemEntries);
-
-            try
-            {
-                await LotteryService.PerformLotteryWithContextAsync(
-                    candidateTypeIds,
-                    price,
-                    playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
-                    context);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Store lottery failed: {ex.Message}");
-                return false;
-            }
-        }
-
-        private static bool TryInvokeRefresh(StockShop? stockShop)
-        {
-            if (stockShop == null) return false;
-
-            AccessTools.Method(typeof(StockShop), "DoRefreshStock").Invoke(stockShop, null);
-            return true;
-        }
-
         private static void ConfigureActionLabel(TextMeshProUGUI label, string text)
         {
             label.text = text;
             label.margin = Vector4.zero;
-            label.alignment = TextAlignmentOptions.Center; // Center alignment
+            label.alignment = TextAlignmentOptions.Center;
             label.enableAutoSizing = false;
             label.fontSize = Mathf.Max(ActionLabelMinFontSize, label.fontSize * ActionLabelFontScale);
             label.raycastTarget = true;
@@ -374,6 +311,24 @@ namespace DuckovLuckyBox.Patches
               ActionsLayoutPaddingHorizontal,
               ActionsLayoutPaddingTop,
               ActionsLayoutPaddingBottom);
+        }
+    }
+
+    [HarmonyPatch(typeof(StockShopView), "OnOpen")]
+    public static class PatchStockShopView_OnOpen
+    {
+        public static void Postfix(StockShopView __instance)
+        {
+            CycleBinAction.OnViewOpened(__instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(StockShopView), "OnClose")]
+    public static class PatchStockShopView_OnClose
+    {
+        public static void Postfix(StockShopView __instance)
+        {
+            CycleBinAction.OnViewClosed(__instance);
         }
     }
 }

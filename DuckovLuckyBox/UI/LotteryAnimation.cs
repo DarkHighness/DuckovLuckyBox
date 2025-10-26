@@ -322,8 +322,7 @@ namespace DuckovLuckyBox.UI
                     _canvasGroup.alpha = 0f;
                 if (_canvasGroup != null)
                     _canvasGroup.blocksRaycasts = false;
-                if (_overlayRoot != null)
-                    _overlayRoot.gameObject.SetActive(false);
+                _overlayRoot?.gameObject.SetActive(false);
 
                 // Hide Pointer after animation ends
                 if (_centerPointer != null)
@@ -402,7 +401,7 @@ namespace DuckovLuckyBox.UI
                 var slot = CreateSlot(typeId, sprite, LotteryService.GetDisplayName(typeId), LotteryService.GetItemQualityColor(typeId));
 
                 // Position: container is centered, so position is offset from center
-                var positionX = (float)i * slotWidth - totalWidth * 0.5f + slotWidth * 0.5f;
+                var positionX = i * slotWidth - totalWidth * 0.5f + slotWidth * 0.5f;
                 slot.Rect.anchoredPosition = new Vector2(positionX, 0f);
 
                 slots.Add(slot);

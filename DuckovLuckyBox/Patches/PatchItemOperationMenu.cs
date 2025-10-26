@@ -200,11 +200,8 @@ namespace DuckovLuckyBox.Patches
 
       // Hide or modify the Icon if needed
       var iconTransform = buttonObj.transform.Find("Icon");
-      if (iconTransform != null)
-      {
-        // Hide the icon for custom buttons
-        iconTransform.gameObject.SetActive(false);
-      }
+      // Hide the icon for custom buttons
+      iconTransform?.gameObject.SetActive(false);
 
       // Initially hide the button
       buttonObj.SetActive(false);
@@ -239,7 +236,7 @@ namespace DuckovLuckyBox.Patches
       Log.Info($"Destroying item: {targetItem.DisplayName}");
 
       var mainCharacter = LevelManager.Instance?.MainCharacter;
-      if (mainCharacter != null && (Object)mainCharacter != null)
+      if (mainCharacter != null && mainCharacter != null)
       {
         targetItem.Detach();
       }
@@ -282,7 +279,7 @@ namespace DuckovLuckyBox.Patches
 
       // Drop the original item (properly handle inventory removal) then destroy it
       var mainCharacter = LevelManager.Instance?.MainCharacter;
-      if (mainCharacter != null && (Object)mainCharacter != null)
+      if (mainCharacter != null && mainCharacter != null)
       {
         targetItem.Detach();
       }
