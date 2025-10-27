@@ -139,9 +139,33 @@ namespace DuckovLuckyBox.Patches
             }
         }
 
+        public static void CleanupUIElements()
+        {
+            // Destroy action buttons and texts
+            foreach (var text in _actionTexts.Values)
+            {
+                if (text != null)
+                {
+                    UnityEngine.Object.Destroy(text.gameObject);
+                }
+            }
+            _actionTexts.Clear();
+
+            // Clear buttons dictionary (buttons are components on text game objects, so destroyed with them)
+            _actionButtons.Clear();
+
+            // Destroy actions container
+            if (_actionsContainer != null)
+            {
+                UnityEngine.Object.Destroy(_actionsContainer.gameObject);
+                _actionsContainer = null;
+            }
+        }
+
         private static void EnsureUIElements(TextMeshProUGUI merchantNameText)
         {
-            if (_actionTexts.Count > 0) return;
+            // Clean up existing UI elements before re-creating
+            CleanupUIElements();
 
             EnsureActionContainer(merchantNameText);
             CreateActionButtons(merchantNameText);
@@ -342,6 +366,8 @@ namespace DuckovLuckyBox.Patches
         public static void Postfix(StockShopView __instance)
         {
             CycleBinAction.OnViewClosed(__instance);
+            // Clean up UI elements when closing
+            PatchStockShopView_Setup.CleanupUIElements();
         }
     }
 
