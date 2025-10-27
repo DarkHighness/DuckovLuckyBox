@@ -627,6 +627,14 @@ namespace DuckovLuckyBox.UI
                 if (Input.GetMouseButtonDown(0))
                 {
                     _skipRequested = true;
+
+                    // Get the SFX group and play skip sound
+                    var result = sfxGroup.stop();
+                    if (result != FMOD.RESULT.OK)
+                    {
+                        Log.Warning($"Failed to stop rolling sound: {result}");
+                    }
+
                     break;
                 }
 
