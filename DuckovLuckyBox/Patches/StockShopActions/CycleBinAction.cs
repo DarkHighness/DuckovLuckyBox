@@ -8,6 +8,7 @@ using Duckov;
 using Duckov.Economy.UI;
 using Duckov.UI;
 using Duckov.UI.Animations;
+using Duckov.Utilities;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
 using DuckovLuckyBox.UI;
@@ -29,6 +30,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
     private const int ContractSize = 5;
     private const float ContractVerticalOffset = -120f;
     public static bool IsOpen { get; private set; } = false;
+    public static bool HasItems => Sessions.Values.Any(session => session.HasItems);
 
     private static readonly Dictionary<StockShopView, ContractSession> Sessions = new Dictionary<StockShopView, ContractSession>();
 
@@ -85,6 +87,22 @@ namespace DuckovLuckyBox.Patches.StockShopActions
       }
 
       SetOpenState(false);
+      RemoveSession(view);
+    }
+
+    private static void RemoveSession(StockShopView view)
+    {
+      if (view == null)
+      {
+        return;
+      }
+
+      if (Sessions.ContainsKey(view))
+      {
+        var session = Sessions[view];
+        session.Destroy();
+        Sessions.Remove(view);
+      }
     }
 
     private static ContractSession GetOrCreateSession(StockShopView view)
@@ -143,13 +161,17 @@ namespace DuckovLuckyBox.Patches.StockShopActions
       private TextMeshProUGUI? _confirmButtonLabel;
       private Button? _clearButton;
       private TextMeshProUGUI? _clearButtonLabel;
+      private GameObject? _tooltipPanel;
+      private TextMeshProUGUI? _tooltipText;
 
-      private bool _initialized;
       private bool _visible;
       private bool _busy;
       private bool _transferring;
       private ItemValueLevel? _targetQuality;
       private ItemValueLevel? _rewardQuality;
+      private ItemDisplay? _savedSelectedDisplay;
+
+      public bool HasItems => _contractInventory != null && _contractInventory.GetItemCount() > 0;
 
       private sealed class OriginItemContext
       {
@@ -204,9 +226,13 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         EnsureInitialized();
         if (_contractRoot == null || _contractDisplay == null || _contractInventory == null)
         {
-          Log.Warning("Cycle bin UI failed to initialize correctly.");
+          Log.Warning($"Cycle bin UI failed to initialize correctly. Since _contractRoot is {(_contractRoot == null ? "null" : "valid")}, _contractDisplay is {(_contractDisplay == null ? "null" : "valid")}, _contractInventory is {(_contractInventory == null ? "null" : "valid")}. Aborting show.");
           return;
         }
+
+        // Save current selection state
+        var currentSelected = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
+        _savedSelectedDisplay = currentSelected?.GetComponent<ItemDisplay>();
 
         _visible = true;
         _contractRoot?.SetAsLastSibling();
@@ -233,7 +259,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
       private void Hide(bool force)
       {
-        if (!_initialized)
+        if (_contractRoot == null || _contractDisplay == null || _contractInventory == null)
         {
           return;
         }
@@ -253,24 +279,124 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
         ReturnAllItems();
 
+        // Verify that contract inventory is empty after returning all items
+        if (_contractInventory != null && _contractInventory.GetItemCount() > 0)
+        {
+          Log.Error($"[CycleBin] Contract inventory still contains {_contractInventory.GetItemCount()} items after ReturnAllItems. Forcing cleanup.");
+          ForceClearContractInventory();
+        }
+
         _contractRoot?.gameObject.SetActive(false);
+
+        // Hide tooltip if visible
+        HideTooltip();
+
+        // Cleanup tooltip on force hide (complete close)
+        if (force)
+        {
+          CleanupTooltip();
+          FinalCleanup();
+        }
+
+        // Restore selection state
+        if (_savedSelectedDisplay != null)
+        {
+          ItemUIUtilities.Select(_savedSelectedDisplay);
+        }
+
         SetOpenState(false);
+      }
+
+      private void CleanupTooltip()
+      {
+        if (_tooltipPanel != null)
+        {
+          UnityEngine.Object.Destroy(_tooltipPanel);
+          _tooltipPanel = null;
+          _tooltipText = null;
+        }
+      }
+
+      public void Destroy()
+      {
+        // Ensure contract inventory is completely empty
+        if (_contractInventory != null && _contractInventory.GetItemCount() > 0)
+        {
+          ForceClearContractInventory();
+        }
+
+        // Clear all references
+        _itemOrigins.Clear();
+        CleanupTooltip();
+
+        // Destroy contract inventory object
+        if (_contractInventory != null)
+        {
+          UnityEngine.Object.Destroy(_contractInventory.gameObject);
+          _contractInventory = null;
+        }
+
+        // Destroy contract display
+        if (_contractDisplay != null)
+        {
+          UnityEngine.Object.Destroy(_contractDisplay.gameObject);
+          _contractDisplay = null;
+        }
+
+        // Destroy contract root
+        if (_contractRoot != null)
+        {
+          UnityEngine.Object.Destroy(_contractRoot.gameObject);
+          _contractRoot = null;
+        }
+
+        // Destroy action button container
+        if (_actionButtonContainer != null)
+        {
+          UnityEngine.Object.Destroy(_actionButtonContainer.gameObject);
+          _actionButtonContainer = null;
+        }
+
+        // Reset other UI components
+        _confirmButton = null;
+        _confirmButtonLabel = null;
+        _clearButton = null;
+        _clearButtonLabel = null;
+      }
+
+      private void FinalCleanup()
+      {
+        // Ensure contract inventory is completely empty
+        if (_contractInventory != null && _contractInventory.GetItemCount() > 0)
+        {
+          Log.Error($"[CycleBin] Contract inventory still contains {_contractInventory.GetItemCount()} items during final cleanup. Force clearing.");
+        }
+
+        Destroy();
       }
 
       private void EnsureInitialized()
       {
-        if (_initialized)
+        Log.Debug("[CycleBin:EnsureInitialized] Starting initialization...");
+
+        // Clean up any existing objects before re-initializing
+        if (_contractInventory != null && _contractInventory.GetItemCount() > 0)
         {
-          return;
+          Log.Warning("[CycleBin] Contract inventory still contains items during re-initialization. Force clearing.");
         }
 
+        Destroy();
+        Log.Debug("[CycleBin:EnsureInitialized] Cleaned up existing objects.");
+
         CaptureViewReferences();
+        Log.Debug("[CycleBin:EnsureInitialized] Captured view references.");
 
         if (_detailsFadeGroup == null)
         {
           Log.Warning("Cycle bin could not locate details fade group in StockShopView.");
           return;
         }
+        Log.Debug("[CycleBin:EnsureInitialized] Details fade group located.");
 
         var templateDisplay = GetInventoryDisplay("playerInventoryDisplay");
         if (templateDisplay == null)
@@ -278,24 +404,29 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           Log.Warning("Cycle bin could not locate a template InventoryDisplay.");
           return;
         }
+        Log.Debug("[CycleBin:EnsureInitialized] Template InventoryDisplay located.");
 
         BuildContractRoot();
         if (_contractRoot == null)
         {
           return;
         }
+        Log.Debug("[CycleBin:EnsureInitialized] Contract root built.");
 
         CreateContractInventory();
         if (_contractInventory == null)
         {
           return;
         }
+        Log.Debug("[CycleBin:EnsureInitialized] Contract inventory created.");
 
         CreateContractDisplay(templateDisplay);
+        Log.Debug("[CycleBin:EnsureInitialized] Contract display created.");
 
         CreateActionButtons();
+        Log.Debug("[CycleBin:EnsureInitialized] Action buttons created.");
 
-        _initialized = _contractRoot != null && _contractDisplay != null && _contractInventory != null;
+        Log.Debug("[CycleBin:EnsureInitialized] Initialization completed.");
       }
 
       private void CaptureViewReferences()
@@ -430,14 +561,19 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
       private void CreateContractDisplay(InventoryDisplay template)
       {
+        Log.Debug("[CycleBin:CreateContractDisplay] Creating contract display...");
+
         if (_contractRoot == null || _contractInventory == null)
         {
+          Log.Debug("[CycleBin:CreateContractDisplay] Contract root or inventory is null, skipping display creation.");
           return;
         }
 
+        Log.Debug("[CycleBin:CreateContractDisplay] Instantiating template display.");
         var clone = UnityEngine.Object.Instantiate(template.gameObject, _contractRoot);
         clone.name = "CycleBinContractDisplay";
 
+        Log.Debug("[CycleBin:CreateContractDisplay] Getting InventoryDisplay component.");
         _contractDisplay = clone.GetComponent<InventoryDisplay>();
         if (_contractDisplay == null)
         {
@@ -446,8 +582,10 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           return;
         }
 
+        Log.Debug("[CycleBin:CreateContractDisplay] Preparing cloned inventory display.");
         PrepareClonedInventoryDisplay(_contractDisplay);
 
+        Log.Debug("[CycleBin:CreateContractDisplay] Configuring rect transform.");
         var rect = clone.transform as RectTransform;
         if (rect != null)
         {
@@ -458,27 +596,44 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           rect.anchoredPosition = Vector2.zero;
         }
 
+        Log.Debug("[CycleBin:CreateContractDisplay] Setting up layout element.");
         var displayLayout = clone.GetComponent<LayoutElement>() ?? clone.AddComponent<LayoutElement>();
         displayLayout.preferredWidth = -1f; // Use preferred size
         displayLayout.preferredHeight = -1f; // Use preferred size
         displayLayout.flexibleWidth = 1f; // Allow flexible sizing
         displayLayout.flexibleHeight = 1f; // Allow flexible sizing
 
+        Log.Debug("[CycleBin:CreateContractDisplay] Disabling inventory display extras.");
         DisableInventoryDisplayExtras(_contractDisplay);
+
+        Log.Debug("[CycleBin:CreateContractDisplay] Setting up inventory display.");
+        if (_contractInventory == null)
+        {
+          Log.Warning("Cycle bin contract inventory is null during display setup.");
+          return;
+        }
         _contractDisplay.Setup(_contractInventory, funcCanOperate: _ => true, movable: false);
+
+        Log.Debug("[CycleBin:CreateContractDisplay] Adding double click event handler.");
         _contractDisplay.onDisplayDoubleClicked += OnContractDoubleClicked;
+
+        Log.Debug("[CycleBin:CreateContractDisplay] Activating display game object.");
         _contractDisplay.gameObject.SetActive(true);
 
         if (_contractRoot != null)
         {
+          Log.Debug("[CycleBin:CreateContractDisplay] Rebuilding layout.");
           LayoutRebuilder.ForceRebuildLayoutImmediate(_contractRoot);
         }
+
+        Log.Debug("[CycleBin:CreateContractDisplay] Contract display creation completed.");
       }
 
       private static void PrepareClonedInventoryDisplay(InventoryDisplay display)
       {
         if (display == null)
         {
+          Log.Warning("[CycleBin:PrepareClonedInventoryDisplay] Display is null.");
           return;
         }
 
@@ -502,17 +657,19 @@ namespace DuckovLuckyBox.Patches.StockShopActions
               continue;
             }
 
-            UnityEngine.Object.Destroy(child.gameObject);
+            child.gameObject.SetActive(false);
+            // UnityEngine.Object.Destroy(child.gameObject);
           }
 
-          if (entryPrefab != null)
-          {
-            entryPrefab.gameObject.SetActive(false);
-            entryPrefab.transform.SetParent(entriesParent, false);
-            entryPrefab.transform.SetAsFirstSibling();
-          }
+          // if (entryPrefab != null)
+          // {
+          //   entryPrefab.gameObject.SetActive(false);
+          //   entryPrefab.transform.SetParent(entriesParent, false);
+          //   entryPrefab.transform.SetAsFirstSibling();
+          // }
         }
 
+        // Clear existing pools and entries
         entryPoolField?.SetValue(display, null);
         entriesField?.SetValue(display, new List<InventoryEntry>());
         cachedIndexesField?.SetValue(display, new List<int>());
@@ -638,6 +795,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           {
             CompleteContractAsync().Forget();
           });
+          AddTooltipToButton(_confirmButton);
         }
 
         _clearButtonLabel = CreateActionButtonLabel(_actionButtonContainer, "CycleBinClearButton", Localizations.I18n.TrashBinClearKey.ToPlainText(), out _clearButton);
@@ -648,9 +806,13 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           {
             ReturnAllItems();
           });
+          AddTooltipToButton(_clearButton);
         }
 
         UpdateActionButtonsState();
+
+        CreateTooltipPanel();
+
         LayoutRebuilder.ForceRebuildLayoutImmediate(_contractRoot);
       }
 
@@ -750,6 +912,197 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         colors.selectedColor = ActionButtonHighlightedColor;
         colors.disabledColor = ActionButtonDisabledColor;
         button.colors = colors;
+      }
+
+      private void AddTooltipToButton(Button button)
+      {
+        // Add tooltip trigger component
+        var tooltipTrigger = button.gameObject.AddComponent<TooltipTrigger>();
+        tooltipTrigger.session = this;
+      }
+
+      private class TooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+      {
+        public ContractSession? session;
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+          session?.ShowTooltip(GetComponent<Button>());
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+          session?.HideTooltip();
+        }
+      }
+
+      private void CreateTooltipPanel()
+      {
+        if (_contractRoot == null || _textTemplate == null)
+        {
+          return;
+        }
+
+        // Create tooltip panel as a child of the main canvas to avoid UI hierarchy issues
+        var mainCanvas = _contractRoot.GetComponentInParent<Canvas>();
+        if (mainCanvas == null)
+        {
+          return;
+        }
+
+        _tooltipPanel = new GameObject("CycleBinTooltipPanel", typeof(RectTransform));
+        _tooltipPanel.transform.SetParent(mainCanvas.transform, false);
+        _tooltipPanel.layer = mainCanvas.gameObject.layer;
+
+        var tooltipRect = _tooltipPanel.transform as RectTransform;
+        if (tooltipRect != null)
+        {
+          tooltipRect.anchorMin = new Vector2(0.5f, 0.5f);
+          tooltipRect.anchorMax = new Vector2(0.5f, 0.5f);
+          tooltipRect.pivot = new Vector2(0.5f, 0.5f);
+          tooltipRect.sizeDelta = new Vector2(300f, 60f);
+          // Position will be set dynamically when shown
+        }
+
+        // Create background with proper CanvasGroup
+        var background = _tooltipPanel.AddComponent<Image>();
+        background.color = new Color(0f, 0f, 0f, 0.9f);
+        background.raycastTarget = false;
+
+        // Add CanvasGroup for better control
+        var canvasGroup = _tooltipPanel.AddComponent<CanvasGroup>();
+        canvasGroup.blocksRaycasts = false;
+        canvasGroup.interactable = false;
+
+        // Create text
+        var textObject = UnityEngine.Object.Instantiate(_textTemplate.gameObject, _tooltipPanel.transform);
+        textObject.name = "TooltipText";
+        _tooltipText = textObject.GetComponent<TextMeshProUGUI>();
+        if (_tooltipText != null)
+        {
+          _tooltipText.text = "";
+          _tooltipText.alignment = TextAlignmentOptions.Center;
+          _tooltipText.fontSize = 16f;
+          _tooltipText.color = Color.white;
+          _tooltipText.raycastTarget = false;
+
+          var textRect = _tooltipText.rectTransform;
+          textRect.anchorMin = Vector2.zero;
+          textRect.anchorMax = Vector2.one;
+          textRect.offsetMin = new Vector2(10f, 5f);
+          textRect.offsetMax = new Vector2(-10f, -5f);
+        }
+
+        _tooltipPanel.SetActive(false);
+      }
+
+      private void ShowTooltip(Button button)
+      {
+        if (_tooltipPanel == null || _tooltipText == null || _contractInventory == null || button == null)
+        {
+          return;
+        }
+
+        // Safety check: don't show tooltip if CycleBin is not visible
+        if (!_visible)
+        {
+          return;
+        }
+
+        string tooltipText = "";
+        if (button == _confirmButton)
+        {
+          int itemCount = _contractInventory.GetItemCount();
+          if (itemCount == 0)
+          {
+            tooltipText = "将物品放入汰换箱中以开始汰换";
+          }
+          else if (itemCount < ContractSize)
+          {
+            tooltipText = $"需要 {ContractSize} 个物品才能完成汰换\n当前: {itemCount}/{ContractSize}";
+          }
+          else
+          {
+            tooltipText = $"确认汰换 {itemCount} 个物品\n将获得更高级别的物品";
+          }
+        }
+        else if (button == _clearButton)
+        {
+          int itemCount = _contractInventory.GetItemCount();
+          if (itemCount > 0)
+          {
+            tooltipText = $"清除所有 {itemCount} 个物品\n物品将返回原位置";
+          }
+          else
+          {
+            tooltipText = "汰换箱为空";
+          }
+        }
+
+        _tooltipText.text = tooltipText;
+
+        // Position tooltip near the button with bounds checking
+        if (button.transform is RectTransform buttonRect && _tooltipPanel.transform is RectTransform tooltipRect)
+        {
+          var buttonWorldPos = buttonRect.position;
+          var buttonSize = buttonRect.rect.size;
+
+          // Get canvas for bounds checking
+          var canvas = _tooltipPanel.GetComponentInParent<Canvas>();
+          if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+          {
+            var canvasRect = canvas.GetComponent<RectTransform>();
+            if (canvasRect != null)
+            {
+              var canvasSize = canvasRect.rect.size;
+              var tooltipSize = tooltipRect.rect.size;
+
+              // Calculate position with bounds checking
+              float xPos = Mathf.Clamp(buttonWorldPos.x, tooltipSize.x / 2, canvasSize.x - tooltipSize.x / 2);
+              float yPos = Mathf.Clamp(buttonWorldPos.y + buttonSize.y / 2 + 40f, tooltipSize.y / 2, canvasSize.y - tooltipSize.y / 2);
+
+              tooltipRect.position = new Vector3(xPos, yPos, buttonWorldPos.z);
+            }
+            else
+            {
+              // Fallback positioning
+              tooltipRect.position = new Vector3(
+                buttonWorldPos.x,
+                buttonWorldPos.y + buttonSize.y / 2 + 40f,
+                buttonWorldPos.z
+              );
+            }
+          }
+        }
+
+        _tooltipPanel.SetActive(true);
+      }
+
+      private void HideTooltip()
+      {
+        if (_tooltipPanel != null)
+        {
+          _tooltipPanel.SetActive(false);
+        }
+      }
+
+      private void ForceClearContractInventory()
+      {
+        if (_contractInventory == null)
+        {
+          return;
+        }
+
+        var remainingItems = _contractInventory.Content.Where(i => i != null).ToList();
+        foreach (var item in remainingItems)
+        {
+          _contractInventory.RemoveItem(item);
+          _itemOrigins.Remove(item);
+          GiveToPlayer(item);
+          Log.Warning($"[CycleBin] Force returned item {item.DisplayName} to player inventory during cleanup.");
+        }
+
+        ResetContractRequirements();
       }
 
       private void SubscribeMonitoredDisplays()
@@ -1072,52 +1425,67 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
       private void ReturnItem(Item item)
       {
-        if (_contractInventory == null)
+        if (_contractInventory == null || item == null)
         {
           return;
         }
 
-        if (!_contractInventory.RemoveItem(item))
+        try
         {
-          return;
-        }
-
-        if (!_itemOrigins.TryGetValue(item, out var originContext) || originContext.Inventory == null)
-        {
-          GiveToPlayer(item);
-          _itemOrigins.Remove(item);
-          return;
-        }
-
-        bool restored = false;
-
-        if (originContext.StackSource != null)
-        {
-          try
+          if (!_contractInventory.RemoveItem(item))
           {
-            originContext.StackSource.Combine(item);
-            restored = true;
+            Log.Warning($"[CycleBin] Failed to remove item {item.DisplayName} from contract inventory.");
+            return;
           }
-          catch (Exception ex)
-          {
-            Log.Warning($"Cycle bin failed to combine returned item: {ex.Message}");
-            restored = false;
-          }
-        }
 
-        if (!restored)
-        {
-          if (!originContext.Inventory.AddItem(item))
+          if (!_itemOrigins.TryGetValue(item, out var originContext) || originContext.Inventory == null)
           {
             GiveToPlayer(item);
+            _itemOrigins.Remove(item);
+            return;
+          }
+
+          bool restored = false;
+
+          if (originContext.StackSource != null)
+          {
+            try
+            {
+              originContext.StackSource.Combine(item);
+              restored = true;
+            }
+            catch (Exception ex)
+            {
+              Log.Warning($"Cycle bin failed to combine returned item: {ex.Message}");
+              restored = false;
+            }
+          }
+
+          if (!restored)
+          {
+            if (!originContext.Inventory.AddItem(item))
+            {
+              GiveToPlayer(item);
+            }
+          }
+
+          _itemOrigins.Remove(item);
+
+          if (_contractInventory.GetItemCount() == 0)
+          {
+            ResetContractRequirements();
           }
         }
-
-        _itemOrigins.Remove(item);
-
-        if (_contractInventory.GetItemCount() == 0)
+        catch (Exception ex)
         {
-          ResetContractRequirements();
+          Log.Error($"[CycleBin] Exception during ReturnItem for {item?.DisplayName ?? "null"}: {ex.Message}");
+          // Ensure item is removed from origins even on error
+          if (item != null)
+          {
+            _itemOrigins.Remove(item);
+            // Give to player as fallback
+            GiveToPlayer(item);
+          }
         }
       }
 
@@ -1128,14 +1496,30 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           return;
         }
 
-        var items = _contractInventory.Content.Where(i => i != null).ToList();
-        foreach (var item in items)
+        try
         {
-          ReturnItem(item);
-        }
+          var items = _contractInventory.Content.Where(i => i != null).ToList();
+          foreach (var item in items)
+          {
+            try
+            {
+              ReturnItem(item);
+            }
+            catch (Exception ex)
+            {
+              Log.Error($"[CycleBin] Exception during ReturnItem for {item?.DisplayName ?? "null"} in ReturnAllItems: {ex.Message}");
+            }
+          }
 
-        ResetContractRequirements();
-        UpdateActionButtonsState();
+          ResetContractRequirements();
+          UpdateActionButtonsState();
+        }
+        catch (Exception ex)
+        {
+          Log.Error($"[CycleBin] Exception during ReturnAllItems: {ex.Message}");
+          // Attempt force cleanup
+          ForceClearContractInventory();
+        }
       }
 
       private static void GiveToPlayer(Item item)
