@@ -280,9 +280,9 @@ namespace DuckovLuckyBox.Patches
                 streetPickText.text = streetPickPrice > 0 ? $"{baseText} (${streetPickPrice})" : $"{baseText} ({freeText})";
             }
 
-            if (_actionTexts.TryGetValue(nameof(CycleBinAction), out var cycleBinText))
+            if (_actionTexts.TryGetValue(nameof(RecycleAction), out var recycleText))
             {
-                cycleBinText.text = Localizations.I18n.TrashBinKey.ToPlainText();
+                recycleText.text = Localizations.I18n.RecycleKey.ToPlainText();
             }
         }
 
@@ -356,7 +356,7 @@ namespace DuckovLuckyBox.Patches
     {
         public static void Postfix(StockShopView __instance)
         {
-            CycleBinAction.OnViewOpened(__instance);
+            RecycleAction.OnViewOpened(__instance);
         }
     }
 
@@ -365,7 +365,7 @@ namespace DuckovLuckyBox.Patches
     {
         public static void Postfix(StockShopView __instance)
         {
-            CycleBinAction.OnViewClosed(__instance);
+            RecycleAction.OnViewClosed(__instance);
             // Clean up UI elements when closing
             PatchStockShopView_Setup.CleanupUIElements();
         }
@@ -377,7 +377,7 @@ namespace DuckovLuckyBox.Patches
         public static bool Prefix(StockShopView __instance)
         {
             // Prevent selection changes when Cycle Bin view is open or has items
-            if (CycleBinAction.IsOpen && CycleBinAction.HasItems)
+            if (RecycleAction.IsOpen && RecycleAction.HasItems)
             {
                 return false; // Skip original method
             }

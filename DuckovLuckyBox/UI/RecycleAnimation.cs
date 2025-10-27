@@ -12,9 +12,9 @@ using ItemStatsSystem;
 namespace DuckovLuckyBox.UI
 {
   /// <summary>
-  /// Manages CycleBin reward animation UI and playback
+  /// Manages Recycle reward animation UI and playback
   /// </summary>
-  public static class CycleBinAnimation
+  public static class RecycleAnimation
   {
     private static RectTransform? _overlayRoot;
     private static CanvasGroup? _canvasGroup;
@@ -32,7 +32,7 @@ namespace DuckovLuckyBox.UI
     private static readonly Color OverlayColor = new Color(0f, 0f, 0f, 0.7f);
 
     /// <summary>
-    /// Initializes the CycleBin animation UI with a full-screen canvas overlay
+    /// Initializes the Recycle animation UI with a full-screen canvas overlay
     /// </summary>
     public static void Initialize()
     {
@@ -41,7 +41,7 @@ namespace DuckovLuckyBox.UI
       // Create full-screen canvas if it doesn't exist
       if (_canvas == null)
       {
-        var canvasObj = new GameObject("CycleBinAnimationCanvas", typeof(Canvas), typeof(GraphicRaycaster), typeof(CanvasScaler));
+        var canvasObj = new GameObject("RecycleAnimationCanvas", typeof(Canvas), typeof(GraphicRaycaster), typeof(CanvasScaler));
         _canvas = canvasObj.GetComponent<Canvas>();
         _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         _canvas.sortingOrder = short.MaxValue - 1; // Slightly lower than LotteryAnimation
@@ -52,7 +52,7 @@ namespace DuckovLuckyBox.UI
       }
 
       // Create full-screen overlay
-      _overlayRoot = new GameObject("CycleBinAnimationOverlay", typeof(RectTransform), typeof(CanvasGroup), typeof(Image)).GetComponent<RectTransform>();
+      _overlayRoot = new GameObject("RecycleAnimationOverlay", typeof(RectTransform), typeof(CanvasGroup), typeof(Image)).GetComponent<RectTransform>();
       _overlayRoot.SetParent(_canvas.transform, false);
       _overlayRoot.anchorMin = Vector2.zero;
       _overlayRoot.anchorMax = Vector2.one;
@@ -70,7 +70,7 @@ namespace DuckovLuckyBox.UI
       overlayImage.raycastTarget = true;
 
       // Create item icon in center
-      var iconObj = new GameObject("CycleBinItemIcon", typeof(RectTransform), typeof(Image));
+      var iconObj = new GameObject("RecycleItemIcon", typeof(RectTransform), typeof(Image));
       _itemIcon = iconObj.GetComponent<Image>();
       _itemIcon.rectTransform.SetParent(_overlayRoot, false);
       _itemIcon.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
@@ -80,7 +80,7 @@ namespace DuckovLuckyBox.UI
       _itemIcon.raycastTarget = false;
 
       // Create item text below icon
-      _itemText = new GameObject("CycleBinItemText", typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+      _itemText = new GameObject("RecycleItemText", typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
       _itemText.rectTransform.SetParent(_overlayRoot, false);
       _itemText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
       _itemText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
@@ -92,13 +92,13 @@ namespace DuckovLuckyBox.UI
     }
 
     /// <summary>
-    /// Plays the CycleBin reward animation
+    /// Plays the Recycle reward animation
     /// </summary>
     public static async UniTask PlayAsync(Item item)
     {
       if (item == null)
       {
-        Log.Warning("CycleBinAnimation: Item is null.");
+        Log.Warning("RecycleAnimation: Item is null.");
         return;
       }
 
@@ -170,7 +170,7 @@ namespace DuckovLuckyBox.UI
       var itemQuality = QualityUtils.GetCachedItemValueLevel(item);
 
       ChannelGroup sfxGroup = default;
-      RuntimeManager.CoreSystem.createChannelGroup("CycleBinSFX", out sfxGroup);
+      RuntimeManager.CoreSystem.createChannelGroup("RecycleSFX", out sfxGroup);
 
       if (itemQuality.IsHighQuality())
       {

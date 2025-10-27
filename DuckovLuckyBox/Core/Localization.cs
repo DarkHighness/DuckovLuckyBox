@@ -12,9 +12,9 @@ namespace DuckovLuckyBox.Core
             public static readonly string RefreshStockKey = "UI_RefreshStock";
             public static readonly string StorePickKey = "UI_StorePick";
             public static readonly string StreetPickKey = "UI_StreetPick";
-            public static readonly string TrashBinKey = "UI_TrashBin";
-            public static readonly string TrashBinConfirmKey = "UI_TrashBinConfirm";
-            public static readonly string TrashBinClearKey = "UI_TrashBinClear";
+            public static readonly string RecycleKey = "UI_TrashBin";
+            public static readonly string ConfirmKey = "UI_TrashBinConfirm";
+            public static readonly string ClearKey = "UI_TrashBinClear";
             public static readonly string PickNotificationFormatKey = "Notification_PickOneFormat";
             public static readonly string InventoryFullAndSendToStorageKey = "Notification_InventoryFullAndSendToStorage";
             public static readonly string NotEnoughMoneyFormatKey = "Notification_NotEnoughMoneyFormat";
@@ -57,9 +57,9 @@ namespace DuckovLuckyBox.Core
         { SystemLanguage.English, new Dictionary<string, string> {
             { I18n.RefreshStockKey, "Refresh" },
             { I18n.StorePickKey, "Pick One" },
-            { I18n.TrashBinKey, "Trash Bin" },
-            { I18n.TrashBinConfirmKey, "Confirm" },
-            { I18n.TrashBinClearKey, "Clear" },
+            { I18n.RecycleKey, "Trash Bin" },
+            { I18n.ConfirmKey, "Confirm" },
+            { I18n.ClearKey, "Clear" },
             { I18n.PickNotificationFormatKey, "You picked one {itemDisplayName}." },
             { I18n.StreetPickKey, "Buy one Lucky Box." },
             { I18n.InventoryFullAndSendToStorageKey, "Inventory full, sending to storage." },
@@ -97,9 +97,9 @@ namespace DuckovLuckyBox.Core
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { I18n.RefreshStockKey, "刷新" },
             { I18n.StorePickKey, "商人那拾一个" },
-            { I18n.TrashBinKey, "\"汰换合同\"" },
-            { I18n.TrashBinConfirmKey, "确认" },
-            { I18n.TrashBinClearKey, "清空" },
+            { I18n.RecycleKey, "\"汰换合同\"" },
+            { I18n.ConfirmKey, "确认" },
+            { I18n.ClearKey, "清空" },
             { I18n.PickNotificationFormatKey, "俺拾到了 {itemDisplayName}" },
             { I18n.StreetPickKey, "路边拾一个" },
             { I18n.InventoryFullAndSendToStorageKey, "俺拾不动嘞，邮回仓库嘞。" },

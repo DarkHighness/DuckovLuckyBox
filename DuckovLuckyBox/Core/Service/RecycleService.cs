@@ -12,7 +12,7 @@ namespace DuckovLuckyBox.Core
 {
     /// <summary>
     /// Service for managing item recycling and sorting operations
-    /// Handles category lookups and item quality mappings for CycleBin and similar features
+    /// Handles category lookups and item quality mappings for Recycle and similar features
     /// </summary>
     public static class RecycleService
     {

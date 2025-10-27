@@ -25,7 +25,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
             Register(nameof(RefreshStockAction), new RefreshStockAction());
             Register(nameof(StorePickAction), new StorePickAction());
             Register(nameof(StreetPickAction), new StreetPickAction());
-            Register(nameof(CycleBinAction), new CycleBinAction());
+            Register(nameof(RecycleAction), new RecycleAction());
         }
 
         /// <summary>
