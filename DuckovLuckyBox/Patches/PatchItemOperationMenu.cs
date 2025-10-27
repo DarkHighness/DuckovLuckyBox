@@ -107,8 +107,16 @@ namespace DuckovLuckyBox.Patches
       var targetDisplay = targetDisplayField?.GetValue(state.Menu) as ItemDisplay;
       var targetItem = targetDisplay?.Target;
 
-      // Show button only if enabled in settings and there's a target item
-      bool shouldShow = lotteryButtonEnabled && targetItem != null;
+      // Check if item is a bullet (should hide lottery button)
+      bool isBullet = false;
+      if (targetItem != null)
+      {
+        string category = LotteryService.GetItemCategory(targetItem.TypeID);
+        isBullet = category == "Bullet";
+      }
+
+      // Show button only if enabled in settings, there's a target item, and it's not a bullet
+      bool shouldShow = lotteryButtonEnabled && targetItem != null && !isBullet;
 
       state.LotteryButton.gameObject.SetActive(shouldShow);
       state.LotteryButton.interactable = shouldShow;
@@ -362,6 +370,14 @@ namespace DuckovLuckyBox.Patches
       bool destroyButtonEnabled = (bool)SettingManager.Instance.EnableDestroyButton.Value;
       bool lotteryButtonEnabled = (bool)SettingManager.Instance.EnableLotteryButton.Value;
 
+      // Check if item is a bullet (should hide lottery button)
+      bool isBullet = false;
+      if (targetItem != null)
+      {
+        string category = LotteryService.GetItemCategory(targetItem.TypeID);
+        isBullet = category == "Bullet";
+      }
+
       // Show/hide Destroy button based on settings only
       if (state.DestroyButton != null)
       {
@@ -369,11 +385,12 @@ namespace DuckovLuckyBox.Patches
         state.DestroyButton.interactable = destroyButtonEnabled;
       }
 
-      // Show/hide Lottery button based on settings only
+      // Show/hide Lottery button based on settings and item type
       if (state.LotteryButton != null)
       {
-        state.LotteryButton.gameObject.SetActive(lotteryButtonEnabled);
-        state.LotteryButton.interactable = lotteryButtonEnabled;
+        bool shouldShowLottery = lotteryButtonEnabled && !isBullet;
+        state.LotteryButton.gameObject.SetActive(shouldShowLottery);
+        state.LotteryButton.interactable = shouldShowLottery;
       }
     }
   }
