@@ -41,19 +41,11 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
             var candidateTypeIds = itemEntries.Select(entry => entry.ItemTypeID).ToList();
             var context = new StoreLotteryContext(target, itemEntries);
-
-            try
-            {
-                await LotteryService.PerformLotteryWithContextAsync(
+            await LotteryService.PerformLotteryWithContextAsync(
                     candidateTypeIds,
                     price,
                     playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
                     context);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Store lottery failed: {ex.Message}");
-            }
         }
     }
 }

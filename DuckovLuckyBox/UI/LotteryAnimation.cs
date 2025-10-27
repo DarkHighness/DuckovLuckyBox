@@ -388,8 +388,8 @@ namespace DuckovLuckyBox.UI
                 var typeId = slotSequence[i];
                 var isFinal = i == finalSlotIndex;
 
-                var sprite = isFinal ? (finalIcon ?? LotteryService.GetItemIcon(typeId)) : LotteryService.GetItemIcon(typeId);
-                var slot = CreateSlot(typeId, sprite, LotteryService.GetDisplayName(typeId), LotteryService.GetItemQualityColor(typeId));
+                var sprite = isFinal ? (finalIcon ?? RecycleService.GetItemIcon(typeId)) : RecycleService.GetItemIcon(typeId);
+                var slot = CreateSlot(typeId, sprite, RecycleService.GetDisplayName(typeId), RecycleService.GetItemQualityColor(typeId));
 
                 // Position: container is centered, so position is offset from center
                 var positionX = i * slotWidth - totalWidth * 0.5f + slotWidth * 0.5f;
@@ -433,7 +433,7 @@ namespace DuckovLuckyBox.UI
 
                 if (useWeightedLottery && weightedItemsCache != null)
                 {
-                    var selectedId = LotteryService.PickRandomItemWeighted(weightedItemsCache);
+                    var selectedId = LotteryService.SampleWeightedItems(weightedItemsCache);
                     if (selectedId < 0)
                     {
                         pick = pool[0];
@@ -800,7 +800,7 @@ namespace DuckovLuckyBox.UI
             StartContinuousGlow(slot);
 
             // Play high-quality lottery sound if enabled
-            var finalItemQuality = LotteryService.GetItemQuality(finalTypeId);
+            var finalItemQuality = RecycleService.GetItemQuality(finalTypeId);
 
             if (finalItemQuality.IsHighQuality())
             {

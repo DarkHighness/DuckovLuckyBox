@@ -115,7 +115,7 @@ namespace DuckovLuckyBox.UI
       try
       {
         // Set item icon and text
-        var itemIcon = LotteryService.GetItemIcon(item.TypeID) ?? EnsureFallbackSprite();
+        var itemIcon = RecycleService.GetItemIcon(item.TypeID) ?? EnsureFallbackSprite();
         if (_itemIcon != null)
         {
           _itemIcon.sprite = itemIcon;
@@ -129,7 +129,7 @@ namespace DuckovLuckyBox.UI
         }
 
         // Set background color based on item quality
-        Color backgroundColor = LotteryService.GetItemQualityColor(item.TypeID);
+        Color backgroundColor = RecycleService.GetItemQualityColor(item.TypeID);
         var overlayImage = _overlayRoot?.GetComponent<Image>();
         if (overlayImage != null)
         {

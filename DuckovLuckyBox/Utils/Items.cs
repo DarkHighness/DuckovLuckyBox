@@ -2,65 +2,365 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DuckovLuckyBox.Core;
+using HarmonyLib;
 using ItemStatsSystem;
+using UnityEngine;
 
 namespace DuckovLuckyBox
 {
+  using ItemPredicate = Func<Item, ItemMetaData, bool>;
   public static class ItemUtils
   {
-    public static async UniTask<Item?> CreateItemById(int typeId, int count = 1)
+    public static List<(Item, ItemMetaData)> QueryGameItems(ItemPredicate predicate, bool includeDynamicItems = true)
     {
-      Item? item = await ItemAssetsCollection.InstantiateAsync(typeId);
-      if (item == null) return null;
-
-      item.StackCount = Math.Clamp(count, 1, item.MaxStackCount);
-      return item;
-    }
-
-    public static async UniTask SendItemToCharacterInventory(int typeId,int count = 1)
-    {
-      Item? item = await CreateItemById(typeId, count);
-      if (item == null)
-      {
-        Log.Warning($"Failed to create item with typeId {typeId}");
-        return;
-      }
-
-      ItemUtilities.SendToPlayer(item, dontMerge: false, sendToStorage: true);
-    }
-
-    public static List<ItemMetaData> GetAllItemMetadata()
-    {
-      var itemMetadata = new List<ItemMetaData>();
+      var result = new List<(Item, ItemMetaData)>();
       var itemDatabase = ItemAssetsCollection.Instance.entries;
       if (itemDatabase != null)
       {
         foreach (var item in itemDatabase)
         {
-          itemMetadata.Add(item.metaData);
+          if (predicate(item.prefab, item.metaData))
+          {
+            result.Add((item.prefab, item.metaData));
+          }
         }
       }
-      return itemMetadata;
-    }
 
-    public static void DumpAllItemMetadataCSV(string filePath = "ItemMetadataDump.csv")
-    {
-     var absFilePath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), filePath);
-      Log.Info($"Dumping all item metadata to: {absFilePath}");
-
-      var items = GetAllItemMetadata();
-      var lines = new List<string>
+      if (includeDynamicItems)
       {
-        "ID,Name,DisplayName,Description,Quality,MaxStackCount,DefaultStackCount,PriceEach,Category"
-      };
-
-      foreach (var item in items)
-      {
-        var line = $"{item.id},\"{item.Name}\",\"{item.DisplayName}\",\"{item.Description}\",{item.quality},{item.maxStackCount},{item.defaultStackCount},{item.priceEach},\"{item.Catagory}\"";
-        lines.Add(line);
+        if (AccessTools.Field(typeof(ItemAssetsCollection), "dynamicDic").GetValue(ItemAssetsCollection.Instance) is Dictionary<int, ItemAssetsCollection.DynamicEntry> dynamicItems)
+        {
+          foreach (var kvp in dynamicItems)
+          {
+            var dynamicEntry = kvp.Value;
+            if (dynamicEntry != null)
+            {
+              var dynamicItem = dynamicEntry.prefab;
+              var dynamicMetaData = AccessTools.Field(typeof(ItemAssetsCollection.DynamicEntry), "metaData").GetValue(dynamicEntry) as ItemMetaData?;
+              if (dynamicItem != null && dynamicMetaData != null)
+              {
+                if (predicate(dynamicItem, (ItemMetaData)dynamicMetaData))
+                {
+                  result.Add((dynamicItem, (ItemMetaData)dynamicMetaData));
+                }
+              }
+            }
+          }
+        }
       }
 
-      System.IO.File.WriteAllLines(filePath, lines);
+      return result;
     }
+
+    public static ItemPredicate DefaultItemPredicate = (item, metaData) => true;
+
+    public static ItemPredicate LotteryItemPredicate = (item, metaData) =>
+    {
+      // 1: Exclude items that the quality not in [0, 990]
+      if (metaData.quality < 0 || metaData.quality > 990)
+      {
+        return false;
+      }
+
+      // 2: Exclude items that are Quest items
+      if (metaData.Catagory == "Quest")
+      {
+        return false;
+      }
+
+      // 3. Exclude items that icon is the default "cross" icon
+      if (item.Icon == null || item.Icon.name == "cross")
+      {
+        return false;
+      }
+
+      // 4. Exclude items that not translated
+      if (item.DisplayName.StartsWith("*Item_"))
+      {
+        return false;
+      }
+
+      // 5. Exclude items that the description is not translated
+      if (item.Description.StartsWith("*Item_"))
+      {
+        return false;
+      }
+
+      return true;
+    };
+
+    public static ItemPredicate MeltableItemPredicate = (item, metaData) =>
+    {
+      // 1. If the item is not lottery item, exclude it
+      if (!LotteryItemPredicate(item, metaData))
+      {
+        return false;
+      }
+
+      // 2. If the item is the Cash, exclude it
+      if (item.TypeID == 451) // Cash TypeID
+      {
+        return false;
+      }
+
+      return true;
+    };
+
+    public static ItemPredicate BulletItemPredicate = (item, metaData) =>
+    {
+      // 1. If the item is not lottery item, exclude it
+      if (!LotteryItemPredicate(item, metaData))
+      {
+        return false;
+      }
+
+      // 2. If the item is not a bullet, exclude it
+      if (metaData.Catagory != "Bullet")
+      {
+        return false;
+      }
+
+      return true;
+    };
+
+    public class ItemQueryCache
+    {
+      private List<(Item, ItemMetaData)> _items;
+      private Dictionary<int, (Item, ItemMetaData)> _itemCache;
+      private Dictionary<int, ItemValueLevel> _itemValueLevelCache;
+      private Dictionary<ItemValueLevel, List<int>> _itemValueLevelToTypeIdsCache = new Dictionary<ItemValueLevel, List<int>>();
+      public string Name;
+
+      public ItemQueryCache(string Name, ItemPredicate predicate, bool includeDynamicItems = true)
+      {
+        this.Name = Name;
+        _items = QueryGameItems(predicate, includeDynamicItems);
+        _itemCache = new Dictionary<int, (Item, ItemMetaData)>();
+        _itemValueLevelCache = new Dictionary<int, ItemValueLevel>();
+        _itemValueLevelToTypeIdsCache = new Dictionary<ItemValueLevel, List<int>>();
+
+        foreach (var (item, metaData) in _items)
+        {
+          _itemCache[item.TypeID] = (item, metaData);
+          var valueLevel = QualityUtils.GetCachedItemValueLevel(item);
+
+          _itemValueLevelCache[item.TypeID] = valueLevel;
+          if (!_itemValueLevelToTypeIdsCache.ContainsKey(valueLevel))
+          {
+            _itemValueLevelToTypeIdsCache[valueLevel] = new List<int>();
+          }
+
+          _itemValueLevelToTypeIdsCache[valueLevel].Add(item.TypeID);
+        }
+      }
+
+      public Item? GetItemById(int typeId)
+      {
+        if (_itemCache.TryGetValue(typeId, out var itemTuple))
+        {
+          return itemTuple.Item1;
+        }
+
+        Log.Warning($"ItemQueryCache[{Name}] - Item with typeId {typeId} not found in cache.");
+        return null;
+      }
+
+      public ItemMetaData? GetItemMetaDataById(int typeId)
+      {
+        if (_itemCache.TryGetValue(typeId, out var itemTuple))
+        {
+          return itemTuple.Item2;
+        }
+
+        Log.Warning($"ItemQueryCache[{Name}] - ItemMetaData with typeId {typeId} not found in cache.");
+        return null;
+      }
+
+      public ItemValueLevel? GetItemValueLevelById(int typeId)
+      {
+        if (_itemValueLevelCache.TryGetValue(typeId, out var valueLevel))
+        {
+          return valueLevel;
+        }
+
+        Log.Warning($"ItemQueryCache[{Name}] - ItemValueLevel with typeId {typeId} not found in cache.");
+        return null;
+      }
+
+      public List<int> GetItemTypeIdsByValueLevel(ItemValueLevel valueLevel)
+      {
+        if (_itemValueLevelToTypeIdsCache.TryGetValue(valueLevel, out var typeIdList))
+        {
+          return typeIdList;
+        }
+
+        Log.Warning($"ItemQueryCache[{Name}] - No items found for ItemValueLevel {valueLevel}.");
+        return new List<int>();
+      }
+
+      public List<int> GetAllItemTypeIds()
+      {
+        return new List<int>(_itemCache.Keys);
+      }
+
+      /// <summary>
+      /// Gets item display information
+      /// </summary>
+      public Item? GetItem(int typeId)
+      {
+        return GetItemById(typeId);
+      }
+
+      /// <summary>
+      /// Gets item display name
+      /// </summary>
+      public string GetDisplayName(int typeId)
+      {
+        var item = GetItem(typeId);
+        return item?.DisplayName ?? $"#{typeId}";
+      }
+
+      /// <summary>
+      /// Gets item quality level
+      /// </summary>
+      public ItemValueLevel GetItemQuality(int typeId)
+      {
+        var item = GetItem(typeId);
+        if (item == null)
+        {
+          return ItemValueLevel.White;
+        }
+        return QualityUtils.GetCachedItemValueLevel(item);
+      }
+
+      /// <summary>
+      /// Gets item icon sprite
+      /// </summary>
+      public Sprite? GetItemIcon(int typeId)
+      {
+        var item = GetItem(typeId);
+        return item?.Icon;
+      }
+
+      /// <summary>
+      /// Gets color associated with item quality
+      /// </summary>
+      public Color GetItemQualityColor(int typeId)
+      {
+        var item = GetItem(typeId);
+        if (item == null)
+        {
+          return Color.white;
+        }
+        return QualityUtils.GetItemValueLevelColor(QualityUtils.GetCachedItemValueLevel(item));
+      }
+
+      /// <summary>
+      /// Gets category associated with item
+      /// </summary>
+      public string GetItemCategory(int typeId)
+      {
+        var metaData = GetItemMetaDataById(typeId);
+        if (metaData == null)
+        {
+          return "Unknown";
+        }
+        return ((ItemMetaData)metaData).Catagory;
+      }
+
+      public async UniTask<Item?> CreateItemById(int typeId, int count = 1)
+      {
+        if (!_itemCache.ContainsKey(typeId))
+        {
+          Log.Warning($"ItemQueryCache[{Name}] - Cannot create item with typeId {typeId} because it is not in the cache.");
+          return null;
+        }
+
+        Item? item = await ItemAssetsCollection.InstantiateAsync(typeId);
+        if (item == null)
+        {
+          return null;
+        }
+
+        item.StackCount = Math.Clamp(count, 1, item.MaxStackCount);
+        return item;
+      }
+
+      public async UniTask SendItemToCharacterInventory(int typeId, int count = 1)
+      {
+        Item? item = await CreateItemById(typeId, count);
+        if (item == null)
+        {
+          Log.Warning($"ItemQueryCache[{Name}] - Failed to create item with typeId {typeId}");
+          return;
+        }
+
+        ItemUtilities.SendToPlayer(item, dontMerge: false, sendToStorage: true);
+      }
+    }
+
+    private static ItemQueryCache? _gameItemCache = null;
+    public static ItemQueryCache GameItemCache
+    {
+      get
+      {
+        _gameItemCache ??= new ItemQueryCache("GameItems", DefaultItemPredicate, includeDynamicItems: true);
+        return _gameItemCache;
+      }
+    }
+
+    private static ItemQueryCache? _lotteryItemCache = null;
+
+    public static ItemQueryCache LotteryItemCache
+    {
+      get
+      {
+        _lotteryItemCache ??= new ItemQueryCache("LotteryItems", LotteryItemPredicate, includeDynamicItems: true);
+        return _lotteryItemCache;
+      }
+    }
+
+    private static ItemQueryCache? _meltableItemCache = null;
+
+    public static ItemQueryCache MeltableItemCache
+    {
+      get
+      {
+        _meltableItemCache ??= new ItemQueryCache("MeltableItems", MeltableItemPredicate, includeDynamicItems: true);
+        return _meltableItemCache;
+      }
+    }
+
+    private static ItemQueryCache? _bulletItemCache = null;
+    public static ItemQueryCache BulletItemCache
+    {
+      get
+      {
+        _bulletItemCache ??= new ItemQueryCache("BulletItems", BulletItemPredicate, includeDynamicItems: true);
+        return _bulletItemCache;
+      }
+    }
+
+
+    // public static async UniTask<Item?> CreateItemById(int typeId, int count = 1)
+    // {
+    //   Item? item = await ItemAssetsCollection.InstantiateAsync(typeId);
+    //   if (item == null) return null;
+
+    //   item.StackCount = Math.Clamp(count, 1, item.MaxStackCount);
+    //   return item;
+    // }
+
+    // public static async UniTask SendItemToCharacterInventory(int typeId, int count = 1)
+    // {
+    //   Item? item = await CreateItemById(typeId, count);
+    //   if (item == null)
+    //   {
+    //     Log.Warning($"Failed to create item with typeId {typeId}");
+    //     return;
+    //   }
+
+    //   ItemUtilities.SendToPlayer(item, dontMerge: false, sendToStorage: true);
+    // }
   }
 }

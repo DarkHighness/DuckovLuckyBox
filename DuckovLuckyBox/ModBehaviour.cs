@@ -68,7 +68,7 @@ namespace DuckovLuckyBox
             if (SettingManager.Instance.EnableDebug.GetAsBool())
             {
                 Log.Warning("Debug mode is enabled.");
-                ItemUtils.DumpAllItemMetadataCSV();
+                DebugUtils.DumpAllItemMetadataCSV();
             }
         }
 
@@ -95,15 +95,24 @@ namespace DuckovLuckyBox
 
             if (SettingManager.Instance.EnableDebug.GetAsBool())
             {
-                if (Input.GetKeyDown(KeyCode.F9))
+                if (Input.GetKeyDown(KeyCode.F9) || Input.GetKeyDown(KeyCode.F8))
                 {
-                    int[] items = { 1172, 1173, 1177, 95, 31, 1178 };
+                    int[] items;
+                    if (Input.GetKeyDown(KeyCode.F9))
+                    {
+                        items = new int[] { 1172, 1173, 1177, 95, 31 };
+                    }
+                    else
+                    {
+                        items = new int[] { 1178, 444 };
+                    }
+
                     foreach (var itemId in items)
                     {
                         // send 5 of each item for testing
                         for (int i = 0; i < 5; i++)
                         {
-                            ItemUtils.SendItemToCharacterInventory(itemId, 1).Forget();
+                            ItemUtils.GameItemCache.SendItemToCharacterInventory(itemId, 1).Forget();
                         }
                     }
                 }

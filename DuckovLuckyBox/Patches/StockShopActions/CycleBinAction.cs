@@ -1203,7 +1203,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           return ContractValidationResult.Invalid(string.Empty, ItemValueLevel.White, true, Localizations.I18n.ContractInventoryNotAvailableKey.ToPlainText());
         }
 
-        string category = LotteryService.GetItemCategory(item.TypeID) ?? string.Empty;
+        string category = RecycleService.GetItemCategory(item.TypeID) ?? string.Empty;
         ItemValueLevel quality = QualityUtils.GetCachedItemValueLevel(item);
         int currentCount = _contractInventory.GetItemCount();
         bool isFirstItem = currentCount == 0;
@@ -1229,7 +1229,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
           rewardLevel = (ItemValueLevel)nextLevelValue;
 
-          if (!LotteryService.HasCategoryItemAtLevel(RewardCategories, rewardLevel.Value))
+          if (!RecycleService.HasCategoryItemAtLevel(RewardCategories, rewardLevel.Value))
           {
             return ContractValidationResult.Invalid(category, quality, true, "目标类型中不存在该等级的升级物品。");
           }
@@ -1619,7 +1619,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
           if (rewardLevel.HasValue)
           {
-            reward = await LotteryService.PickRandomItemByCategoriesAndQualityAsync(RewardCategories, rewardLevel.Value);
+            reward = await RecycleService.PickRandomItemByCategoriesAndQualityAsync(RewardCategories, rewardLevel.Value);
           }
 
           if (reward == null)
@@ -1680,14 +1680,14 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
       private static async UniTask<Item?> TryCreateRewardItem(ItemValueLevel targetLevel)
       {
-        var rewardList = await LotteryService.PickRandomItemsByQualityAsync(targetLevel, 1);
+        var rewardList = await RecycleService.PickRandomItemsByQualityAsync(targetLevel, 1);
         if (rewardList != null && rewardList.Count > 0)
         {
           return rewardList[0];
         }
 
         Log.Warning("Cycle bin value-level-based reward failed – falling back to default lottery pool.");
-        var fallback = await LotteryService.PickRandomItemAsync(LotteryService.ItemTypeIdsCache);
+        var fallback = await RecycleService.PickRandomLotteryItemAsync();
         if (fallback != null)
         {
           fallback.StackCount = 1;

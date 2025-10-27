@@ -111,7 +111,7 @@ namespace DuckovLuckyBox.Patches
       bool isBullet = false;
       if (targetItem != null)
       {
-        string category = LotteryService.GetItemCategory(targetItem.TypeID);
+        string category = ItemUtils.GameItemCache.GetItemCategory(targetItem.TypeID);
         isBullet = category == "Bullet";
       }
 
@@ -374,7 +374,7 @@ namespace DuckovLuckyBox.Patches
       bool isBullet = false;
       if (targetItem != null)
       {
-        string category = LotteryService.GetItemCategory(targetItem.TypeID);
+        string category = ItemUtils.MeltableItemCache.GetItemCategory(targetItem.TypeID);
         isBullet = category == "Bullet";
       }
 

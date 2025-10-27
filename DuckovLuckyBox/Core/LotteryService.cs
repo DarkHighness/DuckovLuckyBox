@@ -7,7 +7,6 @@ using UnityEngine;
 using SodaCraft.Localizations;
 using Duckov.UI;
 using Duckov.Economy;
-using HarmonyLib;
 using DuckovLuckyBox.Core.Settings;
 using DuckovLuckyBox.UI;
 using Duckov;
@@ -87,147 +86,23 @@ namespace DuckovLuckyBox.Core
     }
 
     /// <summary>
-    /// Provides lottery functionality for randomly selecting items from a pool
+    /// Provides lottery functionality for randomly selecting items using reservoir sampling algorithm
+    /// Groups items by quality level, performs proportional sampling with optional quality-based weighting
     /// </summary>
     public static class LotteryService
     {
-        private static List<int>? _itemTypeIdsCache = null;
-
         /// <summary>
-        /// Gets cached list of valid item type IDs that can be used in lottery
+        /// Performs weighted random selection on a collection of items
+        /// Used by animation and other UI components for weighted sampling
         /// </summary>
-        public static List<int> ItemTypeIdsCache
-        {
-            get
-            {
-                if (_itemTypeIdsCache == null)
-                {
-                    _itemTypeIdsCache = ItemAssetsCollection.Instance.entries
-                        // We predictably exclude items
-                        // (1) whose display name is in the form of "*Item_*"
-                        // (2) whose description is in the form of "*Item_*"
-                        // (3) whose quality is 0 (junk items)
-                        // (4) whose icon is the default "cross" icon
-                        // (5) whose catagory is "Quest"
-                        // to avoid illegal items.
-                        .Where(entry => !entry.prefab.DisplayName.StartsWith("*Item_") &&
-                                       !entry.prefab.Description.StartsWith("*Item_") &&
-                                       entry.prefab.Quality > 0 &&
-                                       entry.prefab.Icon.name != "cross" &&
-                                       entry.metaData.Catagory != "Quest")
-                        .Select(entry => entry.typeID)
-                        .ToList();
-                }
-                return _itemTypeIdsCache;
-            }
-        }
-
-        private static Dictionary<string, Dictionary<ItemValueLevel, Item>>? _itemLookupByCategoryAndQuality = null;
-
-        public static Dictionary<string, Dictionary<ItemValueLevel, Item>> ItemLookupByCategoryAndQuality
-        {
-            get
-            {
-                if (_itemLookupByCategoryAndQuality == null)
-                {
-                    _itemLookupByCategoryAndQuality = new Dictionary<string, Dictionary<ItemValueLevel, Item>>();
-
-                    foreach (var entry in ItemAssetsCollection.Instance.entries)
-                    {
-                        var item = entry.prefab;
-                        var category = entry.metaData.Catagory;
-                        var quality = QualityUtils.GetCachedItemValueLevel(item);
-
-                        if (!_itemLookupByCategoryAndQuality.ContainsKey(category))
-                        {
-                            _itemLookupByCategoryAndQuality[category] = new Dictionary<ItemValueLevel, Item>();
-                        }
-
-                        if (!_itemLookupByCategoryAndQuality[category].ContainsKey(quality))
-                        {
-                            _itemLookupByCategoryAndQuality[category][quality] = item;
-                        }
-                    }
-                }
-                return _itemLookupByCategoryAndQuality;
-            }
-        }
-
-        /// <summary>
-        /// Gets the default weight for an item based on its quality
-        /// Used when weighted lottery is enabled but no explicit weights are provided
-        /// Higher quality items are rarer (lower weight)
-        /// Uses a predefined weight mapping table
-        /// </summary>
-        public static float GetDefaultWeightByQuality(int itemTypeId)
-        {
-            var quality = GetItemQuality(itemTypeId);
-
-            // Predefined weight mapping by quality level
-            // Quality 1 (common items): 30
-            // Quality 2 (uncommon items): 25
-            // Quality 3 (rare items): 20
-            // Quality 4 (epic items): 15
-            // Quality 5+ (legendary items): 10
-            return quality switch
-            {
-                ItemValueLevel.White => 30f,
-                ItemValueLevel.Green => 25f,
-                ItemValueLevel.Blue => 20f,
-                ItemValueLevel.Purple => 15f,
-                _ => 10f,
-            };
-        }
-
-        /// <summary>
-        /// Converts a list of item IDs to weighted items based on their quality
-        /// </summary>
-        public static List<WeightedItem> ConvertToQualityWeightedItems(IEnumerable<int> itemTypeIds)
-        {
-            return itemTypeIds?
-                .Select(id => new WeightedItem(id, GetDefaultWeightByQuality(id)))
-                .ToList() ?? new List<WeightedItem>();
-        }
-
-        /// <summary>
-        /// Picks a random item from the specified pool
-        /// </summary>
-        /// <param name="candidateTypeIds">Pool of item type IDs to choose from</param>
-        /// <returns>Selected item type ID</returns>
-        public static int PickRandomItem(IEnumerable<int> candidateTypeIds)
-        {
-            var pool = candidateTypeIds?.ToList() ?? new List<int>();
-
-            if (pool.Count == 0)
-            {
-                Log.Warning("Empty item pool for lottery, using default cache");
-                pool = ItemTypeIdsCache;
-            }
-
-            if (pool.Count == 0)
-            {
-                Log.Error("No valid items available for lottery");
-                return -1;
-            }
-
-            // Convert to weighted items with equal weights and use weighted algorithm
-            var weightedItems = pool.Select(typeId => new WeightedItem(typeId, 1f)).ToList();
-            return PickRandomItemWeighted(weightedItems);
-        }
-
-        /// <summary>
-        /// Picks a random item with weighted probability
-        /// When all weights are equal (1f), this is equivalent to uniform random selection
-        /// </summary>
-        /// <param name="weightedItems">Collection of items with their weights. Weight must be > 0.</param>
+        /// <param name="weightedItems">Items with their weights. Weight must be > 0.</param>
         /// <returns>Selected item type ID, or -1 if failed</returns>
-        public static int PickRandomItemWeighted(IEnumerable<WeightedItem> weightedItems)
+        public static int SampleWeightedItems(IEnumerable<WeightedItem> weightedItems)
         {
             var items = weightedItems?.ToList() ?? new List<WeightedItem>();
 
             if (items.Count == 0)
             {
-                Log.Warning("Empty weighted item pool for lottery");
                 return -1;
             }
 
@@ -242,15 +117,10 @@ namespace DuckovLuckyBox.Core
                     validItems.Add(item);
                     totalWeight += item.Weight;
                 }
-                else
-                {
-                    Log.Warning($"Skipping item {item.ItemTypeId} with invalid weight {item.Weight}");
-                }
             }
 
             if (validItems.Count == 0 || totalWeight <= 0)
             {
-                Log.Error("No valid weighted items available for lottery");
                 return -1;
             }
 
@@ -272,306 +142,136 @@ namespace DuckovLuckyBox.Core
         }
 
         /// <summary>
-        /// Picks a random item with weighted probability and instantiates it
+        /// Converts a list of item IDs to weighted items based on their quality
+        /// Used by animation and UI components
         /// </summary>
-        /// <param name="weightedItems">Collection of items with their weights</param>
-        /// <returns>Instantiated item, or null if failed</returns>
-        public static async UniTask<Item?> PickRandomItemWeightedAsync(IEnumerable<WeightedItem> weightedItems)
+        public static List<WeightedItem> ConvertToQualityWeightedItems(IEnumerable<int> itemTypeIds)
         {
-            var selectedItemTypeId = PickRandomItemWeighted(weightedItems);
-
-            if (selectedItemTypeId < 0)
+            var result = new List<WeightedItem>();
+            foreach (var id in itemTypeIds ?? Enumerable.Empty<int>())
             {
-                return null;
-            }
-
-            Item obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
-            if (obj == null)
-            {
-                Log.Error($"Failed to instantiate lottery item: {selectedItemTypeId}");
-                return null;
-            }
-
-            return obj;
-        }
-
-        /// <summary>
-        /// Picks a random item and instantiates it
-        /// </summary>
-        /// <param name="candidateTypeIds">Pool of item type IDs to choose from</param>
-        /// <returns>Instantiated item, or null if failed</returns>
-        public static async UniTask<Item?> PickRandomItemAsync(IEnumerable<int> candidateTypeIds)
-        {
-            var pool = candidateTypeIds?.ToList() ?? new List<int>();
-            var weightedItems = pool.Select(typeId => new WeightedItem(typeId, 1f)).ToList();
-            return await PickRandomItemWeightedAsync(weightedItems);
-        }
-
-        /// <summary>
-        /// Picks multiple random items of the specified quality and instantiates them
-        /// </summary>
-        /// <param name="quality">Quality level to filter items by</param>
-        /// <param name="count">Number of items to pick</param>
-        /// <returns>List of instantiated items</returns>
-        public static async UniTask<List<Item>> PickRandomItemsByQualityAsync(ItemValueLevel level, int count)
-        {
-            var result = new List<Item>();
-
-            // Get all valid items of the specified quality from cache
-            var qualityItems = ItemTypeIdsCache
-                .Select(typeId => new { TypeId = typeId, Item = GetItem(typeId) })
-                .Where(x => x.Item != null && QualityUtils.GetCachedItemValueLevel(x.Item) == level)
-                .Select(x => x.TypeId)
-                .ToList();
-
-            if (qualityItems.Count == 0)
-            {
-                Log.Warning($"No items found with value level {level}");
-                return result;
-            }
-
-            Log.Debug($"Found {qualityItems.Count} items with value level {level}");
-
-            // Pick random items
-            for (int i = 0; i < count; i++)
-            {
-                var selectedIndex = UnityEngine.Random.Range(0, qualityItems.Count);
-                var selectedItemTypeId = qualityItems[selectedIndex];
-
-                Item? obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
-                if (obj == null)
+                var item = ItemUtils.LotteryItemCache.GetItem(id);
+                if (item != null)
                 {
-                    Log.Error($"Failed to instantiate lottery item: {selectedItemTypeId}");
-                    continue;
+                    var quality = QualityUtils.GetCachedItemValueLevel(item);
+                    float probability = ProbabilityUtils.GetProbabilityForItemValueLevel(quality);
+                    result.Add(new WeightedItem(id, probability));
                 }
-
-                result.Add(obj);
-                Log.Debug($"Picked item {i + 1}/{count}: {obj.DisplayName} (value level {level})");
             }
-
             return result;
         }
 
         /// <summary>
-        /// Gets item display information
+        /// Performs a lottery using quality-level based reservoir sampling
+        /// Groups items by quality level into a unified pool, then samples using reservoir sampling
+        /// If a quality level has fewer items than needed, allows duplicate sampling
         /// </summary>
-        public static Item? GetItem(int typeId)
+        /// <param name="count">Number of items to sample</param>
+        /// <param name="useWeightedSampling">If true, uses quality-based probability weights; if false, uses uniform distribution</param>
+        /// <returns>List of selected item type IDs</returns>
+        private static List<int> ReservoirSampleByQuality(IEnumerable<int> itemTypeIds, int count, bool useWeightedSampling)
         {
-            try
+            var result = new List<int>();
+            // Get all lottery items grouped by quality level
+            var itemsByQuality = new Dictionary<ItemValueLevel, List<int>>();
+            foreach (ItemValueLevel level in Enum.GetValues(typeof(ItemValueLevel)))
             {
-                var entry = ItemAssetsCollection.Instance.entries.FirstOrDefault(e => e != null && e.typeID == typeId);
-                return entry?.prefab;
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Failed to get item for typeId {typeId}: {ex.Message}");
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets item icon sprite
-        /// </summary>
-        public static Sprite? GetItemIcon(int typeId)
-        {
-            var item = GetItem(typeId);
-            return item?.Icon;
-        }
-
-        /// <summary>
-        /// Gets item quality level
-        /// </summary>
-        public static ItemValueLevel GetItemQuality(int typeId)
-        {
-            var item = GetItem(typeId);
-            if (item == null)
-            {
-                return ItemValueLevel.White;
-            }
-            return QualityUtils.GetCachedItemValueLevel(item);
-        }
-
-        /// <summary>
-        /// Gets item category
-        /// </summary>
-        public static string GetItemCategory(int typeId)
-        {
-            var entry = ItemAssetsCollection.Instance.entries.FirstOrDefault(e => e != null && e.typeID == typeId);
-            return entry?.metaData.Catagory ?? "Unknown";
-        }
-
-        /// <summary>
-        /// Determines whether a given category contains an item whose value level is exactly one tier higher than the provided baseline.
-        /// </summary>
-        public static bool HasHigherQualityItemInCategory(string category, ItemValueLevel baseQuality)
-        {
-            if (string.IsNullOrEmpty(category))
-            {
-                return false;
+                itemsByQuality[level] = new List<int>();
             }
 
-            if (!ItemLookupByCategoryAndQuality.TryGetValue(category, out var qualityMap) || qualityMap == null)
+            foreach (var id in itemTypeIds)
             {
-                return false;
+                var quality = ItemUtils.GameItemCache.GetItemQuality(id);
+                itemsByQuality[quality].Add(id);
             }
 
-            int nextLevelValue = (int)baseQuality + 1;
-            if (!Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue))
+            if (itemsByQuality.Count == 0)
             {
-                return false;
+                Log.Error("No items available for lottery");
+                return result;
             }
 
-            var nextLevel = (ItemValueLevel)nextLevelValue;
-            return qualityMap.TryGetValue(nextLevel, out var nextItem) && nextItem != null;
-        }
+            // Remove empty quality levels
+            var nonEmptyItemsByQuality = itemsByQuality
+                .Where(kvp => kvp.Value.Count > 0)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        /// <summary>
-        /// Determines whether any of the specified categories contains an item at the provided value level.
-        /// </summary>
-        public static bool HasCategoryItemAtLevel(IEnumerable<string> categories, ItemValueLevel level)
-        {
-            if (categories == null)
+            if (useWeightedSampling)
             {
-                return false;
-            }
-
-            var categorySet = new HashSet<string>(categories.Where(c => !string.IsNullOrWhiteSpace(c)), StringComparer.OrdinalIgnoreCase);
-            if (categorySet.Count == 0)
-            {
-                return false;
-            }
-
-            foreach (var kvp in ItemLookupByCategoryAndQuality)
-            {
-                if (!categorySet.Contains(kvp.Key))
+                // Use quality-based probability weights
+                for (int i = 0; i < count; i++)
                 {
-                    continue;
+                    // Create weighted list of quality levels
+                    var qualityWeights = new List<WeightedItem>();
+                    foreach (var level in nonEmptyItemsByQuality.Keys)
+                    {
+                        float probability = ProbabilityUtils.GetProbabilityForItemValueLevel(level);
+                        qualityWeights.Add(new WeightedItem((int)level, probability));
+                    }
+
+                    // Select a quality level based on probability
+                    int qualityValue = SampleWeightedItems(qualityWeights);
+                    if (qualityValue < 0) break;
+
+                    var selectedQuality = (ItemValueLevel)qualityValue;
+                    if (!nonEmptyItemsByQuality.TryGetValue(selectedQuality, out var itemsAtLevel))
+                        continue;
+
+                    // Sample an item from the selected quality level with repetition allowed
+                    int itemIndex = UnityEngine.Random.Range(0, itemsAtLevel.Count);
+                    result.Add(itemsAtLevel[itemIndex]);
                 }
+            }
+            else
+            {
+                // Uniform distribution: select equal count from each quality level using reservoir sampling
+                int itemsPerQuality = count / itemsByQuality.Count;
+                int remainder = count % itemsByQuality.Count;
+                int addedCount = 0;
 
-                var qualityMap = kvp.Value;
-                if (qualityMap != null && qualityMap.TryGetValue(level, out var item) && item != null)
+                foreach (var kvp in itemsByQuality)
                 {
-                    return true;
+                    int countForThisLevel = itemsPerQuality + (remainder > 0 ? 1 : 0);
+                    if (remainder > 0) remainder--;
+
+                    var sampledItems = ProbabilityUtils.ReservoirSample(kvp.Value, countForThisLevel, allowDuplicates: true);
+                    result.AddRange(sampledItems);
+                    addedCount += sampledItems.Count;
+
+                    if (addedCount >= count)
+                        break;
                 }
             }
 
-            return false;
+            return result.Take(count).ToList();
         }
 
         /// <summary>
-        /// Picks a random item from the specified categories that matches the desired value level.
+        /// Performs a complete lottery flow with context support
+        /// Uses reservoir sampling for even quality distribution when sampling
         /// </summary>
-        public static async UniTask<Item?> PickRandomItemByCategoriesAndQualityAsync(IEnumerable<string> categories, ItemValueLevel level)
-        {
-            if (categories == null)
-            {
-                return null;
-            }
-
-            var categorySet = new HashSet<string>(categories.Where(c => !string.IsNullOrWhiteSpace(c)), StringComparer.OrdinalIgnoreCase);
-            if (categorySet.Count == 0)
-            {
-                return null;
-            }
-
-            var candidateTypeIds = ItemAssetsCollection.Instance.entries
-                .Where(entry => entry != null && entry.prefab != null && categorySet.Contains(entry.metaData.Catagory))
-                .Where(entry => QualityUtils.GetCachedItemValueLevel(entry.prefab) == level)
-                .Select(entry => entry.typeID)
-                .ToList();
-
-            if (candidateTypeIds.Count == 0)
-            {
-                return null;
-            }
-
-            var weightedItems = candidateTypeIds.Select(id => new WeightedItem(id, 1f)).ToList();
-            return await PickRandomItemWeightedAsync(weightedItems);
-        }
-
-        /// <summary>
-        /// Gets item display name
-        /// </summary>
-        public static string GetDisplayName(int typeId)
-        {
-            var item = GetItem(typeId);
-            return item?.DisplayName ?? $"#{typeId}";
-        }
-
-        /// <summary>
-        /// Gets color associated with item quality
-        /// </summary>
-        public static Color GetItemQualityColor(int typeId)
-        {
-            var item = GetItem(typeId);
-            if (item == null)
-            {
-                return Color.white;
-            }
-            return QualityUtils.GetItemValueLevelColor(QualityUtils.GetCachedItemValueLevel(item));
-        }
-
-        /// <summary>
-        /// Performs a complete lottery flow with context support (internal implementation)
-        /// </summary>
-        private static async UniTask<(bool success, Item? item, bool sentToStorage)> PerformLotteryInternalAsync(
-            IEnumerable<WeightedItem>? weightedItems = null,
-            IEnumerable<int>? candidateTypeIds = null,
+        /// <param name="price">Price to charge (0 for free)</param>
+        /// <param name="playAnimation">Whether to play lottery animation</param>
+        /// <param name="context">Context for handling payment, success/failure callbacks</param>
+        /// <returns>Tuple of (success, item, sentToStorage)</returns>
+        public static async UniTask<(bool success, Item? item, bool sentToStorage)> PerformLotteryWithContextAsync(
+            IEnumerable<int> itemTypeIds,
             long price = 0,
             bool playAnimation = true,
             ILotteryContext? context = null)
         {
-            // Prepare weighted items list
-            var itemList = new List<WeightedItem>();
-            var allCandidateIds = new List<int>();
-            bool useQualityWeights = SettingManager.Instance.EnableWeightedLottery.GetAsBool();
+            bool useWeightedSampling = SettingManager.Instance.EnableWeightedLottery.GetAsBool();
 
-            if (weightedItems != null)
+            // Use reservoir sampling to select one item
+            var sampledIds = ReservoirSampleByQuality(itemTypeIds, 1, useWeightedSampling);
+            if (sampledIds.Count == 0)
             {
-                itemList = weightedItems.ToList();
-                allCandidateIds = itemList.Select(x => x.ItemTypeId).ToList();
-            }
-            else if (candidateTypeIds != null)
-            {
-                var candidateList = candidateTypeIds.ToList();
-                if (candidateList.Count > 0)
-                {
-                    // If weighted lottery is enabled, use quality-based weights; otherwise use equal weights
-                    if (useQualityWeights)
-                    {
-                        itemList = ConvertToQualityWeightedItems(candidateList);
-                        Log.Debug($"Using quality-based weights for lottery ({itemList.Count} items)");
-                    }
-                    else
-                    {
-                        itemList = candidateList.Select(id => new WeightedItem(id, 1f)).ToList();
-                    }
-                    allCandidateIds = candidateList;
-                }
-            }
-
-            // Use cached items if no candidates provided
-            if (itemList.Count == 0)
-            {
-                if (useQualityWeights)
-                {
-                    itemList = ConvertToQualityWeightedItems(ItemTypeIdsCache);
-                    Log.Debug($"Using cached item type IDs with quality-based weights ({itemList.Count} items)");
-                }
-                else
-                {
-                    itemList = ItemTypeIdsCache.Select(id => new WeightedItem(id, 1f)).ToList();
-                    Log.Debug("Using cached item type IDs for lottery candidates");
-                }
-                allCandidateIds = ItemTypeIdsCache;
-            }
-
-            if (itemList.Count == 0)
-            {
-                Log.Warning("No candidate items for lottery");
+                Log.Error("Failed to sample item for lottery");
                 context?.OnLotteryFailed();
                 return (false, null, false);
             }
+
+            int selectedItemTypeId = sampledIds[0];
 
             // Call context pre-lottery hook
             if (context != null && !await context.OnBeforeLotteryAsync())
@@ -592,15 +292,6 @@ namespace DuckovLuckyBox.Core
                 }
             }
 
-            // Pick random item with weights
-            var selectedItemTypeId = PickRandomItemWeighted(itemList);
-            if (selectedItemTypeId < 0)
-            {
-                Log.Error("Failed to pick item for lottery");
-                context?.OnLotteryFailed();
-                return (false, null, false);
-            }
-
             // Instantiate item
             Item? item = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
             if (item == null)
@@ -613,16 +304,16 @@ namespace DuckovLuckyBox.Core
             // Play animation if requested
             if (playAnimation)
             {
-                await LotteryAnimation.PlayAsync(allCandidateIds, selectedItemTypeId, item.DisplayName, item.Icon);
+                var allItemIds = ItemUtils.LotteryItemCache.GetAllItemTypeIds();
+                await LotteryAnimation.PlayAsync(allItemIds, selectedItemTypeId, item.DisplayName, item.Icon);
             }
 
             // Send to inventory or storage
-            var sentToStorage = false;
-            if (!ItemUtilities.SendToPlayerCharacterInventory(item))
+            var sentToStorage = !ItemUtilities.SendToPlayerCharacterInventory(item);
+            if (sentToStorage)
             {
                 Log.Warning($"Failed to send item to player inventory: {selectedItemTypeId}. Sending to storage.");
                 ItemUtilities.SendToPlayerStorage(item);
-                sentToStorage = true;
             }
 
             // Call context success hook
@@ -631,38 +322,37 @@ namespace DuckovLuckyBox.Core
             return (true, item, sentToStorage);
         }
 
-        /// <summary>
-        /// Performs a complete lottery flow with context support
-        /// </summary>
-        /// <param name="candidateTypeIds">Pool of item type IDs to choose from. If null/empty, uses ItemTypeIdsCache.</param>
-        /// <param name="price">Price to charge (0 for free)</param>
-        /// <param name="playAnimation">Whether to play lottery animation</param>
-        /// <param name="context">Context for handling payment, success/failure callbacks</param>
-        /// <returns>Tuple of (success, item, sentToStorage)</returns>
-        public static async UniTask<(bool success, Item? item, bool sentToStorage)> PerformLotteryWithContextAsync(
-            IEnumerable<int>? candidateTypeIds = null,
-            long price = 0,
-            bool playAnimation = true,
-            ILotteryContext? context = null)
+        public static async UniTask<List<Item>> PickRandomItemsByQualityAsync(ItemValueLevel level, int count)
         {
-            return await PerformLotteryInternalAsync(null, candidateTypeIds, price, playAnimation, context);
-        }
+            var result = new List<Item>();
+            var qualityItems = ItemUtils.LotteryItemCache.GetItemTypeIdsByValueLevel(level);
 
-        /// <summary>
-        /// Performs a complete weighted lottery flow with context support
-        /// </summary>
-        /// <param name="weightedItems">Collection of items with their weights. If null/empty, uses ItemTypeIdsCache with equal weights.</param>
-        /// <param name="price">Price to charge (0 for free)</param>
-        /// <param name="playAnimation">Whether to play lottery animation</param>
-        /// <param name="context">Context for handling payment, success/failure callbacks</param>
-        /// <returns>Tuple of (success, item, sentToStorage)</returns>
-        public static async UniTask<(bool success, Item? item, bool sentToStorage)> PerformWeightedLotteryWithContextAsync(
-            IEnumerable<WeightedItem>? weightedItems = null,
-            long price = 0,
-            bool playAnimation = true,
-            ILotteryContext? context = null)
-        {
-            return await PerformLotteryInternalAsync(weightedItems, null, price, playAnimation, context);
+            if (qualityItems.Count == 0)
+            {
+                Log.Warning($"No items found with value level {level}");
+                return result;
+            }
+
+            Log.Debug($"Found {qualityItems.Count} items with value level {level}");
+
+            // Pick random items with repetition allowed
+            for (int i = 0; i < count; i++)
+            {
+                var selectedIndex = UnityEngine.Random.Range(0, qualityItems.Count);
+                var selectedItemTypeId = qualityItems[selectedIndex];
+
+                Item? obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
+                if (obj == null)
+                {
+                    Log.Error($"Failed to instantiate item: {selectedItemTypeId}");
+                    continue;
+                }
+
+                result.Add(obj);
+                Log.Debug($"Picked item {i + 1}/{count}: {obj.DisplayName} (value level {level})");
+            }
+
+            return result;
         }
     }
 }

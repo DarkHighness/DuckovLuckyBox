@@ -21,19 +21,12 @@ namespace DuckovLuckyBox.Patches.StockShopActions
             // Get price from settings
             long price = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
 
-            try
-            {
-                var context = new DefaultLotteryContext();
-                await LotteryService.PerformLotteryWithContextAsync(
-                    candidateTypeIds: null, // Use default cache
-                    price: price,
-                    playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
-                    context: context);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Street lottery failed: {ex.Message}");
-            }
+            var context = new DefaultLotteryContext();
+            await LotteryService.PerformLotteryWithContextAsync(
+                itemTypeIds: ItemUtils.LotteryItemCache.GetAllItemTypeIds(),
+                price: price,
+                playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
+                context: context);
         }
     }
 }
