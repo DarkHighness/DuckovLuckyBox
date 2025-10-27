@@ -48,6 +48,7 @@ namespace DuckovLuckyBox.UI
         private const float HighlightIntensity = 1.5f; // Highlight glow intensity multiplier
 
         private const float FadeDuration = 0.25f;
+        private const float SkippedFadeDuration = 0.1f;
         private const float CelebrateDuration = 0.5f;
         private const float PointerThickness = 12f;
 
@@ -288,7 +289,7 @@ namespace DuckovLuckyBox.UI
                 // Physics-based continuous roll animation (CSGO-style)
                 await PerformPhysicsBasedRoll(plan, sfxGroup);
 
-                // If skip was requested, jump directly to celebration
+                // If skip requested, skip the following animations
                 if (!_skipRequested)
                 {
                     // Celebration on final slot
@@ -299,16 +300,14 @@ namespace DuckovLuckyBox.UI
                 }
                 else
                 {
-                    // Skip requested - show final result immediately
                     if (_resultText != null)
                     {
-                        _resultText.text = finalDisplayName;
+                        _resultText.text = string.Empty;
                     }
-                    await UniTask.Delay(TimeSpan.FromSeconds(0.1f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
                 }
 
                 // Fade out
-                await FadeCanvasGroup(_canvasGroup, 1f, 0f, FadeDuration);
+                await FadeCanvasGroup(_canvasGroup, 1f, 0f, !_skipRequested ? FadeDuration : SkippedFadeDuration);
             }
             finally
             {
@@ -800,7 +799,7 @@ namespace DuckovLuckyBox.UI
             // Continuous glow effect
             StartContinuousGlow(slot);
 
-            // Play high-quality lottery sound if enabled and the final item has high quality (quality >= 5 and < 99)
+            // Play high-quality lottery sound if enabled
             var finalItemQuality = LotteryService.GetItemQuality(finalTypeId);
 
             if (finalItemQuality.IsHighQuality())
