@@ -350,8 +350,8 @@ namespace DuckovLuckyBox.Patches
     {
         public static bool Prefix(StockShopView __instance)
         {
-            // Prevent selection changes when Cycle Bin view is open
-            if (CycleBinAction.IsOpen)
+            // Prevent selection changes when Cycle Bin view is open or has items
+            if (CycleBinAction.IsOpen && CycleBinAction.HasItems)
             {
                 return false; // Skip original method
             }
