@@ -36,9 +36,9 @@ namespace DuckovLuckyBox.UI
         private const int SlotsAfterFinal = 20; // Extra slots after final for visual buffer
 
         // Physics-based animation parameters (CSGO-style) - using slot as the unit
-        private const float InitialVelocityInSlots = 20f; // Initial scroll speed (slots/second) - scroll 20 slots per second initially
+        private const float InitialVelocityInSlots = 50f; // Initial scroll speed (slots/second) - scroll 50 slots per second initially
         private const float MinVelocityInSlots = 0.01f; // Minimum velocity before final positioning (slots/second) - decelerate to 0.01 slots/s at the end
-        private const float TargetAnimationDurationInSeconds = 6.8f; // Target animation total duration (seconds) - physics-based rolling phase must last this long (decelerate to 0 after 6.8s)
+        private const float TargetAnimationDurationInSeconds = 7f; // Target animation total duration (seconds) - physics-based rolling phase must last this long (decelerate to 0 after 7s)
 
         // Pre-calculated velocity curve for smooth deceleration
         private static float[]? _velocityCurve = null;
@@ -539,37 +539,37 @@ namespace DuckovLuckyBox.UI
 
         /// <summary>
         /// Generate velocity curve for smooth deceleration from initial to minimum velocity over target duration
-        /// Custom curve: velocity at 6s is 0.1 slots/s, velocity at 6.8s is 0 (complete stop)
+        /// Custom curve: velocity at 7s is 0.1 slots/s, velocity at 8s is 0 (complete stop)
         /// </summary>
         private static float[] GenerateVelocityCurve()
         {
             const int stepsPerSecond = 20; // 20 samples per second (every 0.05s)
-            // 6.8 * 20 = 136
-            int totalSteps = (int)(TargetAnimationDurationInSeconds * stepsPerSecond);
+            // 8 * 20 = 160
+            int totalSteps = (int)(8f * stepsPerSecond);
             var curve = new float[totalSteps];
 
-            // At 6s (index 120) should be 0.1
-            // At 6.8s (index 135, the last one) should be 0.0 (complete stop)
-            const float velocityAt6s = 0.1f;
+            // At 7s (index 140) should be 0.1
+            // At 8s (index 159, the last one) should be 0.0 (complete stop)
+            const float velocityAt7s = 0.1f;
 
             for (int i = 0; i < totalSteps; i++)
             {
                 // Current sample point corresponding time
-                // i=0 → 0.00s, i=1 → 0.05s, ..., i=120 → 6.00s, i=135 → 6.75s
+                // i=0 → 0.00s, i=1 → 0.05s, ..., i=140 → 7.00s, i=159 → 7.95s
                 float timeInSeconds = (float)i / stepsPerSecond;
 
-                if (timeInSeconds < 6.0f)
+                if (timeInSeconds < 7.0f)
                 {
-                    // First 6 seconds: decelerate from 20 to 0.1, using ease-out cubic curve
-                    float t = timeInSeconds / 6.0f; // 0.0 to 1.0
-                    float easeT = 1f - Mathf.Pow(1f - t, 3f);
-                    curve[i] = Mathf.Lerp(InitialVelocityInSlots, velocityAt6s, easeT);
+                    // First 7 seconds: decelerate from 35 to 0.1, using ease-out quartic curve for faster deceleration
+                    float t = timeInSeconds / 7.0f; // 0.0 to 1.0
+                    float easeT = 1f - Mathf.Pow(1f - t, 4f);
+                    curve[i] = Mathf.Lerp(InitialVelocityInSlots, velocityAt7s, easeT);
                 }
                 else
                 {
-                    // 6-6.8 seconds: linearly decelerate from 0.1 to 0.0 (complete stop)
-                    float t = (timeInSeconds - 6.0f) / 0.8f; // 0.0 to 1.0
-                    curve[i] = Mathf.Lerp(velocityAt6s, 0f, t);
+                    // 7-8 seconds: linearly decelerate from 0.1 to 0.0 (complete stop)
+                    float t = (timeInSeconds - 7.0f) / 1.0f; // 0.0 to 1.0
+                    curve[i] = Mathf.Lerp(velocityAt7s, 0f, t);
                 }
             }
 
