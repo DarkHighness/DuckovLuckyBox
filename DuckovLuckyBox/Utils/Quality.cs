@@ -18,7 +18,7 @@ namespace DuckovLuckyBox
 
   public static class QualityUtils
   {
-    public static Color White = ColorUtility.TryParseHtmlString("#FFFFFF", out Color white) ? white : Color.white;
+    public static Color White = ColorUtility.TryParseHtmlString("#808080", out Color white) ? white : Color.gray;
     public static Color Green = ColorUtility.TryParseHtmlString("#7cff7c40", out Color green) ? green : Color.green;
     public static Color Blue = ColorUtility.TryParseHtmlString("#7cd5ff40", out Color blue) ? blue : Color.blue;
     public static Color Purple = ColorUtility.TryParseHtmlString("#d0acff40", out Color purple) ? purple : Color.magenta;
