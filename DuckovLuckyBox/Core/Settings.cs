@@ -134,7 +134,7 @@ namespace DuckovLuckyBox.Core.Settings
     public const bool EnableAnimation = true;
     public static readonly Hotkey SettingsHotkey = new Hotkey(KeyCode.F1, false, false, false);
     public const bool EnableDestroyButton = Constants.ModId != Constants.AnimationOnlyModId;
-    public const bool EnableLotteryButton = Constants.ModId != Constants.AnimationOnlyModId;
+    public const bool EnableMeltButton = Constants.ModId != Constants.AnimationOnlyModId;
     public const bool EnableStockShopActions = Constants.ModId != Constants.AnimationOnlyModId;
     public const bool EnableDebug = false;
     public const bool EnableUseToCreateItemPatch = true;
@@ -187,14 +187,14 @@ namespace DuckovLuckyBox.Core.Settings
       DefaultValue = DefaultSettings.EnableDestroyButton,
     };
 
-    public SettingItem EnableLotteryButton { get; set; } = new SettingItem
+    public SettingItem EnableMeltButton { get; set; } = new SettingItem
     {
-      Key = "DuckovLuckyBox.Settings.EnableLotteryButton",
+      Key = "DuckovLuckyBox.Settings.EnableMeltButton",
       Label = Localizations.I18n.SettingsEnableMeltButtonKey,
-      Description = "DuckovLuckyBox.Settings.EnableLotteryButton.Description",
+      Description = "DuckovLuckyBox.Settings.EnableMeltButton.Description",
       Type = Type.Toggle,
       Category = Category.General,
-      DefaultValue = DefaultSettings.EnableLotteryButton,
+      DefaultValue = DefaultSettings.EnableMeltButton,
     };
 
     public SettingItem EnableDebug { get; set; } = new SettingItem
@@ -319,7 +319,7 @@ namespace DuckovLuckyBox.Core.Settings
         yield return EnableAnimation;
         yield return SettingsHotkey;
         yield return EnableDestroyButton;
-        yield return EnableLotteryButton;
+        yield return EnableMeltButton;
         yield return EnableDebug;
         yield return EnableUseToCreateItemPatch;
         yield return EnableWeightedLottery;

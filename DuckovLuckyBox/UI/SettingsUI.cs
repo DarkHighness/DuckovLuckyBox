@@ -222,8 +222,8 @@ namespace DuckovLuckyBox.UI
                 CreateHotkeySetting(settings.SettingsHotkey);
             if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableDestroyButton.Key}"))
                 CreateToggleSetting(settings.EnableDestroyButton);
-            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableLotteryButton.Key}"))
-                CreateToggleSetting(settings.EnableLotteryButton);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableMeltButton.Key}"))
+                CreateToggleSetting(settings.EnableMeltButton);
             if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableDebug.Key}"))
                 CreateToggleSetting(settings.EnableDebug);
             if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableUseToCreateItemPatch.Key}"))

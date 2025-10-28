@@ -14,7 +14,7 @@ namespace DuckovLuckyBox.Core.Settings
         public bool EnableAnimation = DefaultSettings.EnableAnimation;
         public string SettingsHotkey = DefaultSettings.SettingsHotkey.ToString();
         public bool EnableDestroyButton = DefaultSettings.EnableDestroyButton;
-        public bool EnableLotteryButton = DefaultSettings.EnableLotteryButton;
+        public bool EnableMeltButton = DefaultSettings.EnableMeltButton;
         public bool EnableDebug = DefaultSettings.EnableDebug;
         public bool EnableUseToCreateItemPatch = DefaultSettings.EnableUseToCreateItemPatch;
         public bool EnableWeightedLottery = DefaultSettings.EnableWeightedLottery;
@@ -310,7 +310,7 @@ namespace DuckovLuckyBox.Core.Settings
                 EnableAnimation = settings.EnableAnimation.GetAsBool(),
                 SettingsHotkey = settings.SettingsHotkey.GetAsHotkey().ToString(),
                 EnableDestroyButton = settings.EnableDestroyButton.GetAsBool(),
-                EnableLotteryButton = settings.EnableLotteryButton.GetAsBool(),
+                EnableMeltButton = settings.EnableMeltButton.GetAsBool(),
                 EnableDebug = settings.EnableDebug.GetAsBool(),
                 EnableUseToCreateItemPatch = settings.EnableUseToCreateItemPatch.GetAsBool(),
                 EnableWeightedLottery = settings.EnableWeightedLottery.GetAsBool(),
@@ -339,7 +339,7 @@ namespace DuckovLuckyBox.Core.Settings
                 settings.SettingsHotkey.Value = Hotkey.Parse(config.SettingsHotkey);
 
                 settings.EnableDestroyButton.Value = config.EnableDestroyButton;
-                settings.EnableLotteryButton.Value = config.EnableLotteryButton;
+                settings.EnableMeltButton.Value = config.EnableMeltButton;
                 settings.EnableDebug.Value = config.EnableDebug;
                 settings.EnableUseToCreateItemPatch.Value = config.EnableUseToCreateItemPatch;
                 settings.EnableWeightedLottery.Value = config.EnableWeightedLottery;
@@ -364,7 +364,7 @@ namespace DuckovLuckyBox.Core.Settings
             settings.EnableAnimation.OnValueChanged += OnSettingChanged;
             settings.SettingsHotkey.OnValueChanged += OnSettingChanged;
             settings.EnableDestroyButton.OnValueChanged += OnSettingChanged;
-            settings.EnableLotteryButton.OnValueChanged += OnSettingChanged;
+            settings.EnableMeltButton.OnValueChanged += OnSettingChanged;
             settings.EnableDebug.OnValueChanged += OnSettingChanged;
             settings.EnableUseToCreateItemPatch.OnValueChanged += OnSettingChanged;
             settings.EnableWeightedLottery.OnValueChanged += OnSettingChanged;
@@ -384,7 +384,7 @@ namespace DuckovLuckyBox.Core.Settings
             settings.EnableAnimation.OnValueChanged -= OnSettingChanged!;
             settings.SettingsHotkey.OnValueChanged -= OnSettingChanged!;
             settings.EnableDestroyButton.OnValueChanged -= OnSettingChanged!;
-            settings.EnableLotteryButton.OnValueChanged -= OnSettingChanged!;
+            settings.EnableMeltButton.OnValueChanged -= OnSettingChanged!;
             settings.EnableDebug.OnValueChanged -= OnSettingChanged!;
             settings.EnableUseToCreateItemPatch.OnValueChanged -= OnSettingChanged!;
             settings.EnableWeightedLottery.OnValueChanged -= OnSettingChanged!;
