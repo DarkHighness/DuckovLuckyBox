@@ -49,6 +49,15 @@ namespace DuckovLuckyBox.Core
             public static readonly string ContractFullKey = "UI_ContractFull";
             public static readonly string NoRewardAvailableKey = "UI_NoRewardAvailable";
             public static readonly string ItemQualityMismatchKey = "UI_ItemQualityMismatch";
+            public static readonly string BulletMustBeStackableKey = "UI_BulletMustBeStackable";
+            public static readonly string BulletMustBeFullStackKey = "UI_BulletMustBeFullStack";
+            public static readonly string RecycleTooltipEmptyKey = "UI_RecycleTooltipEmpty";
+            public static readonly string RecycleTooltipNeedCountKey = "UI_RecycleTooltipNeedCount";
+            public static readonly string RecycleTooltipConfirmKey = "UI_RecycleTooltipConfirm";
+            public static readonly string RecycleTooltipClearKey = "UI_RecycleTooltipClear";
+            public static readonly string RecycleCannotMixKey = "UI_RecycleCannotMix";
+            public static readonly string RecycleNoHigherLevelKey = "UI_RecycleNoHigherLevel";
+            public static readonly string RecycleNoTargetUpgradeKey = "UI_RecycleNoTargetUpgrade";
 
             // Item Operation Menu I18n keys
             public static readonly string ItemMenuDestroyKey = "UI_ItemMenuDestroy";
@@ -102,6 +111,15 @@ namespace DuckovLuckyBox.Core
             { I18n.ContractInventoryNotAvailableKey, "Contract inventory not available." },
             { I18n.ItemNotValidForContractKey, "Item is not valid for this contract." },
             { I18n.ContractFullKey, "Contract is full." },
+            { I18n.BulletMustBeStackableKey, "Bullets must be stackable." },
+            { I18n.BulletMustBeFullStackKey, "Bullets must be submitted as a full group of 30." },
+            { I18n.RecycleTooltipEmptyKey, "Place items into the recycle box to start recycling." },
+            { I18n.RecycleTooltipNeedCountKey, "Requires {needed} items to complete the recycle. Current: {current}/{needed}" },
+            { I18n.RecycleTooltipConfirmKey, "Confirm recycling {count} items to receive a higher-tier item." },
+            { I18n.RecycleTooltipClearKey, "Clear all {count} items; items will be returned to their origin." },
+            { I18n.RecycleCannotMixKey, "Cannot mix bullets with non-bullet items in a contract." },
+            { I18n.RecycleNoHigherLevelKey, "No higher-tier item exists for this level; cannot recycle." },
+            { I18n.RecycleNoTargetUpgradeKey, "Target categories do not contain an upgrade item for this level." },
             { I18n.NoRewardAvailableKey, "No reward available for this quality." },
             { I18n.ItemQualityMismatchKey, "Item quality does not match contract requirements." },
             { I18n.ItemMenuDestroyKey, "Destroy" },
@@ -112,7 +130,7 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltLevelDownNotificationKey, "{originalItem} downgraded to {newItem}..." },
             { I18n.MeltLevelSameNotificationKey, "{originalItem} stayed as {newItem}." },
             { I18n.MeltDestroyedNotificationKey, "{originalItem} was destroyed!" },
-            { I18n.MeltCostFormatKey, "Melt cost: {basePrice} × {level} × {count} = {totalCost}" }
+            { I18n.MeltCostFormatKey, "Melt cost: {basePrice} (Base Price) × {level} (Level Fee) × {count} (Quantity) = {totalCost}" }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { I18n.RefreshStockKey, "刷新" },
@@ -151,6 +169,15 @@ namespace DuckovLuckyBox.Core
             { I18n.ContractInventoryNotAvailableKey, "合同库存不可用。" },
             { I18n.ItemNotValidForContractKey, "物品对该合同无效。" },
             { I18n.ContractFullKey, "合同已满。" },
+            { I18n.BulletMustBeStackableKey, "子弹必须为可堆叠物品。" },
+            { I18n.BulletMustBeFullStackKey, "子弹必须一次提交整组（30发），无法添加到汰换合同。" },
+            { I18n.RecycleTooltipEmptyKey, "将物品放入汰换箱中以开始汰换" },
+            { I18n.RecycleTooltipNeedCountKey, "需要 {needed} 个物品才能完成汰换\n当前: {current}/{needed}" },
+            { I18n.RecycleTooltipConfirmKey, "确认汰换 {count} 个物品\n将获得更高级别的物品" },
+            { I18n.RecycleTooltipClearKey, "清除所有 {count} 个物品\n物品将返回原位置" },
+            { I18n.RecycleCannotMixKey, "子弹与非子弹物品不能混合放入汰换合同。" },
+            { I18n.RecycleNoHigherLevelKey, "该等级不存在高一级的物品，无法进行汰换。" },
+            { I18n.RecycleNoTargetUpgradeKey, "目标类型中不存在该等级的升级物品。" },
             { I18n.NoRewardAvailableKey, "此品质无可用奖励。" },
             { I18n.ItemQualityMismatchKey, "物品品质不符合合同要求。" },
             { I18n.ItemMenuDestroyKey, "销毁" },
@@ -161,7 +188,7 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltLevelDownNotificationKey, "{originalItem} 降级为 {newItem}..." },
             { I18n.MeltLevelSameNotificationKey, "{originalItem} 从等级挑选了 {newItem}。" },
             { I18n.MeltDestroyedNotificationKey, "{originalItem} 被损毁了！" },
-            { I18n.MeltCostFormatKey, "熔炼费用: {basePrice} × {level} × {count} = {totalCost}" }
+            { I18n.MeltCostFormatKey, "熔炼费用: {basePrice} (基础价格) × {level} (等级付费) × {count} (数量) = {totalCost}" }
         } },
     };
 

@@ -16,34 +16,40 @@ namespace DuckovLuckyBox.Core
     /// </summary>
     public static class RecycleService
     {
-        private static Dictionary<string, Dictionary<ItemValueLevel, Item>>? _itemLookupByCategoryAndQuality = null;
+        // Number of bullets per logical group for recycling
+        public const int BulletGroupSize = 30;
+
+        private static Dictionary<string, Dictionary<ItemValueLevel, List<Item>>>? _itemLookupByCategoryAndQuality = null;
 
         /// <summary>
         /// Gets a lookup dictionary mapping categories and quality levels to items
         /// Used for efficient category and quality-based item queries
         /// </summary>
-        public static Dictionary<string, Dictionary<ItemValueLevel, Item>> ItemLookupByCategoryAndQuality
+        public static Dictionary<string, Dictionary<ItemValueLevel, List<Item>>> ItemLookupByCategoryAndQuality
         {
             get
             {
                 if (_itemLookupByCategoryAndQuality == null)
                 {
-                    _itemLookupByCategoryAndQuality = new Dictionary<string, Dictionary<ItemValueLevel, Item>>();
-                    foreach (var entry in ItemAssetsCollection.Instance.entries)
+                    _itemLookupByCategoryAndQuality = new Dictionary<string, Dictionary<ItemValueLevel, List<Item>>>();
+                    foreach (var entry in ItemUtils.RecycleItemCache.Entries)
                     {
-                        var item = entry.prefab;
-                        var category = entry.metaData.Catagory;
-                        var quality = QualityUtils.GetCachedItemValueLevel(item);
+                        var item = entry.Item;
+                        var category = entry.MetaData.Catagory;
+                        var valueLevel = entry.ValueLevel;
 
                         if (!_itemLookupByCategoryAndQuality.ContainsKey(category))
                         {
-                            _itemLookupByCategoryAndQuality[category] = new Dictionary<ItemValueLevel, Item>();
+                            _itemLookupByCategoryAndQuality[category] = new Dictionary<ItemValueLevel, List<Item>>();
                         }
 
-                        if (!_itemLookupByCategoryAndQuality[category].ContainsKey(quality))
+                        if (!_itemLookupByCategoryAndQuality[category].ContainsKey(valueLevel))
                         {
-                            _itemLookupByCategoryAndQuality[category][quality] = item;
+                            _itemLookupByCategoryAndQuality[category][valueLevel] = new List<Item>();
                         }
+
+                        // Add item to the list for this category & quality
+                        _itemLookupByCategoryAndQuality[category][valueLevel].Add(item);
                     }
                 }
                 return _itemLookupByCategoryAndQuality;
@@ -72,7 +78,7 @@ namespace DuckovLuckyBox.Core
             }
 
             var nextLevel = (ItemValueLevel)nextLevelValue;
-            return qualityMap.TryGetValue(nextLevel, out var nextItem) && nextItem != null;
+            return qualityMap.TryGetValue(nextLevel, out var nextItems) && nextItems != null && nextItems.Count > 0;
         }
 
         /// <summary>
@@ -99,7 +105,7 @@ namespace DuckovLuckyBox.Core
                 }
 
                 var qualityMap = kvp.Value;
-                if (qualityMap != null && qualityMap.TryGetValue(level, out var item) && item != null)
+                if (qualityMap != null && qualityMap.TryGetValue(level, out var items) && items != null && items.Count > 0)
                 {
                     return true;
                 }
@@ -131,7 +137,7 @@ namespace DuckovLuckyBox.Core
             }
 
             var candidateEntries = ItemUtils.RecycleItemCache.Entries
-                .Where(entry => categorySet.Contains(entry.MetaData.Catagory))
+                .Where(entry => entry.MetaData.Catagory != "Bullet" && categorySet.Contains(entry.MetaData.Catagory))
                 .Where(entry => entry.ValueLevel == level)
                 .ToList();
 
@@ -165,7 +171,7 @@ namespace DuckovLuckyBox.Core
             foreach (var mat in materialCategories)
             {
                 var biased = candidateEntries
-                    .Where(e => string.Equals(e.MetaData.Catagory, mat.Category, StringComparison.OrdinalIgnoreCase))
+                    .Where(e => e.MetaData.Catagory == mat.Category)
                     .Select(e => e.Item.TypeID)
                     .ToList();
 
@@ -183,6 +189,34 @@ namespace DuckovLuckyBox.Core
             int fallbackTypeId = candidateTypeIds[fallbackIndex];
             Item? fallbackObj = await ItemAssetsCollection.InstantiateAsync(fallbackTypeId);
             return fallbackObj;
+        }
+
+        /// <summary>
+        /// Pick a random bullet item (full stack) at the specified quality level.
+        /// Returns an item whose StackCount is set to its MaxStackCount.
+        /// </summary>
+        public static async UniTask<Item?> PickRandomBulletStackByQualityAsync(ItemValueLevel level)
+        {
+            var candidateEntries = ItemUtils.BulletItemCache.Entries
+                .Where(entry => entry.ValueLevel == level)
+                .ToList();
+
+            if (candidateEntries.Count == 0)
+            {
+                return null;
+            }
+
+            int randomIndex = UnityEngine.Random.Range(0, candidateEntries.Count);
+            int selectedItemTypeId = candidateEntries[randomIndex].Item.TypeID;
+
+            Item? obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
+            if (obj != null)
+            {
+                // set to configured bullet group size
+                obj.StackCount = BulletGroupSize;
+            }
+
+            return obj;
         }
 
         /// <summary>
@@ -206,12 +240,12 @@ namespace DuckovLuckyBox.Core
             if (!Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue)) return false;
             var targetLevel = (ItemValueLevel)nextLevelValue;
 
-            // For bullets, require full stack submitted (caller should ensure sending whole stack)
+            // For bullets, require submission of a full logical bullet group (BulletGroupSize)
             if (string.Equals(category, "Bullet", StringComparison.OrdinalIgnoreCase))
             {
-                // If bullet, require stackable and full stack (caller will normally send full stack)
+                // If bullet, require stackable and at least one full group
                 if (!item.Stackable) return false;
-                if (item.StackCount < item.MaxStackCount) return false;
+                if (item.StackCount < BulletGroupSize) return false;
 
                 // Ensure there is a bullet at next level in supported categories
                 return HasCategoryItemAtLevel(new[] { category }, targetLevel);
@@ -219,15 +253,6 @@ namespace DuckovLuckyBox.Core
 
             // Generic case: ensure at least one item at next level exists among supported categories
             return HasCategoryItemAtLevel(supportedSet, targetLevel);
-        }
-
-        /// <summary>
-        /// Gets item category
-        /// </summary>
-        public static string GetItemCategory(int typeId)
-        {
-            var entry = ItemAssetsCollection.Instance.entries.FirstOrDefault(e => e != null && e.typeID == typeId);
-            return entry?.metaData.Catagory ?? "Unknown";
         }
 
         /// <summary>
@@ -285,11 +310,19 @@ namespace DuckovLuckyBox.Core
         }
 
         /// <summary>
+        /// Gets item category
+        /// </summary>
+        public static string GetItemCategory(int typeId)
+        {
+            return ItemUtils.RecycleItemCache.GetItemCategory(typeId);
+        }
+
+        /// <summary>
         /// Gets item display information
         /// </summary>
         public static Item? GetItem(int typeId)
         {
-            return ItemUtils.LotteryItemCache.GetItem(typeId);
+            return ItemUtils.RecycleItemCache.GetItem(typeId);
         }
 
         /// <summary>
@@ -297,7 +330,7 @@ namespace DuckovLuckyBox.Core
         /// </summary>
         public static string GetDisplayName(int typeId)
         {
-            return ItemUtils.LotteryItemCache.GetDisplayName(typeId);
+            return ItemUtils.RecycleItemCache.GetDisplayName(typeId);
         }
 
         /// <summary>
@@ -305,7 +338,7 @@ namespace DuckovLuckyBox.Core
         /// </summary>
         public static ItemValueLevel GetItemQuality(int typeId)
         {
-            return ItemUtils.LotteryItemCache.GetItemQuality(typeId);
+            return ItemUtils.RecycleItemCache.GetItemQuality(typeId);
         }
 
         /// <summary>
@@ -313,7 +346,7 @@ namespace DuckovLuckyBox.Core
         /// </summary>
         public static Sprite? GetItemIcon(int typeId)
         {
-            return ItemUtils.LotteryItemCache.GetItemIcon(typeId);
+            return ItemUtils.RecycleItemCache.GetItemIcon(typeId);
         }
 
         /// <summary>
@@ -321,7 +354,7 @@ namespace DuckovLuckyBox.Core
         /// </summary>
         public static Color GetItemQualityColor(int typeId)
         {
-            return ItemUtils.LotteryItemCache.GetItemQualityColor(typeId);
+            return ItemUtils.RecycleItemCache.GetItemQualityColor(typeId);
         }
     }
 }

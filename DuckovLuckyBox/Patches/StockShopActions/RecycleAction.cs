@@ -130,7 +130,8 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         "Injector",
         "Electric",
         "Totem",
-        "Tool"
+        "Tool",
+        "Bullet"
       };
 
       private readonly StockShopView _view;
@@ -1015,15 +1016,20 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           int itemCount = _contractInventory.GetItemCount();
           if (itemCount == 0)
           {
-            tooltipText = "将物品放入汰换箱中以开始汰换";
+            tooltipText = Localizations.I18n.RecycleTooltipEmptyKey.ToPlainText();
           }
           else if (itemCount < ContractSize)
           {
-            tooltipText = $"需要 {ContractSize} 个物品才能完成汰换\n当前: {itemCount}/{ContractSize}";
+            // Replace placeholders: {current} and {needed} are defined in localization strings
+            tooltipText = Localizations.I18n.RecycleTooltipNeedCountKey.ToPlainText()
+              .Replace("{current}", itemCount.ToString())
+              .Replace("{needed}", ContractSize.ToString());
           }
           else
           {
-            tooltipText = $"确认汰换 {itemCount} 个物品\n将获得更高级别的物品";
+            // {count} placeholder for confirmed count
+            tooltipText = Localizations.I18n.RecycleTooltipConfirmKey.ToPlainText()
+              .Replace("{count}", itemCount.ToString());
           }
         }
         else if (button == _clearButton)
@@ -1031,11 +1037,12 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           int itemCount = _contractInventory.GetItemCount();
           if (itemCount > 0)
           {
-            tooltipText = $"清除所有 {itemCount} 个物品\n物品将返回原位置";
+            tooltipText = Localizations.I18n.RecycleTooltipClearKey.ToPlainText()
+              .Replace("{count}", itemCount.ToString());
           }
           else
           {
-            tooltipText = "汰换箱为空";
+            tooltipText = Localizations.I18n.RecycleTooltipEmptyKey.ToPlainText();
           }
         }
 
@@ -1214,6 +1221,37 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.ItemNotValidForContractKey.ToPlainText());
         }
 
+        // Special handling for bullets: only allow if a full bullet group (configured size) is submitted
+        if (category == "Bullet")
+        {
+          if (!item.Stackable)
+          {
+            return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.BulletMustBeStackableKey.ToPlainText());
+          }
+
+          if (item.StackCount < RecycleService.BulletGroupSize)
+          {
+            return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.BulletMustBeFullStackKey.ToPlainText());
+          }
+        }
+
+        // Disallow mixing bullets with non-bullets: if contract already has items and first item is bullet,
+        // new items must also be bullets; similarly if first is non-bullet, bullets cannot be added.
+        if (!isFirstItem && _contractInventory != null)
+        {
+          var firstExisting = _contractInventory.Content.FirstOrDefault();
+          if (firstExisting != null)
+          {
+            var firstCategory = RecycleService.GetItemCategory(firstExisting.TypeID);
+            bool firstIsBullet = firstCategory == "Bullet";
+            bool thisIsBullet = category == "Bullet";
+            if (firstIsBullet != thisIsBullet)
+            {
+              return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.RecycleCannotMixKey.ToPlainText());
+            }
+          }
+        }
+
         if (currentCount >= ContractSize)
         {
           return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.ContractFullKey.ToPlainText());
@@ -1224,14 +1262,14 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           int nextLevelValue = (int)quality + 1;
           if (!Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue))
           {
-            return ContractValidationResult.Invalid(category, quality, true, "该等级不存在高一级的物品，无法进行汰换。");
+            return ContractValidationResult.Invalid(category, quality, true, Localizations.I18n.RecycleNoHigherLevelKey.ToPlainText());
           }
 
           rewardLevel = (ItemValueLevel)nextLevelValue;
 
           if (!RecycleService.HasCategoryItemAtLevel(RewardCategories, rewardLevel.Value))
           {
-            return ContractValidationResult.Invalid(category, quality, true, "目标类型中不存在该等级的升级物品。");
+            return ContractValidationResult.Invalid(category, quality, true, Localizations.I18n.RecycleNoTargetUpgradeKey.ToPlainText());
           }
         }
         else if (!MatchesContractRequirements(quality))
@@ -1335,39 +1373,82 @@ namespace DuckovLuckyBox.Patches.StockShopActions
           Item itemToMove = item;
           Item? stackSource = null;
 
-          if (item.StackCount > 1)
+          var itemCategory = RecycleService.GetItemCategory(item.TypeID);
+
+          // If bullet, move the whole stack (requirement: full stack checked in validation)
+          if (string.Equals(itemCategory, "Bullet", StringComparison.OrdinalIgnoreCase))
           {
-            Item? splitItem = null;
+              // If the player holds more than one logical bullet group, split out a group of BulletGroupSize
+              if (item.StackCount > RecycleService.BulletGroupSize)
+              {
+                Item? splitItem = null;
+                try
+                {
+                  splitItem = await item.Split(RecycleService.BulletGroupSize);
+                }
+                catch (Exception ex)
+                {
+                  Log.Error($"Cycle bin failed to split bullet stack: {ex.Message}");
+                }
 
-            try
-            {
-              splitItem = await item.Split(1);
-            }
-            catch (Exception ex)
-            {
-              Log.Error($"Cycle bin failed to split item stack: {ex.Message}");
-            }
+                if (splitItem == null)
+                {
+                  return;
+                }
 
-            if (splitItem == null)
-            {
-              return;
-            }
+                itemToMove = splitItem;
+                stackSource = item;
+              }
+              else
+              {
+                // StackCount is exactly BulletGroupSize (validation ensures >=), remove the whole stack
+                if (!origin.RemoveItem(item))
+                {
+                  Log.Warning("Cycle bin failed to remove bullet stack from source inventory.");
+                  return;
+                }
 
-            itemToMove = splitItem;
-            stackSource = item;
+                item.Detach();
+                itemToMove = item;
+              }
           }
           else
           {
-            if (!origin.RemoveItem(item))
+            if (item.StackCount > 1)
             {
-              Log.Warning("Cycle bin failed to remove item from source inventory.");
-              return;
+              Item? splitItem = null;
+
+              try
+              {
+                splitItem = await item.Split(1);
+              }
+              catch (Exception ex)
+              {
+                Log.Error($"Cycle bin failed to split item stack: {ex.Message}");
+              }
+
+              if (splitItem == null)
+              {
+                return;
+              }
+
+              itemToMove = splitItem;
+              stackSource = item;
+            }
+            else
+            {
+              if (!origin.RemoveItem(item))
+              {
+                Log.Warning("Cycle bin failed to remove item from source inventory.");
+                return;
+              }
+
+              item.Detach();
             }
 
-            item.Detach();
+            // non-bullet: each moved item is a single count
+            itemToMove.StackCount = 1;
           }
-
-          itemToMove.StackCount = 1;
 
           if (_contractInventory == null)
           {
@@ -1617,15 +1698,34 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
           Item? reward = null;
 
-          if (rewardLevel.HasValue)
-          {
-            reward = await RecycleService.PickRandomItemByCategoriesAndQualityAsync(RewardCategories, rewardLevel.Value);
-          }
+          // If all submitted items are bullets, use bullet-only logic and return a full stack bullet
+          bool allBullets = items.All(i => RecycleService.GetItemCategory(i.TypeID) == "Bullet");
 
-          if (reward == null)
+          if (allBullets)
           {
-            var fallbackLevel = DetermineTargetValueLevel(items);
-            reward = await TryCreateRewardItem(fallbackLevel);
+            if (rewardLevel.HasValue)
+            {
+              reward = await RecycleService.PickRandomBulletStackByQualityAsync(rewardLevel.Value);
+            }
+
+            if (reward == null)
+            {
+              var fallbackLevel = DetermineTargetValueLevel(items);
+              reward = await RecycleService.PickRandomBulletStackByQualityAsync(fallbackLevel);
+            }
+          }
+          else
+          {
+            if (rewardLevel.HasValue)
+            {
+              reward = await RecycleService.PickRandomItemByCategoriesAndQualityAsync(RewardCategories, rewardLevel.Value);
+            }
+
+            if (reward == null)
+            {
+              var fallbackLevel = DetermineTargetValueLevel(items);
+              reward = await TryCreateRewardItem(fallbackLevel);
+            }
           }
 
           ResetContractRequirements();

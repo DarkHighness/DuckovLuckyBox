@@ -372,7 +372,7 @@ namespace DuckovLuckyBox.Core
       if (item.TypeID == 451) return false;
 
       string category = RecycleService.GetItemCategory(item.TypeID);
-      if (string.Equals(category, "Bullet", StringComparison.OrdinalIgnoreCase))
+      if (category == "Bullet")
       {
         return false;
       }
