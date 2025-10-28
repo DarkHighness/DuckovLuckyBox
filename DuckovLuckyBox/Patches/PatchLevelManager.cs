@@ -7,6 +7,7 @@ namespace DuckovLuckyBox.Patches
   {
     public static void Postfix()
     {
+      ModBehaviour.SettingsUI?.Destroy();
       ItemOperationMenuUI.Instance.Destroy();
       StockShopViewUI.Instance.Destroy();
       RecycleSessionUI.Instance.Destroy();

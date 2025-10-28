@@ -22,7 +22,7 @@ namespace DuckovLuckyBox
 
     public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
-        private SettingsUI? settingsUI = null;
+        public static SettingsUI? SettingsUI = null;
         private Harmony? harmony = null;
 
         void Awake()
@@ -41,7 +41,7 @@ namespace DuckovLuckyBox
             SettingManager.InitializeConfig(this);
             Log.Debug("Settings config initialized.");
 
-            settingsUI = gameObject.AddComponent<SettingsUI>();
+            SettingsUI = gameObject.AddComponent<SettingsUI>();
             Log.Debug("Settings UI component created.");
 
             Constants.Sound.LoadSounds();
@@ -90,7 +90,7 @@ namespace DuckovLuckyBox
 
             if (hotkey.IsPressed())
             {
-                settingsUI!.ToggleSettingsUI();
+                SettingsUI!.Toggle();
             }
 
             if (SettingManager.Instance.EnableDebug.GetAsBool())
