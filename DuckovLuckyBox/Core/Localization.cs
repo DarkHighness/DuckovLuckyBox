@@ -186,7 +186,7 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltResultFormatKey, "熔炼完成！ 总数: {meltCount}, 升级: {levelUpCount}, 降级: {levelDownCount}, 不变: {sameLevelCount}, 损毁: {destroyedCount}" },
             { I18n.MeltLevelUpNotificationKey, "{originalItem} 升级为 {newItem}！" },
             { I18n.MeltLevelDownNotificationKey, "{originalItem} 降级为 {newItem}..." },
-            { I18n.MeltLevelSameNotificationKey, "{originalItem} 从等级挑选了 {newItem}。" },
+            { I18n.MeltLevelSameNotificationKey, "{originalItem} 平级转换为 {newItem}。" },
             { I18n.MeltDestroyedNotificationKey, "{originalItem} 被损毁了！" },
             { I18n.MeltCostFormatKey, "熔炼费用: {basePrice} (基础价格) × {level} (等级付费) × {count} (数量) = {totalCost}" }
         } },
