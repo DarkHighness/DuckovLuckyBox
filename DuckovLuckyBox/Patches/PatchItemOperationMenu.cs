@@ -327,7 +327,7 @@ namespace DuckovLuckyBox.Patches
       bool destroyButtonEnabled = (bool)SettingManager.Instance.EnableDestroyButton.Value;
       bool lotteryButtonEnabled = (bool)SettingManager.Instance.EnableLotteryButton.Value;
 
-      // Check if item is a bullet (should hide lottery button)
+      // Check if item is a bullet (should hide melt button)
       bool isBullet = false;
       if (targetItem != null)
       {

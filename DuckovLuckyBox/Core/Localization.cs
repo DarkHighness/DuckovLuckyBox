@@ -12,9 +12,11 @@ namespace DuckovLuckyBox.Core
             public static readonly string RefreshStockKey = "UI_RefreshStock";
             public static readonly string StorePickKey = "UI_StorePick";
             public static readonly string StreetPickKey = "UI_StreetPick";
-            public static readonly string RecycleKey = "UI_TrashBin";
-            public static readonly string ConfirmKey = "UI_TrashBinConfirm";
-            public static readonly string ClearKey = "UI_TrashBinClear";
+            public static readonly string RecycleKey = "UI_Recycle";
+            public static readonly string ConfirmKey = "UI_Confirm";
+            public static readonly string ClearKey = "UI_Clear";
+            public static readonly string OpenKey = "UI_Open";
+            public static readonly string CloseKey = "UI_Close";
             public static readonly string PickNotificationFormatKey = "Notification_PickOneFormat";
             public static readonly string InventoryFullAndSendToStorageKey = "Notification_InventoryFullAndSendToStorage";
             public static readonly string NotEnoughMoneyFormatKey = "Notification_NotEnoughMoneyFormat";
@@ -69,6 +71,8 @@ namespace DuckovLuckyBox.Core
             { I18n.RecycleKey, "Recycle" },
             { I18n.ConfirmKey, "Confirm" },
             { I18n.ClearKey, "Clear" },
+            { I18n.OpenKey, "Open" },
+            { I18n.CloseKey, "Close" },
             { I18n.PickNotificationFormatKey, "You picked one {itemDisplayName}." },
             { I18n.StreetPickKey, "Roll from the street." },
             { I18n.InventoryFullAndSendToStorageKey, "Inventory full, sending to storage." },
@@ -116,6 +120,8 @@ namespace DuckovLuckyBox.Core
             { I18n.RecycleKey, "\"汰换合同\"" },
             { I18n.ConfirmKey, "确认" },
             { I18n.ClearKey, "清空" },
+            { I18n.OpenKey, "打开" },
+            { I18n.CloseKey, "关闭" },
             { I18n.PickNotificationFormatKey, "俺拾到了 {itemDisplayName}" },
             { I18n.StreetPickKey, "路边拾一个" },
             { I18n.InventoryFullAndSendToStorageKey, "俺拾不动嘞，邮回仓库嘞。" },

@@ -243,6 +243,8 @@ namespace DuckovLuckyBox.Patches
             {
                 await _actionManager.ExecuteAsync(actionName, view);
             }
+
+            UpdateButtonTexts();
         }
 
         private static StockShopView? FindStockShopView()
@@ -282,7 +284,16 @@ namespace DuckovLuckyBox.Patches
 
             if (_actionTexts.TryGetValue(nameof(RecycleAction), out var recycleText))
             {
-                recycleText.text = Localizations.I18n.RecycleKey.ToPlainText();
+                var text = string.Empty;
+                if (RecycleAction.IsOpen)
+                {
+                    text = Localizations.I18n.CloseKey.ToPlainText() + " " + Localizations.I18n.RecycleKey.ToPlainText();
+                }
+                else
+                {
+                    text = Localizations.I18n.OpenKey.ToPlainText() + " " + Localizations.I18n.RecycleKey.ToPlainText();
+                }
+                recycleText.text = text;
             }
         }
 
