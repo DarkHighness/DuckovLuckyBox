@@ -48,8 +48,39 @@ namespace DuckovLuckyBox.UI
                 return;
             }
 
-            settingsPanel!.SetActive(false);
-            Log.Debug("Settings UI hidden.");
+            // Destroy the UI when hiding so that next Show will fully recreate it.
+            if (canvas != null)
+            {
+                try
+                {
+                    DestroyImmediate(canvas.gameObject);
+                }
+                catch (Exception ex)
+                {
+                    Log.Debug($"Error destroying canvas: {ex}");
+                }
+
+                canvas = null;
+            }
+
+            if (settingsPanel != null)
+            {
+                try
+                {
+                    DestroyImmediate(settingsPanel);
+                }
+                catch (Exception ex)
+                {
+                    Log.Debug($"Error destroying settingsPanel: {ex}");
+                }
+
+                settingsPanel = null;
+            }
+
+            initialized = false;
+            initializing = false;
+
+            Log.Debug("Settings UI destroyed on hide.");
         }
 
         public void ShowSettingsUI()
@@ -164,32 +195,63 @@ namespace DuckovLuckyBox.UI
 
         private void CreateSettings()
         {
-            CreateTitle();
-
+            // Avoid duplicate UI elements by checking for existing children first.
             var settings = SettingManager.Instance;
 
+            // Title
+            if (settingsPanel!.transform.Find("DuckovLuckyBox.UI.Title") == null)
+            {
+                CreateTitle();
+            }
+
+            // Helper local functions
+            bool HasEntry(string name) => settingsPanel.transform.Find(name) != null;
+            void EnsureCategory(string categoryKey)
+            {
+                string catName = $"DuckovLuckyBox.UI.Category.{categoryKey}";
+                if (!HasEntry(catName))
+                    CreateCategoryLabel(categoryKey);
+            }
+
             // General category
-            CreateCategoryLabel(Localizations.I18n.SettingsCategoryGeneralKey);
-            CreateToggleSetting(settings.EnableAnimation);
-            CreateHotkeySetting(settings.SettingsHotkey);
-            CreateToggleSetting(settings.EnableDestroyButton);
-            CreateToggleSetting(settings.EnableLotteryButton);
-            CreateToggleSetting(settings.EnableDebug);
-            CreateToggleSetting(settings.EnableUseToCreateItemPatch);
-            CreateToggleSetting(settings.EnableWeightedLottery);
-            CreateToggleSetting(settings.EnableHighQualitySound);
-            CreateToggleSetting(settings.EnableStockShopActions);
-            CreateTextSetting(settings.HighQualitySoundFilePath);
+            EnsureCategory(Localizations.I18n.SettingsCategoryGeneralKey);
+
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableAnimation.Key}"))
+                CreateToggleSetting(settings.EnableAnimation);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.SettingsHotkey.Key}"))
+                CreateHotkeySetting(settings.SettingsHotkey);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableDestroyButton.Key}"))
+                CreateToggleSetting(settings.EnableDestroyButton);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableLotteryButton.Key}"))
+                CreateToggleSetting(settings.EnableLotteryButton);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableDebug.Key}"))
+                CreateToggleSetting(settings.EnableDebug);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableUseToCreateItemPatch.Key}"))
+                CreateToggleSetting(settings.EnableUseToCreateItemPatch);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableWeightedLottery.Key}"))
+                CreateToggleSetting(settings.EnableWeightedLottery);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableHighQualitySound.Key}"))
+                CreateToggleSetting(settings.EnableHighQualitySound);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.EnableStockShopActions.Key}"))
+                CreateToggleSetting(settings.EnableStockShopActions);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.HighQualitySoundFilePath.Key}"))
+                CreateTextSetting(settings.HighQualitySoundFilePath);
 
             // Pricing category
-            CreateCategoryLabel(Localizations.I18n.SettingsCategoryPricingKey);
-            CreateSliderSetting(settings.RefreshStockPrice);
-            CreateSliderSetting(settings.StorePickPrice);
-            CreateSliderSetting(settings.StreetPickPrice);
-            CreateSliderSetting(settings.MeltBasePrice);
+            EnsureCategory(Localizations.I18n.SettingsCategoryPricingKey);
+
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.RefreshStockPrice.Key}"))
+                CreateSliderSetting(settings.RefreshStockPrice);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.StorePickPrice.Key}"))
+                CreateSliderSetting(settings.StorePickPrice);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.StreetPickPrice.Key}"))
+                CreateSliderSetting(settings.StreetPickPrice);
+            if (!HasEntry($"DuckovLuckyBox.UI.Entry.{settings.MeltBasePrice.Key}"))
+                CreateSliderSetting(settings.MeltBasePrice);
 
             // Reset button
-            CreateResetButton();
+            if (!HasEntry("DuckovLuckyBox.UI.ResetButtonContainer"))
+                CreateResetButton();
         }
 
         private void CreateTitle()
