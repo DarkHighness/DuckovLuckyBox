@@ -8,6 +8,8 @@ A mod for "Escape from Duckov" that allows players to use additional features in
 
 ## Features
 
+⚠️ Note: This mod references item value from the "Item Value Rarity and Search Sounds" mod. If the version of the rarity and value mod you have installed is inconsistent with this mod, it may cause discrepancies between the draw probabilities and in-game experience!
+
 ### Shop Features
 
 1. ⌚ A decent-looking lottery animation (can be skipped by left-clicking the mouse while playing)
@@ -22,13 +24,13 @@ A mod for "Escape from Duckov" that allows players to use additional features in
 
 5. 🗑️ "Destroy": Destroy the selected item (right-click item to open menu)
 
-6. 🎰 "Lottery": Use the selected item for lottery
-   - Draws the same number of items with the same **Quality** based on the item's **Quality** and **StackCount**
-   - Example: Using 5 quality-3 items will give you 5 random quality-3 items
+6. 🎰 "Melt": Use the selected item for melting
+   1. Based on the item's **Quality** and **StackCount**, melt to get a corresponding quantity and quality of random items
+   2. Melting results include: quality upgrade, quality downgrade, quality unchanged, or destroyed (no item output)
 
 ### Recycling Contract Feature
 
-7. 🗂️ "Recycling Contract": Put items into the trash bin to get rewards based on item value
+1. 🗂️ "Recycling Contract": Put items into the trash bin to get rewards based on item value
    - **Supported Item Types**: Weapons, Melee Weapons, Helmets, Medical Supplies, Face Masks, Armor, Luxury Items, Injectors, Electronics, Totems, Tools
    - Support dragging items into the trash bin
    - Calculate reward level based on item quality and value
@@ -69,12 +71,13 @@ The configuration file supports:
   - Available modifiers: `Ctrl`, `Shift`, `Alt`
 - **EnableHighQualitySound**: Enable/disable high-quality item sound effects (default: `true`)
 - **HighQualitySoundFilePath**: Custom file path for high-quality item sound effects (default: empty string, uses default sound)
-- **RefreshStockPrice**: Cost to refresh merchant inventory (default: `100`, range: 0-5000, step: 100)
-- **StorePickPrice**: Cost to pick from merchant's stock (default: `100`, range: 0-5000, step: 100)
-- **StreetPickPrice**: Cost to pick from all items (default: `100`, range: 0-5000, step: 100)
-- **EnableDestroyButton**: Enable/disable the Destroy button in item menu (default: `true`)
-- **EnableLotteryButton**: Enable/disable the Lottery button in item menu (default: `true`)
-- **EnableWeightedLottery**: Enable/disable weighted lottery (weight by item quality, default: `false`)
+ - **RefreshStockPrice**: Cost to refresh merchant inventory (default: `100`, range: 0-10000, step: 100)
+ - **StorePickPrice**: Cost to pick from merchant's stock (default: `3000`, range: 0-10000, step: 100)
+ - **StreetPickPrice**: Cost to pick from all items (default: `3000`, range: 0-10000, step: 100)
+ - **MeltBasePrice**: Base cost for melting items (default: `100`, range: 0-10000, step: 100)
+ - **EnableDestroyButton**: Enable/disable the Destroy button in item menu (default: `true`)
+ - **EnableLotteryButton**: Enable/disable the Lottery button in item menu (default: `true`)
+ - **EnableWeightedLottery**: Enable/disable weighted lottery (weight by item quality, default: `false`)
 
 The mod will automatically reload settings when the config file is modified externally.
 
