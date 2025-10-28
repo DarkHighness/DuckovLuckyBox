@@ -132,7 +132,7 @@ namespace DuckovLuckyBox.Patches
             // Prevent selection changes when Cycle Bin view is open
             if (RecycleSessionUI.Instance.IsOpen)
             {
-                return false; // Skip original method
+                AccessTools.Field(typeof(StockShopView), "Selection").SetValue(__instance, null);
             }
             return true; // Proceed with original method
         }
