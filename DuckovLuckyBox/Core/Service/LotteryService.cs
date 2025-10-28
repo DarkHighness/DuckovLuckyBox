@@ -304,8 +304,7 @@ namespace DuckovLuckyBox.Core
             // Play animation if requested
             if (playAnimation)
             {
-                var allItemIds = ItemUtils.LotteryItemCache.GetAllItemTypeIds();
-                await LotteryAnimation.PlayAsync(allItemIds, selectedItemTypeId, item.DisplayName, item.Icon);
+                await LotteryAnimation.PlayAsync(itemTypeIds, selectedItemTypeId, item.DisplayName, item.Icon);
             }
 
             // Send to inventory or storage
