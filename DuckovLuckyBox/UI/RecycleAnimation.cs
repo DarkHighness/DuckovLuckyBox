@@ -14,14 +14,20 @@ namespace DuckovLuckyBox.UI
   /// <summary>
   /// Manages Recycle reward animation UI and playback
   /// </summary>
-  public static class RecycleAnimation
+  public class RecycleAnimation
   {
-    private static RectTransform? _overlayRoot;
-    private static CanvasGroup? _canvasGroup;
-    private static Image? _itemIcon;
-    private static TextMeshProUGUI? _itemText;
-    private static Canvas? _canvas;
-    private static bool _isAnimating;
+    private static RecycleAnimation? _instance;
+    public static RecycleAnimation Instance => _instance ??= new RecycleAnimation();
+
+    private RecycleAnimation() {}
+
+    private bool _isInitialized;
+    private RectTransform? _overlayRoot;
+    private CanvasGroup? _canvasGroup;
+    private Image? _itemIcon;
+    private TextMeshProUGUI? _itemText;
+    private Canvas? _canvas;
+    private bool _isAnimating;
 
     // Animation constants
     private const float FadeInDuration = 0.3f;
@@ -34,9 +40,9 @@ namespace DuckovLuckyBox.UI
     /// <summary>
     /// Initializes the Recycle animation UI with a full-screen canvas overlay
     /// </summary>
-    public static void Initialize()
+    public void Initialize()
     {
-      if (_overlayRoot != null) return;
+      if (_isInitialized) return;
 
       // Create full-screen canvas if it doesn't exist
       if (_canvas == null)
@@ -89,12 +95,14 @@ namespace DuckovLuckyBox.UI
       _itemText.fontSize = 36;
       _itemText.alignment = TextAlignmentOptions.Center;
       _itemText.raycastTarget = false;
+
+      _isInitialized = true;
     }
 
     /// <summary>
     /// Plays the Recycle reward animation
     /// </summary>
-    public static async UniTask PlayAsync(Item item)
+    public async UniTask PlayAsync(Item item)
     {
       if (item == null)
       {
@@ -163,7 +171,7 @@ namespace DuckovLuckyBox.UI
       }
     }
 
-    private static async UniTask PlayRewardSoundEffect(Item item)
+    private async UniTask PlayRewardSoundEffect(Item item)
     {
       if (item == null) return;
 
@@ -187,7 +195,7 @@ namespace DuckovLuckyBox.UI
       await UniTask.Delay(TimeSpan.FromMilliseconds(100));
     }
 
-    private static async UniTask PerformBounceAnimation()
+    private async UniTask PerformBounceAnimation()
     {
       if (_itemIcon == null) return;
 
@@ -254,7 +262,7 @@ namespace DuckovLuckyBox.UI
       return 1f - Mathf.Pow(1f - t, 3f);
     }
 
-    private static async UniTask FadeCanvasGroup(CanvasGroup? group, float from, float to, float duration)
+    private async UniTask FadeCanvasGroup(CanvasGroup? group, float from, float to, float duration)
     {
       if (group == null) return;
 
@@ -277,13 +285,37 @@ namespace DuckovLuckyBox.UI
       group.alpha = to;
     }
 
-    private static Sprite EnsureFallbackSprite()
+    private Sprite EnsureFallbackSprite()
     {
       // Create a simple white square as fallback
       var texture = new Texture2D(1, 1);
       texture.SetPixel(0, 0, Color.white);
       texture.Apply();
       return Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f));
+    }
+
+    /// <summary>
+    /// Destroys the Recycle animation UI
+    /// </summary>
+    public void Destroy()
+    {
+      if (_overlayRoot != null)
+      {
+        UnityEngine.Object.Destroy(_overlayRoot.gameObject);
+        _overlayRoot = null;
+      }
+
+      if (_canvas != null)
+      {
+        UnityEngine.Object.Destroy(_canvas.gameObject);
+        _canvas = null;
+      }
+
+      _canvasGroup = null;
+      _itemIcon = null;
+      _itemText = null;
+      _isAnimating = false;
+      _isInitialized = false;
     }
   }
 }

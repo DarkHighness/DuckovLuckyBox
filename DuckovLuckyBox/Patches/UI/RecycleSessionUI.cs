@@ -1635,7 +1635,7 @@ namespace DuckovLuckyBox.Core
         }
 
         // Play reward animation
-        await RecycleAnimation.PlayAsync(reward);
+        await RecycleAnimation.Instance.PlayAsync(reward);
 
         if (!ItemUtilities.SendToPlayerCharacterInventory(reward))
         {

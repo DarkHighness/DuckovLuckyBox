@@ -15,9 +15,15 @@ namespace DuckovLuckyBox.UI
     /// <summary>
     /// Manages lottery animation UI and playback
     /// </summary>
-    public static class LotteryAnimation
+    public class LotteryAnimation
     {
-        private static RectTransform? _overlayRoot;
+        private static LotteryAnimation? _instance;
+        public static LotteryAnimation Instance => _instance ??= new LotteryAnimation();
+
+        private LotteryAnimation() {}
+
+        private bool _isInitialized;
+        private RectTransform? _overlayRoot;
         private static RectTransform? _viewport;
         private static RectTransform? _itemsContainer;
     private static Graphic? _centerPointer;
@@ -61,9 +67,9 @@ namespace DuckovLuckyBox.UI
         /// <summary>
         /// Initializes the lottery animation UI with a full-screen canvas overlay
         /// </summary>
-        public static void Initialize()
+        public void Initialize()
         {
-            if (_overlayRoot != null) return;
+            if (_isInitialized) return;
 
             // Create full-screen canvas if it doesn't exist
             if (_canvas == null)
@@ -277,12 +283,14 @@ namespace DuckovLuckyBox.UI
             _resultText.alignment = TextAlignmentOptions.Center;
             _resultText.raycastTarget = false;
             ResetResultText();
+
+            _isInitialized = true;
         }
 
         /// <summary>
         /// Plays the lottery animation
         /// </summary>
-        public static async UniTask PlayAsync(IEnumerable<int> candidateTypeIds, int finalTypeId, string finalDisplayName, Sprite? finalIcon)
+        public async UniTask PlayAsync(IEnumerable<int> candidateTypeIds, int finalTypeId, string finalDisplayName, Sprite? finalIcon)
         {
             // Check if animation is enabled in settings
             var enableAnimationValue = Core.Settings.SettingManager.Instance.EnableAnimation.Value;
@@ -391,7 +399,7 @@ namespace DuckovLuckyBox.UI
             }
         }
 
-        private static bool TryBuildAnimationPlan(IEnumerable<int> candidateTypeIds, int finalTypeId, Sprite? finalIcon, out AnimationPlan plan)
+        private bool TryBuildAnimationPlan(IEnumerable<int> candidateTypeIds, int finalTypeId, Sprite? finalIcon, out AnimationPlan plan)
         {
             plan = default!;
 
@@ -469,7 +477,7 @@ namespace DuckovLuckyBox.UI
         /// <summary>
         /// Build slot sequence with final item at a specific index
         /// </summary>
-        private static List<int> BuildSlotSequenceWithFixedFinal(IEnumerable<int> candidateTypeIds, int finalTypeId, bool useWeightedLottery, int totalSlots, int finalSlotIndex)
+        private List<int> BuildSlotSequenceWithFixedFinal(IEnumerable<int> candidateTypeIds, int finalTypeId, bool useWeightedLottery, int totalSlots, int finalSlotIndex)
         {
             var pool = candidateTypeIds?.ToList() ?? new List<int>();
             if (!pool.Contains(finalTypeId)) pool.Add(finalTypeId);
@@ -548,7 +556,7 @@ namespace DuckovLuckyBox.UI
             return sequence;
         }
 
-        private static Slot CreateSlot(int typeId, Sprite? sprite, string displayName, Color frameColor)
+        private Slot CreateSlot(int typeId, Sprite? sprite, string displayName, Color frameColor)
         {
             // Root acts as the slot container and is what we position inside the items container
             var root = new GameObject($"LotterySlot_{typeId}", typeof(RectTransform));
@@ -630,7 +638,7 @@ namespace DuckovLuckyBox.UI
         /// Generate velocity curve for smooth deceleration from initial to minimum velocity over target duration
         /// Custom curve: velocity at 7s is 0.1 slots/s, velocity at 8s is 0 (complete stop)
         /// </summary>
-        private static float[] GenerateVelocityCurve()
+        private float[] GenerateVelocityCurve()
         {
             const int stepsPerSecond = 20; // 20 samples per second (every 0.05s)
             // 8 * 20 = 160
@@ -668,7 +676,7 @@ namespace DuckovLuckyBox.UI
         /// <summary>
         /// Calculate total distance traveled based on velocity curve
         /// </summary>
-        private static float CalculateTotalDistanceInSlots(float[] velocityCurve)
+        private float CalculateTotalDistanceInSlots(float[] velocityCurve)
         {
             const float timeStepInSeconds = 0.05f; // Each sample point is 0.05 seconds apart
             float totalDistance = 0f;
@@ -685,7 +693,7 @@ namespace DuckovLuckyBox.UI
         /// <summary>
         /// Physics-based rolling animation (CSGO-style smooth deceleration)
         /// </summary>
-        private static async UniTask PerformPhysicsBasedRoll(AnimationPlan plan, ChannelGroup sfxGroup)
+        private async UniTask PerformPhysicsBasedRoll(AnimationPlan plan, ChannelGroup sfxGroup)
         {
             if (_itemsContainer == null) return;
 
@@ -744,19 +752,6 @@ namespace DuckovLuckyBox.UI
                 int curveIndex = Mathf.FloorToInt(elapsedTime * 20f); // One sample every 0.05s
                 curveIndex = Mathf.Clamp(curveIndex, 0, _velocityCurve.Length - 1);
                 float currentVelocityInSlots = _velocityCurve[curveIndex] * velocityDirection;
-
-                // Calculate distance to target
-                float distanceInPixels = targetPositionInPixels - currentPositionInPixels;
-                float distanceInSlots = distanceInPixels / SlotFullWidth;
-
-                if (Core.Settings.SettingManager.Instance.EnableDebug.GetAsBool())
-                {
-                    // Detailed debug: output every 0.1s or every frame after 5.8s
-                    bool shouldLog = (Mathf.FloorToInt(elapsedTime * 10) % 10 == 0) || (elapsedTime > 5.8f);
-                    if (shouldLog && deltaTime > 0)
-                    {
-                    }
-                }
 
                 // Convert slot/s to pixel/s, then calculate displacement
                 float velocityInPixels = currentVelocityInSlots * SlotFullWidth;
@@ -817,7 +812,7 @@ namespace DuckovLuckyBox.UI
             }
         }
 
-        private static int FindCenteredSlotIndex(AnimationPlan plan, float currentOffset)
+        private int FindCenteredSlotIndex(AnimationPlan plan, float currentOffset)
         {
             float minDistance = float.MaxValue;
             int closestIndex = -1;
@@ -838,7 +833,7 @@ namespace DuckovLuckyBox.UI
             return closestIndex;
         }
 
-        private static async UniTask AnimateCelebration(AnimationPlan plan, int finalTypeId, ChannelGroup sfxGroup)
+        private async UniTask AnimateCelebration(AnimationPlan plan, int finalTypeId, ChannelGroup sfxGroup)
         {
             var slot = plan.FinalSlot;
             var frame = slot.Frame;
@@ -901,7 +896,7 @@ namespace DuckovLuckyBox.UI
         /// <summary>
         /// Continuous glow effect on final slot
         /// </summary>
-        private static async void StartContinuousGlow(Slot slot)
+        private async void StartContinuousGlow(Slot slot)
         {
             float startTime = Time.time;
             const float glowDuration = 2f; // Glow for 2 seconds
@@ -921,7 +916,7 @@ namespace DuckovLuckyBox.UI
             }
         }
 
-        private static void ResetResultText()
+        private void ResetResultText()
         {
             if (_resultText == null) return;
 
@@ -931,7 +926,7 @@ namespace DuckovLuckyBox.UI
             _resultText.text = string.Empty;
         }
 
-        private static async UniTask RevealResult(string finalDisplayName)
+        private async UniTask RevealResult(string finalDisplayName)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(0.5f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
 
@@ -943,7 +938,7 @@ namespace DuckovLuckyBox.UI
             await UniTask.Delay(TimeSpan.FromSeconds(0.75f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
         }
 
-        private static Sprite EnsureFallbackSprite()
+        private Sprite EnsureFallbackSprite()
         {
             if (_fallbackSprite != null) return _fallbackSprite;
 
@@ -952,7 +947,7 @@ namespace DuckovLuckyBox.UI
             return _fallbackSprite;
         }
 
-        private static void ClearItems()
+        private void ClearItems()
         {
             if (_itemsContainer == null) return;
 
@@ -962,7 +957,7 @@ namespace DuckovLuckyBox.UI
             }
         }
 
-        private static async UniTask FadeCanvasGroup(CanvasGroup group, float from, float to, float duration)
+        private async UniTask FadeCanvasGroup(CanvasGroup group, float from, float to, float duration)
         {
             group.alpha = from;
             if (Mathf.Approximately(duration, 0f))
@@ -982,6 +977,35 @@ namespace DuckovLuckyBox.UI
             }
 
             group.alpha = to;
+        }
+
+        /// <summary>
+        /// Destroys the Lottery animation UI
+        /// </summary>
+        public void Destroy()
+        {
+          if (_overlayRoot != null)
+          {
+            UnityEngine.Object.Destroy(_overlayRoot.gameObject);
+            _overlayRoot = null;
+          }
+
+          if (_canvas != null)
+          {
+            UnityEngine.Object.Destroy(_canvas.gameObject);
+            _canvas = null;
+          }
+
+          _viewport = null;
+          _itemsContainer = null;
+          _centerPointer = null;
+          _resultText = null;
+          _canvasGroup = null;
+          _fallbackSprite = null;
+          _isAnimating = false;
+          _skipRequested = false;
+          _velocityCurve = null;
+          _isInitialized = false;
         }
 
         private readonly struct Slot

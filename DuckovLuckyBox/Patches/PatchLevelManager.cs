@@ -1,4 +1,5 @@
 using DuckovLuckyBox.Core;
+using DuckovLuckyBox.UI;
 using HarmonyLib;
 namespace DuckovLuckyBox.Patches
 {
@@ -11,6 +12,9 @@ namespace DuckovLuckyBox.Patches
       ItemOperationMenuUI.Instance.Destroy();
       StockShopViewUI.Instance.Destroy();
       RecycleSessionUI.Instance.Destroy();
+
+      LotteryAnimation.Instance.Destroy();
+      RecycleAnimation.Instance.Initialize();
     }
   }
 }
