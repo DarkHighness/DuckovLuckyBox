@@ -188,7 +188,7 @@ namespace DuckovLuckyBox.Core.Settings
     public SettingItem EnableLotteryButton { get; set; } = new SettingItem
     {
       Key = "DuckovLuckyBox.Settings.EnableLotteryButton",
-      Label = Localizations.I18n.SettingsEnableLotteryButtonKey,
+      Label = Localizations.I18n.SettingsEnableMeltButtonKey,
       Description = "DuckovLuckyBox.Settings.EnableLotteryButton.Description",
       Type = Type.Toggle,
       Category = Category.General,

@@ -32,7 +32,7 @@ namespace DuckovLuckyBox.Core
             public static readonly string SettingsResetToDefaultKey = "UI_SettingsResetToDefault";
             public static readonly string FreeKey = "UI_Free";
             public static readonly string SettingsEnableDestroyButtonKey = "UI_SettingsEnableDestroyButton";
-            public static readonly string SettingsEnableLotteryButtonKey = "UI_SettingsEnableLotteryButton";
+            public static readonly string SettingsEnableMeltButtonKey = "UI_SettingsEnableLotteryButton";
             public static readonly string SettingsEnableDebugKey = "UI_SettingsEnableDebug";
             public static readonly string SettingsEnableUseToCreateItemPatchKey = "UI_SettingsEnableUseToCreateItemPatch";
             public static readonly string SettingsEnableWeightedLotteryKey = "UI_SettingsEnableWeightedLottery";
@@ -49,34 +49,41 @@ namespace DuckovLuckyBox.Core
 
             // Item Operation Menu I18n keys
             public static readonly string ItemMenuDestroyKey = "UI_ItemMenuDestroy";
-            public static readonly string ItemMenuLotteryKey = "UI_ItemMenuLottery";
+            public static readonly string ItemMenuMeltKey = "UI_ItemMenuLottery";
             public static readonly string LotteryResultFormatKey = "Notification_LotteryResultFormat";
+
+            // Melt Operation I18n keys
+            public static readonly string MeltResultFormatKey = "Notification_MeltResultFormat";
+            public static readonly string MeltLevelUpNotificationKey = "Notification_MeltLevelUp";
+            public static readonly string MeltLevelDownNotificationKey = "Notification_MeltLevelDown";
+            public static readonly string MeltLevelSameNotificationKey = "Notification_MeltLevelSame";
+            public static readonly string MeltDestroyedNotificationKey = "Notification_MeltDestroyed";
         }
 
         private readonly Dictionary<SystemLanguage, Dictionary<string, string>> _localizedStrings = new Dictionary<SystemLanguage, Dictionary<string, string>> {
         { SystemLanguage.English, new Dictionary<string, string> {
             { I18n.RefreshStockKey, "Refresh" },
-            { I18n.StorePickKey, "Pick One" },
-            { I18n.RecycleKey, "Trash Bin" },
+            { I18n.StorePickKey, "Roll from the merchant." },
+            { I18n.RecycleKey, "Recycle" },
             { I18n.ConfirmKey, "Confirm" },
             { I18n.ClearKey, "Clear" },
             { I18n.PickNotificationFormatKey, "You picked one {itemDisplayName}." },
-            { I18n.StreetPickKey, "Buy one Lucky Box." },
+            { I18n.StreetPickKey, "Roll from the street." },
             { I18n.InventoryFullAndSendToStorageKey, "Inventory full, sending to storage." },
             { I18n.NotEnoughMoneyFormatKey, "Not enough money! Need {price} coins." },
-            { I18n.SettingsPanelTitleKey, "DuckvoLuckyBox SETTINGS" },
+            { I18n.SettingsPanelTitleKey, $"{Constants.ModName} SETTINGS" },
             { I18n.SettingsCategoryGeneralKey, "General" },
             { I18n.SettingsCategoryPricingKey, "Pricing" },
             { I18n.SettingsEnableAnimationKey, "Enable Animation" },
             { I18n.SettingsHotkeyKey, "Settings Hotkey" },
             { I18n.SettingsPressAnyKeyKey, "Press any key..." },
             { I18n.SettingsRefreshStockPriceKey, "Refresh Stock Price" },
-            { I18n.SettingsStorePickPriceKey, "Store Pick Price" },
-            { I18n.SettingsStreetPickPriceKey, "Street Pick Price" },
+            { I18n.SettingsStorePickPriceKey, "Roll from the merchant Price" },
+            { I18n.SettingsStreetPickPriceKey, "Roll from the street Price" },
             { I18n.SettingsResetToDefaultKey, "Reset to Default" },
             { I18n.FreeKey, "Free!" },
             { I18n.SettingsEnableDestroyButtonKey, "Enable Destroy Button" },
-            { I18n.SettingsEnableLotteryButtonKey, "Enable Lottery Button" },
+            { I18n.SettingsEnableMeltButtonKey, "Enable Melt Button" },
             { I18n.SettingsEnableDebugKey, "Enable Debug Mode" },
             { I18n.SettingsEnableUseToCreateItemPatchKey, "Enable In—Game Lottery Patch" },
             { I18n.SettingsEnableWeightedLotteryKey, "Enable Weighted Lottery" },
@@ -91,8 +98,13 @@ namespace DuckovLuckyBox.Core
             { I18n.NoRewardAvailableKey, "No reward available for this quality." },
             { I18n.ItemQualityMismatchKey, "Item quality does not match contract requirements." },
             { I18n.ItemMenuDestroyKey, "Destroy" },
-            { I18n.ItemMenuLotteryKey, "Lottery" },
-            { I18n.LotteryResultFormatKey, "You got {itemDisplayName}!" }
+            { I18n.ItemMenuMeltKey, "Melt" },
+            { I18n.LotteryResultFormatKey, "You got {itemDisplayName}!" },
+            { I18n.MeltResultFormatKey, "Melt done! Total: {meltCount}, Level up: {levelUpCount}, Level down: {levelDownCount}, Same level: {sameLevelCount}, Destroyed: {destroyedCount}" },
+            { I18n.MeltLevelUpNotificationKey, "{originalItem} upgraded to {newItem}!" },
+            { I18n.MeltLevelDownNotificationKey, "{originalItem} downgraded to {newItem}..." },
+            { I18n.MeltLevelSameNotificationKey, "{originalItem} stayed as {newItem}." },
+            { I18n.MeltDestroyedNotificationKey, "{originalItem} was destroyed!" }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { I18n.RefreshStockKey, "刷新" },
@@ -116,7 +128,7 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsResetToDefaultKey, "恢复默认值" },
             { I18n.FreeKey, "免费！" },
             { I18n.SettingsEnableDestroyButtonKey, "启用销毁按钮" },
-            { I18n.SettingsEnableLotteryButtonKey, "启用抽奖按钮" },
+            { I18n.SettingsEnableMeltButtonKey, "启用抽奖按钮" },
             { I18n.SettingsEnableDebugKey, "启用调试模式" },
             { I18n.SettingsEnableUseToCreateItemPatchKey, "启用游戏内抽奖补丁" },
             { I18n.SettingsEnableWeightedLotteryKey, "启用权重抽奖" },
@@ -131,8 +143,13 @@ namespace DuckovLuckyBox.Core
             { I18n.NoRewardAvailableKey, "此品质无可用奖励。" },
             { I18n.ItemQualityMismatchKey, "物品品质不符合合同要求。" },
             { I18n.ItemMenuDestroyKey, "销毁" },
-            { I18n.ItemMenuLotteryKey, "抽奖" },
-            { I18n.LotteryResultFormatKey, "你抽中了 {itemDisplayName}！" }
+            { I18n.ItemMenuMeltKey, "熔炼" },
+            { I18n.LotteryResultFormatKey, "你抽中了 {itemDisplayName}！" },
+            { I18n.MeltResultFormatKey, "熔炼完成！ 总数: {meltCount}, 升级: {levelUpCount}, 降级: {levelDownCount}, 不变: {sameLevelCount}, 损毁: {destroyedCount}" },
+            { I18n.MeltLevelUpNotificationKey, "{originalItem} 升级为 {newItem}！" },
+            { I18n.MeltLevelDownNotificationKey, "{originalItem} 降级为 {newItem}..." },
+            { I18n.MeltLevelSameNotificationKey, "{originalItem} 保持为 {newItem}。" },
+            { I18n.MeltDestroyedNotificationKey, "{originalItem} 被损毁了！" }
         } },
     };
 

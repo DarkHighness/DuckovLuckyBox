@@ -199,7 +199,7 @@ namespace DuckovLuckyBox
         };
 
         // Create event handler that captures filePath
-        FileSystemEventHandler handler = (sender, e) => OnSoundFileChanged(filePath);
+        void handler(object sender, FileSystemEventArgs e) => OnSoundFileChanged(filePath);
         watcher.Changed += handler;
 
         // Store both watcher and handler for proper cleanup

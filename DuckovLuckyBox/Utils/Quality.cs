@@ -209,25 +209,17 @@ namespace DuckovLuckyBox
 
     public static Color GetItemValueLevelColor(ItemValueLevel level)
     {
-      switch (level)
+      return level switch
       {
-        case ItemValueLevel.Red:
-          return Red;
-        case ItemValueLevel.LightRed:
-          return LightRed;
-        case ItemValueLevel.Orange:
-          return Orange;
-        case ItemValueLevel.Purple:
-          return Purple;
-        case ItemValueLevel.Blue:
-          return Blue;
-        case ItemValueLevel.Green:
-          return Green;
-        case ItemValueLevel.White:
-          return White;
-        default:
-          return White;
-      }
+        ItemValueLevel.Red => Red,
+        ItemValueLevel.LightRed => LightRed,
+        ItemValueLevel.Orange => Orange,
+        ItemValueLevel.Purple => Purple,
+        ItemValueLevel.Blue => Blue,
+        ItemValueLevel.Green => Green,
+        ItemValueLevel.White => White,
+        _ => White,
+      };
     }
 
     public static bool IsHighQuality(this ItemValueLevel level)

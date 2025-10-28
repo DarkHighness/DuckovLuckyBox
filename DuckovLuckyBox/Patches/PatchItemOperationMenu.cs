@@ -20,7 +20,7 @@ namespace DuckovLuckyBox.Patches
     public static Dictionary<ItemOperationMenu, MenuState> States = new Dictionary<ItemOperationMenu, MenuState>();
 
     public Button? DestroyButton { get; set; }
-    public Button? LotteryButton { get; set; }
+    public Button? MeltButton { get; set; }
     public ItemOperationMenu? Menu { get; set; }
   }
 
@@ -43,7 +43,7 @@ namespace DuckovLuckyBox.Patches
       }
 
       // Only create buttons once
-      if (state.DestroyButton == null || state.LotteryButton == null)
+      if (state.DestroyButton == null || state.MeltButton == null)
       {
         CreateCustomButtons(__instance, ___contentRectTransform, state);
       }
@@ -66,7 +66,7 @@ namespace DuckovLuckyBox.Patches
       SettingManager.Instance.EnableLotteryButton.OnValueChanged += (value) =>
       {
         bool enabled = (bool)value;
-        if (state.LotteryButton != null && state.Menu != null)
+        if (state.MeltButton != null && state.Menu != null)
         {
           // Re-evaluate button visibility based on new setting
           UpdateLotteryButtonVisibility(state);
@@ -98,7 +98,7 @@ namespace DuckovLuckyBox.Patches
 
     private static void UpdateLotteryButtonVisibility(MenuState state)
     {
-      if (state.LotteryButton == null || state.Menu == null) return;
+      if (state.MeltButton == null || state.Menu == null) return;
 
       bool lotteryButtonEnabled = (bool)SettingManager.Instance.EnableLotteryButton.Value;
 
@@ -118,8 +118,8 @@ namespace DuckovLuckyBox.Patches
       // Show button only if enabled in settings, there's a target item, and it's not a bullet
       bool shouldShow = lotteryButtonEnabled && targetItem != null && !isBullet;
 
-      state.LotteryButton.gameObject.SetActive(shouldShow);
-      state.LotteryButton.interactable = shouldShow;
+      state.MeltButton.gameObject.SetActive(shouldShow);
+      state.MeltButton.interactable = shouldShow;
 
       Log.Debug($"Lottery button visibility updated: {shouldShow}");
     }
@@ -144,13 +144,13 @@ namespace DuckovLuckyBox.Patches
         () => OnDestroyClicked(menu));
 
       // Create Lottery button with gold color
-      state.LotteryButton = CreateButton(
+      state.MeltButton = CreateButton(
         existingButton,
         contentRect,
-        Localizations.I18n.ItemMenuLotteryKey.ToPlainText(),
+        Localizations.I18n.ItemMenuMeltKey.ToPlainText(),
         new Color(0.9f, 0.7f, 0.2f, 1f), // BG color - dark gold
         new Color(1f, 0.8f, 0.3f, 1f),    // Main color - light gold
-        () => OnLotteryClicked(menu).Forget());
+        () => OnMeltClicked(menu).Forget());
 
       Log.Debug("Custom buttons created for ItemOperationMenu");
     }
@@ -256,13 +256,13 @@ namespace DuckovLuckyBox.Patches
       menu.Close();
     }
 
-    private static async UniTask OnLotteryClicked(ItemOperationMenu menu)
+    private static async UniTask OnMeltClicked(ItemOperationMenu menu)
     {
-      Log.Debug("Lottery button clicked");
+      Log.Debug("Melt button clicked");
 
       // Play lottery sound
-      RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
-      SoundUtils.PlaySound(Constants.Sound.LOTTERY_SOUND, sfxGroup);
+      // RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
+      // SoundUtils.PlaySound(Constants.Sound.LOTTERY_SOUND, sfxGroup);
 
       // Get the target item using reflection
       var targetDisplayField = AccessTools.Field(typeof(ItemOperationMenu), "TargetDisplay");
@@ -292,54 +292,14 @@ namespace DuckovLuckyBox.Patches
         targetItem.Detach();
       }
 
+      var meltResult = await MeltService.MeltItemAsync(targetItem);
+      if (!meltResult.Success)
+      {
+        Log.Error("Melt action failed");
+      }
+
       // Destroy the dropped item immediately
       Object.Destroy(targetItem.gameObject);
-
-      // Get original item quality and stack count
-      var originalQuality = QualityUtils.GetCachedItemValueLevel(targetItem);
-      var originalStackCount = targetItem.StackCount;
-
-      Log.Info($"Lottery: destroying {originalStackCount}x quality {originalQuality} item(s)");
-
-      // Use LotteryService to pick random items of the same quality
-      var newItems = await LotteryService.PickRandomItemsByQualityAsync(originalQuality, originalStackCount);
-      if (newItems == null || newItems.Count == 0)
-      {
-        Log.Error($"Failed to pick lottery items for quality {originalQuality}");
-        return;
-      }
-
-      // Add all items to player inventory
-      int successCount = 0;
-      int storageCount = 0;
-      foreach (var newItem in newItems)
-      {
-        if (!ItemUtilities.SendToPlayerCharacterInventory(newItem))
-        {
-          Log.Warning($"Failed to send item to player inventory: {newItem.DisplayName}. Sending to storage.");
-          ItemUtilities.SendToPlayerStorage(newItem);
-          storageCount++;
-        }
-        else
-        {
-          successCount++;
-        }
-      }
-
-      // Show notification
-      var itemNames = string.Join(", ", newItems.Select(i => i.DisplayName));
-      var message = Localizations.I18n.LotteryResultFormatKey.ToPlainText()
-        .Replace("{itemDisplayName}", itemNames);
-
-      if (storageCount > 0)
-      {
-        var inventoryFullMessage = Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
-        message = $"{message} ({storageCount} {inventoryFullMessage})";
-      }
-
-      NotificationText.Push(message);
-
-      Log.Info($"Lottery result: got {newItems.Count} items (quality {originalQuality})");
     }
   }
 
@@ -362,7 +322,7 @@ namespace DuckovLuckyBox.Patches
       {
         // Hide buttons if no target item
         state.DestroyButton?.gameObject.SetActive(false);
-        state.LotteryButton?.gameObject.SetActive(false);
+        state.MeltButton?.gameObject.SetActive(false);
         return;
       }
 
@@ -386,11 +346,11 @@ namespace DuckovLuckyBox.Patches
       }
 
       // Show/hide Lottery button based on settings and item type
-      if (state.LotteryButton != null)
+      if (state.MeltButton != null)
       {
         bool shouldShowLottery = lotteryButtonEnabled && !isBullet;
-        state.LotteryButton.gameObject.SetActive(shouldShowLottery);
-        state.LotteryButton.interactable = shouldShowLottery;
+        state.MeltButton.gameObject.SetActive(shouldShowLottery);
+        state.MeltButton.interactable = shouldShowLottery;
       }
     }
   }
