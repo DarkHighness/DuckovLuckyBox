@@ -1227,9 +1227,12 @@ namespace DuckovLuckyBox.Patches.StockShopActions
             return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.BulletMustBeStackableKey.ToPlainText());
           }
 
-          if (item.StackCount < RecycleService.BulletGroupSize)
+          int requiredGroupSize = Math.Min(RecycleService.BulletGroupSize, item.MaxStackCount);
+          if (item.StackCount < requiredGroupSize)
           {
-            return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.BulletMustBeFullStackKey.ToPlainText());
+            var template = Localizations.I18n.BulletMustBeFullStackKey.ToPlainText();
+            var message = template != null ? template.Replace("{groupSize}", requiredGroupSize.ToString()) : null;
+            return ContractValidationResult.Invalid(category, quality, isFirstItem, message);
           }
         }
 

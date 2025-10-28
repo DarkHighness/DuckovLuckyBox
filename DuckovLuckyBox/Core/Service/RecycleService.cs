@@ -212,8 +212,8 @@ namespace DuckovLuckyBox.Core
             Item? obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
             if (obj != null)
             {
-                // set to configured bullet group size
-                obj.StackCount = BulletGroupSize;
+                // set to configured bullet group size (but never exceed the item's MaxStackCount)
+                obj.StackCount = Math.Min(BulletGroupSize, obj.MaxStackCount);
             }
 
             return obj;
@@ -240,12 +240,14 @@ namespace DuckovLuckyBox.Core
             if (!Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue)) return false;
             var targetLevel = (ItemValueLevel)nextLevelValue;
 
-            // For bullets, require submission of a full logical bullet group (BulletGroupSize)
+            // For bullets, require submission of a full logical bullet group.
+            // Some bullet types may have MaxStackCount < BulletGroupSize, so use the smaller of the two.
             if (string.Equals(category, "Bullet", StringComparison.OrdinalIgnoreCase))
             {
                 // If bullet, require stackable and at least one full group
                 if (!item.Stackable) return false;
-                if (item.StackCount < BulletGroupSize) return false;
+                int requiredGroupSize = Math.Min(BulletGroupSize, item.MaxStackCount);
+                if (item.StackCount < requiredGroupSize) return false;
 
                 // Ensure there is a bullet at next level in supported categories
                 return HasCategoryItemAtLevel(new[] { category }, targetLevel);
