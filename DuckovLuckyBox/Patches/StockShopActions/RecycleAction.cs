@@ -70,8 +70,6 @@ namespace DuckovLuckyBox.Patches.StockShopActions
       {
         session.OnViewOpened();
       }
-
-      SetOpenState(true);
     }
 
     internal static void OnViewClosed(StockShopView view)

@@ -284,15 +284,11 @@ namespace DuckovLuckyBox.Patches
 
             if (_actionTexts.TryGetValue(nameof(RecycleAction), out var recycleText))
             {
-                var text = string.Empty;
-                if (RecycleAction.IsOpen)
-                {
-                    text = Localizations.I18n.CloseKey.ToPlainText() + " " + Localizations.I18n.RecycleKey.ToPlainText();
-                }
-                else
-                {
-                    text = Localizations.I18n.OpenKey.ToPlainText() + " " + Localizations.I18n.RecycleKey.ToPlainText();
-                }
+                // Display "Close Recycle" when the recycle view is open, otherwise display "Open Recycle".
+                // This decision is based solely on the IsOpen flag and does not depend on HasItems.
+                var text = RecycleAction.IsOpen
+                    ? Localizations.I18n.CloseKey.ToPlainText() + " " + Localizations.I18n.RecycleKey.ToPlainText()
+                    : Localizations.I18n.OpenKey.ToPlainText() + " " + Localizations.I18n.RecycleKey.ToPlainText();
                 recycleText.text = text;
             }
         }
