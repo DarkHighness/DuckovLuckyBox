@@ -20,7 +20,7 @@ namespace DuckovLuckyBox.UI
         private static RectTransform? _overlayRoot;
         private static RectTransform? _viewport;
         private static RectTransform? _itemsContainer;
-        private static Image? _centerPointer;
+    private static Graphic? _centerPointer;
         private static TextMeshProUGUI? _resultText;
         private static CanvasGroup? _canvasGroup;
         private static Sprite? _fallbackSprite;
@@ -139,75 +139,132 @@ namespace DuckovLuckyBox.UI
             pointerContainer.sizeDelta = Vector2.zero;
             pointerContainer.anchoredPosition = Vector2.zero;
 
-            // Main vertical line pointer
-            var pointerLineObj = new GameObject("PointerLine", typeof(RectTransform), typeof(Image));
+            // Main vertical line pointer (rounded capsule with inner stripe and subtle shadow)
+            var pointerLineObj = new GameObject("PointerLine", typeof(RectTransform));
             var pointerLineRect = pointerLineObj.GetComponent<RectTransform>();
             pointerLineRect.SetParent(pointerContainer, false);
             pointerLineRect.anchorMin = new Vector2(0.5f, 0.5f);
             pointerLineRect.anchorMax = new Vector2(0.5f, 0.5f);
             pointerLineRect.pivot = new Vector2(0.5f, 0.5f);
-            pointerLineRect.sizeDelta = new Vector2(PointerThickness * 1.5f, viewportHeight + 80f);
+            pointerLineRect.sizeDelta = new Vector2(PointerThickness * 1.1f, viewportHeight + 80f);
             pointerLineRect.anchoredPosition = Vector2.zero;
 
-            var pointerLineImage = pointerLineObj.GetComponent<Image>();
-            pointerLineImage.sprite = EnsureFallbackSprite();
-            pointerLineImage.type = Image.Type.Simple;
-            pointerLineImage.color = new Color(1f, 1f, 1f, 0.7f);  // White with transparency
-            pointerLineImage.raycastTarget = false;
+            // Rounded capsule for the pointer body
+            var pointerLineGraphic = pointerLineObj.AddComponent<RoundedRectGraphic>();
+            pointerLineGraphic.raycastTarget = false;
+            pointerLineGraphic.cornerSegments = 8;
+            pointerLineGraphic.cornerRadius = pointerLineRect.sizeDelta.x * 0.5f; // capsule ends
+            pointerLineGraphic.color = new Color(1f, 1f, 1f, 0.95f); // near-opaque white
 
-            // Add outline effect to the pointer line - white glow
+            // Subtle outline and shadow for polish
             var pointerLineOutline = pointerLineObj.AddComponent<Outline>();
-            pointerLineOutline.effectColor = new Color(1f, 1f, 1f, 0.5f);  // White glow
-            pointerLineOutline.effectDistance = new Vector2(1.5f, -1.5f);
-            pointerLineOutline.useGraphicAlpha = false;
+            pointerLineOutline.effectColor = new Color(0f, 0f, 0f, 0.25f);
+            pointerLineOutline.effectDistance = new Vector2(1f, -1f);
+            pointerLineOutline.useGraphicAlpha = true;
 
-            // Top diamond accent
-            var topDiamondObj = new GameObject("TopDiamond", typeof(RectTransform), typeof(Image));
-            var topDiamondRect = topDiamondObj.GetComponent<RectTransform>();
-            topDiamondRect.SetParent(pointerContainer, false);
-            topDiamondRect.anchorMin = new Vector2(0.5f, 0.5f);
-            topDiamondRect.anchorMax = new Vector2(0.5f, 0.5f);
-            topDiamondRect.pivot = new Vector2(0.5f, 0.5f);
-            topDiamondRect.sizeDelta = new Vector2(PointerThickness * 2.5f, PointerThickness * 2.5f);
-            topDiamondRect.anchoredPosition = new Vector2(0f, viewportHeight * 0.5f + 32f);
-            topDiamondRect.rotation = Quaternion.Euler(0f, 0f, 45f);  // Rotate 45 degrees to make diamond
+            var pointerLineShadow = pointerLineObj.AddComponent<Shadow>();
+            pointerLineShadow.effectColor = new Color(0f, 0f, 0f, 0.15f);
+            pointerLineShadow.effectDistance = new Vector2(0f, -4f);
 
-            var topDiamondImage = topDiamondObj.GetComponent<Image>();
-            topDiamondImage.sprite = EnsureFallbackSprite();
-            topDiamondImage.type = Image.Type.Simple;
-            topDiamondImage.color = new Color(1f, 1f, 1f, 0.8f);  // White diamond
-            topDiamondImage.raycastTarget = false;
+            // Thin vertical highlight stripe on the pointer body
+            var stripeObj = new GameObject("PointerInnerStripe", typeof(RectTransform));
+            var stripeRect = stripeObj.GetComponent<RectTransform>();
+            stripeRect.SetParent(pointerLineRect, false);
+            stripeRect.anchorMin = new Vector2(0.5f, 0.5f);
+            stripeRect.anchorMax = new Vector2(0.5f, 0.5f);
+            stripeRect.pivot = new Vector2(0.5f, 0.5f);
+            stripeRect.sizeDelta = new Vector2(pointerLineRect.sizeDelta.x * 0.22f, pointerLineRect.sizeDelta.y * 0.82f);
+            stripeRect.anchoredPosition = Vector2.zero;
 
-            // Add outline to top diamond - subtle white outline
-            var topDiamondOutline = topDiamondObj.AddComponent<Outline>();
-            topDiamondOutline.effectColor = new Color(1f, 1f, 1f, 0.4f);  // Subtle white outline
-            topDiamondOutline.effectDistance = new Vector2(0.5f, -0.5f);
-            topDiamondOutline.useGraphicAlpha = false;
+            var stripe = stripeObj.AddComponent<RoundedRectGraphic>();
+            stripe.raycastTarget = false;
+            stripe.cornerSegments = 6;
+            stripe.cornerRadius = stripeRect.sizeDelta.x * 0.5f;
+            stripe.color = new Color(1f, 1f, 1f, 0.12f); // subtle vertical highlight
 
-            // Bottom diamond accent
-            var bottomDiamondObj = new GameObject("BottomDiamond", typeof(RectTransform), typeof(Image));
-            var bottomDiamondRect = bottomDiamondObj.GetComponent<RectTransform>();
-            bottomDiamondRect.SetParent(pointerContainer, false);
-            bottomDiamondRect.anchorMin = new Vector2(0.5f, 0.5f);
-            bottomDiamondRect.anchorMax = new Vector2(0.5f, 0.5f);
-            bottomDiamondRect.pivot = new Vector2(0.5f, 0.5f);
-            bottomDiamondRect.sizeDelta = new Vector2(PointerThickness * 2.5f, PointerThickness * 2.5f);
-            bottomDiamondRect.anchoredPosition = new Vector2(0f, -viewportHeight * 0.5f - 32f);
-            bottomDiamondRect.rotation = Quaternion.Euler(0f, 0f, 45f);  // Rotate 45 degrees to make diamond
+            // Top arrowhead (procedural triangle) - points up
+            var topArrowObj = new GameObject("TopArrow", typeof(RectTransform));
+            var topArrowRect = topArrowObj.GetComponent<RectTransform>();
+            topArrowRect.SetParent(pointerContainer, false);
+            topArrowRect.anchorMin = new Vector2(0.5f, 0.5f);
+            topArrowRect.anchorMax = new Vector2(0.5f, 0.5f);
+            topArrowRect.pivot = new Vector2(0.5f, 0.5f);
+            topArrowRect.sizeDelta = new Vector2(PointerThickness * 2.5f, PointerThickness * 2.5f);
+            topArrowRect.anchoredPosition = new Vector2(0f, viewportHeight * 0.5f + 32f);
 
-            var bottomDiamondImage = bottomDiamondObj.GetComponent<Image>();
-            bottomDiamondImage.sprite = EnsureFallbackSprite();
-            bottomDiamondImage.type = Image.Type.Simple;
-            bottomDiamondImage.color = new Color(1f, 1f, 1f, 0.8f);  // White diamond
-            bottomDiamondImage.raycastTarget = false;
+            var topArrowGraphic = topArrowObj.AddComponent<TriangleGraphic>();
+            topArrowGraphic.raycastTarget = false;
+            topArrowGraphic.color = new Color(1f, 1f, 1f, 0.9f);
+            topArrowGraphic.direction = TriangleGraphic.TriangleDirection.Up;
 
-            // Add outline to bottom diamond - subtle white outline
-            var bottomDiamondOutline = bottomDiamondObj.AddComponent<Outline>();
-            bottomDiamondOutline.effectColor = new Color(1f, 1f, 1f, 0.4f);  // Subtle white outline
-            bottomDiamondOutline.effectDistance = new Vector2(0.5f, -0.5f);
-            bottomDiamondOutline.useGraphicAlpha = false;
+            var topArrowOutline = topArrowObj.AddComponent<Outline>();
+            topArrowOutline.effectColor = new Color(1f, 1f, 1f, 0.4f);
+            topArrowOutline.effectDistance = new Vector2(0.5f, -0.5f);
+            topArrowOutline.useGraphicAlpha = false;
+            // Subtle drop shadow for depth
+            var topArrowShadow = topArrowObj.AddComponent<Shadow>();
+            topArrowShadow.effectColor = new Color(0f, 0f, 0f, 0.12f);
+            topArrowShadow.effectDistance = new Vector2(0f, -3f);
 
-            _centerPointer = pointerLineImage;  // Store the main line for visibility control
+            // Inner highlight: smaller triangle inset
+            var topInnerObj = new GameObject("TopArrowInner", typeof(RectTransform));
+            var topInnerRect = topInnerObj.GetComponent<RectTransform>();
+            topInnerRect.SetParent(topArrowRect, false);
+            topInnerRect.anchorMin = Vector2.zero;
+            topInnerRect.anchorMax = Vector2.one;
+            topInnerRect.pivot = new Vector2(0.5f, 0.5f);
+            // Inset by 15% to create a subtle highlight
+            float inset = 0.15f;
+            topInnerRect.sizeDelta = Vector2.zero;
+            topInnerRect.anchoredPosition = Vector2.zero;
+            topInnerRect.localScale = Vector3.one * (1f - inset);
+
+            var topInner = topInnerObj.AddComponent<TriangleGraphic>();
+            topInner.raycastTarget = false;
+            topInner.color = new Color(1f, 1f, 1f, 0.12f); // light inner highlight (subtler)
+            topInner.direction = TriangleGraphic.TriangleDirection.Up;
+
+            // Bottom arrowhead (procedural triangle) - points down
+            var bottomArrowObj = new GameObject("BottomArrow", typeof(RectTransform));
+            var bottomArrowRect = bottomArrowObj.GetComponent<RectTransform>();
+            bottomArrowRect.SetParent(pointerContainer, false);
+            bottomArrowRect.anchorMin = new Vector2(0.5f, 0.5f);
+            bottomArrowRect.anchorMax = new Vector2(0.5f, 0.5f);
+            bottomArrowRect.pivot = new Vector2(0.5f, 0.5f);
+            bottomArrowRect.sizeDelta = new Vector2(PointerThickness * 2.5f, PointerThickness * 2.5f);
+            bottomArrowRect.anchoredPosition = new Vector2(0f, -viewportHeight * 0.5f - 32f);
+
+            var bottomArrowGraphic = bottomArrowObj.AddComponent<TriangleGraphic>();
+            bottomArrowGraphic.raycastTarget = false;
+            bottomArrowGraphic.color = new Color(1f, 1f, 1f, 0.9f);
+            bottomArrowGraphic.direction = TriangleGraphic.TriangleDirection.Down;
+
+            var bottomArrowOutline = bottomArrowObj.AddComponent<Outline>();
+            bottomArrowOutline.effectColor = new Color(1f, 1f, 1f, 0.4f);
+            bottomArrowOutline.effectDistance = new Vector2(0.5f, -0.5f);
+            bottomArrowOutline.useGraphicAlpha = false;
+            // Subtle drop shadow for depth
+            var bottomArrowShadow = bottomArrowObj.AddComponent<Shadow>();
+            bottomArrowShadow.effectColor = new Color(0f, 0f, 0f, 0.12f);
+            bottomArrowShadow.effectDistance = new Vector2(0f, 3f);
+
+            // Inner highlight: smaller triangle inset
+            var bottomInnerObj = new GameObject("BottomArrowInner", typeof(RectTransform));
+            var bottomInnerRect = bottomInnerObj.GetComponent<RectTransform>();
+            bottomInnerRect.SetParent(bottomArrowRect, false);
+            bottomInnerRect.anchorMin = Vector2.zero;
+            bottomInnerRect.anchorMax = Vector2.one;
+            bottomInnerRect.pivot = new Vector2(0.5f, 0.5f);
+            bottomInnerRect.sizeDelta = Vector2.zero;
+            bottomInnerRect.anchoredPosition = Vector2.zero;
+            bottomInnerRect.localScale = Vector3.one * (1f - inset);
+
+            var bottomInner = bottomInnerObj.AddComponent<TriangleGraphic>();
+            bottomInner.raycastTarget = false;
+            bottomInner.color = new Color(1f, 1f, 1f, 0.12f); // light inner highlight (subtler)
+            bottomInner.direction = TriangleGraphic.TriangleDirection.Down;
+
+            _centerPointer = pointerLineGraphic;  // Store the main line for visibility control
 
             // Create result text
             _resultText = new GameObject("LotteryResultText", typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
@@ -505,7 +562,7 @@ namespace DuckovLuckyBox.UI
             // Background slightly larger than the frame to act as a border
             // Increase padding to make the border thicker. Change color below to set border color.
             const float borderPadding = 16f; // increased border thickness
-            var backgroundObj = new GameObject("LotterySlotBackground", typeof(RectTransform), typeof(Image));
+            var backgroundObj = new GameObject("LotterySlotBackground", typeof(RectTransform));
             var bgRect = backgroundObj.GetComponent<RectTransform>();
             bgRect.SetParent(rect, false);
             bgRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -514,15 +571,15 @@ namespace DuckovLuckyBox.UI
             bgRect.anchoredPosition = Vector2.zero;
             bgRect.sizeDelta = rect.sizeDelta + new Vector2(borderPadding, borderPadding);
 
-            var bgImage = backgroundObj.GetComponent<Image>();
-            bgImage.sprite = EnsureFallbackSprite();
-            bgImage.type = Image.Type.Simple;
-            // Use black with 80% opacity for the border
-            bgImage.color = new Color(0f, 0f, 0f, 0.8f);
-            bgImage.raycastTarget = false;
+            // Use a rounded rect graphic for the border so mods don't need external sprites.
+            var bgGraphic = backgroundObj.AddComponent<RoundedRectGraphic>();
+            bgGraphic.raycastTarget = false;
+            bgGraphic.cornerRadius = Mathf.Min(rect.sizeDelta.x, rect.sizeDelta.y) * 0.12f; // adaptive radius
+            bgGraphic.cornerSegments = 6;
+            bgGraphic.color = new Color(0f, 0f, 0f, 0.8f); // black with 80% opacity
 
             // Frame (the colored background for quality) sits above the white background
-            var frameObj = new GameObject("LotterySlotFrame", typeof(RectTransform), typeof(Image));
+            var frameObj = new GameObject("LotterySlotFrame", typeof(RectTransform));
             var frameRect = frameObj.GetComponent<RectTransform>();
             frameRect.SetParent(rect, false);
             frameRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -531,13 +588,13 @@ namespace DuckovLuckyBox.UI
             frameRect.anchoredPosition = Vector2.zero;
             frameRect.sizeDelta = rect.sizeDelta; // Match root size (icon + padding)
 
-            var frame = frameObj.GetComponent<Image>();
-            frame.sprite = EnsureFallbackSprite();
-            frame.type = Image.Type.Simple;
-            // Force opaque alpha (incoming color may include transparency) so the white border remains visible
-            frame.color = new Color(frameColor.r, frameColor.g, frameColor.b, 1f);
-            frame.raycastTarget = false;
-            frame.useSpriteMesh = true;
+            var frameGraphic = frameObj.AddComponent<RoundedRectGraphic>();
+            // Match the frame size to rect
+            frameGraphic.cornerRadius = Mathf.Min(frameRect.sizeDelta.x, frameRect.sizeDelta.y) * 0.1f;
+            frameGraphic.cornerSegments = 6;
+            // Force opaque alpha so the border underneath remains visible
+            frameGraphic.color = new Color(frameColor.r, frameColor.g, frameColor.b, 1f);
+            frameGraphic.raycastTarget = false;
 
             var frameMask = frameObj.AddComponent<Mask>();
             frameMask.showMaskGraphic = true;
@@ -566,7 +623,7 @@ namespace DuckovLuckyBox.UI
             iconOutline.useGraphicAlpha = false;
 
             // Return the root RectTransform as Slot.Rect (used for positioning/scaling). The frame remains the visual frame.
-            return new Slot(rect, frame, icon, iconOutline, displayName);
+            return new Slot(rect, frameGraphic, icon, iconOutline, displayName);
         }
 
         /// <summary>
@@ -930,12 +987,12 @@ namespace DuckovLuckyBox.UI
         private readonly struct Slot
         {
             public RectTransform Rect { get; }
-            public Image Frame { get; }
+            public Graphic Frame { get; }
             public Image Icon { get; }
             public Outline IconOutline { get; }
             public string DisplayName { get; }
 
-            public Slot(RectTransform rect, Image frame, Image icon, Outline iconOutline, string displayName)
+            public Slot(RectTransform rect, Graphic frame, Image icon, Outline iconOutline, string displayName)
             {
                 Rect = rect;
                 Frame = frame;
@@ -977,5 +1034,159 @@ namespace DuckovLuckyBox.UI
                 }
             }
         }
+    }
+}
+
+/// <summary>
+/// Simple MaskableGraphic that draws a filled rounded rectangle by generating vertices.
+/// Useful for mods where adding external 9-sliced sprites is inconvenient.
+/// </summary>
+internal class RoundedRectGraphic : MaskableGraphic
+{
+    public float cornerRadius = 8f;
+    public int cornerSegments = 6;
+
+    protected override void OnPopulateMesh(VertexHelper vh)
+    {
+        vh.Clear();
+
+        var rect = GetPixelAdjustedRect();
+        float hw = rect.width * 0.5f;
+        float hh = rect.height * 0.5f;
+
+        float r = Mathf.Clamp(cornerRadius, 0f, Mathf.Min(hw, hh));
+        int seg = Mathf.Max(1, cornerSegments);
+
+        // Center is (0,0) since vertices are relative to RectTransform pivot by default
+        var points = new List<Vector2>();
+
+        if (r <= 0f)
+        {
+            // Simple rectangle
+            points.Add(new Vector2(hw, hh));
+            points.Add(new Vector2(-hw, hh));
+            points.Add(new Vector2(-hw, -hh));
+            points.Add(new Vector2(hw, -hh));
+        }
+        else
+        {
+            // corner centers relative to rect center
+            var tr = new Vector2(hw - r, hh - r);
+            var tl = new Vector2(-hw + r, hh - r);
+            var bl = new Vector2(-hw + r, -hh + r);
+            var br = new Vector2(hw - r, -hh + r);
+
+            // Top-right corner: angles 0 -> 90
+            for (int i = 0; i <= seg; i++)
+            {
+                float a = Mathf.Deg2Rad * (0f + (90f * i / seg));
+                points.Add(tr + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r);
+            }
+
+            // Top-left corner: 90 -> 180
+            for (int i = 0; i <= seg; i++)
+            {
+                float a = Mathf.Deg2Rad * (90f + (90f * i / seg));
+                points.Add(tl + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r);
+            }
+
+            // Bottom-left corner: 180 -> 270
+            for (int i = 0; i <= seg; i++)
+            {
+                float a = Mathf.Deg2Rad * (180f + (90f * i / seg));
+                points.Add(bl + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r);
+            }
+
+            // Bottom-right corner: 270 -> 360
+            for (int i = 0; i <= seg; i++)
+            {
+                float a = Mathf.Deg2Rad * (270f + (90f * i / seg));
+                points.Add(br + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r);
+            }
+        }
+
+        // Add center vertex
+        UIVertex centerV = UIVertex.simpleVert;
+        centerV.position = Vector3.zero;
+        centerV.color = color;
+        centerV.uv0 = new Vector2(0.5f, 0.5f);
+        vh.AddVert(centerV);
+        int centerIndex = 0;
+
+        // Add perimeter vertices
+        for (int i = 0; i < points.Count; i++)
+        {
+            var p = points[i];
+            UIVertex v = UIVertex.simpleVert;
+            v.position = new Vector3(p.x, p.y, 0f);
+            v.color = color;
+            // UV mapping normalized to rect
+            v.uv0 = new Vector2((p.x + hw) / (rect.width == 0 ? 1f : rect.width), (p.y + hh) / (rect.height == 0 ? 1f : rect.height));
+            vh.AddVert(v);
+        }
+
+        int vertsCount = points.Count + 1; // including center
+        // Add triangles as a fan from center
+        for (int i = 0; i < points.Count; i++)
+        {
+            int a = centerIndex;
+            int b = 1 + i;
+            int c = 1 + ((i + 1) % points.Count);
+            vh.AddTriangle(a, b, c);
+        }
+    }
+}
+
+/// <summary>
+/// Procedural triangle graphic. Direction can be Up or Down.
+/// </summary>
+internal class TriangleGraphic : MaskableGraphic
+{
+    public enum TriangleDirection { Up, Down }
+
+    public TriangleDirection direction = TriangleDirection.Up;
+
+    protected override void OnPopulateMesh(VertexHelper vh)
+    {
+        vh.Clear();
+
+        var rect = GetPixelAdjustedRect();
+        float hw = rect.width * 0.5f;
+        float hh = rect.height * 0.5f;
+
+        Vector2 p0, p1, p2;
+        if (direction == TriangleDirection.Up)
+        {
+            p0 = new Vector2(0f, hh); // top center
+            p1 = new Vector2(-hw, -hh); // bottom-left
+            p2 = new Vector2(hw, -hh); // bottom-right
+        }
+        else
+        {
+            p0 = new Vector2(0f, -hh); // bottom center
+            p1 = new Vector2(-hw, hh); // top-left
+            p2 = new Vector2(hw, hh); // top-right
+        }
+
+        UIVertex v0 = UIVertex.simpleVert;
+        v0.position = new Vector3(p0.x, p0.y, 0f);
+        v0.color = color;
+        v0.uv0 = new Vector2((p0.x + hw) / (rect.width == 0 ? 1f : rect.width), (p0.y + hh) / (rect.height == 0 ? 1f : rect.height));
+
+        UIVertex v1 = UIVertex.simpleVert;
+        v1.position = new Vector3(p1.x, p1.y, 0f);
+        v1.color = color;
+        v1.uv0 = new Vector2((p1.x + hw) / (rect.width == 0 ? 1f : rect.width), (p1.y + hh) / (rect.height == 0 ? 1f : rect.height));
+
+        UIVertex v2 = UIVertex.simpleVert;
+        v2.position = new Vector3(p2.x, p2.y, 0f);
+        v2.color = color;
+        v2.uv0 = new Vector2((p2.x + hw) / (rect.width == 0 ? 1f : rect.width), (p2.y + hh) / (rect.height == 0 ? 1f : rect.height));
+
+        vh.AddVert(v0);
+        vh.AddVert(v1);
+        vh.AddVert(v2);
+
+        vh.AddTriangle(0, 1, 2);
     }
 }
