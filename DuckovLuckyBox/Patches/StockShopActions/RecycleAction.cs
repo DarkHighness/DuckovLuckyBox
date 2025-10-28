@@ -39,7 +39,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
       var session = RecycleSessionUI.Instance;
       session.Setup(stockShopView);
-      session.Open();
+      session.Toggle();
       await UniTask.CompletedTask;
     }
   }
