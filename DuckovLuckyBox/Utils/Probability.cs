@@ -6,18 +6,32 @@ namespace DuckovLuckyBox
 {
   public static class ProbabilityUtils
   {
+    // ===========================================
+    // 物品爆率设置 (千分之几 = 百分比)
+    // ===========================================
+    // | 品质   | 概率 | 百分比 |
+    // |--------|------|--------|
+    // | 白色   | 200  | 20.0%  |
+    // | 绿色   | 268  | 26.8%  |
+    // | 蓝色   | 252  | 25.2%  |
+    // | 紫色   | 120  | 12.0%  |
+    // | 橙色   | 80   | 8.0%   |
+    // | 红色   | 50   | 5.0%   |
+    // | 浅红色 | 30   | 3.0%   |
+    // ===========================================
+
     // Return the probability (thousandth) of getting an item of the specified ItemValueLevel
     public static int GetProbabilityForItemValueLevel(ItemValueLevel level)
     {
       return level switch
       {
-        ItemValueLevel.White => 300,
-        ItemValueLevel.Green => 250,
-        ItemValueLevel.Blue => 200,
-        ItemValueLevel.Purple => 130,
-        ItemValueLevel.Orange => 70,
-        ItemValueLevel.Red => 34,
-        ItemValueLevel.LightRed => 16,
+        ItemValueLevel.White => 200,
+        ItemValueLevel.Green => 268,
+        ItemValueLevel.Blue => 252,
+        ItemValueLevel.Purple => 120,
+        ItemValueLevel.Orange => 80,
+        ItemValueLevel.Red => 50,
+        ItemValueLevel.LightRed => 30,
         _ => 0
       };
     }
@@ -44,19 +58,33 @@ namespace DuckovLuckyBox
         }
       }
 
+      // ===========================================
+      // 熔炼概率设置 (千分之几 = 百分比)
+      // ===========================================
+      // | 品质   | 升级概率 | 降级概率 | 保持概率 | 损毁概率 |
+      // |--------|----------|----------|----------|----------|
+      // | 白色   | 300(30%) | 200(20%) | 400(40%) | 100(10%) |
+      // | 绿色   | 250(25%) | 250(25%) | 400(40%) | 100(10%) |
+      // | 蓝色   | 200(20%) | 300(30%) | 400(40%) | 100(10%) |
+      // | 紫色   | 150(15%) | 350(35%) | 400(40%) | 100(10%) |
+      // | 橙色   | 100(10%) | 400(40%) | 350(35%) | 150(15%) |
+      // | 浅红色 | 50(5%)   | 450(45%) | 300(30%) | 200(20%) |
+      // | 红色   | 0(0%)    | 500(50%) | 300(30%) | 200(20%) |
+      // ===========================================
+
       // Get melt probabilities for a given ItemValueLevel
       public static MeltProbability GetMeltProbabilityForLevel(ItemValueLevel level)
       {
         // The higher the level, the higher the chance to go down, the lower the chance to go up, etc.
         return level switch
         {
-          ItemValueLevel.White => new MeltProbability(level, 300, 200, 300, 200),
-          ItemValueLevel.Green => new MeltProbability(level, 250, 300, 250, 200),
-          ItemValueLevel.Blue => new MeltProbability(level, 200, 350, 350, 100),
-          ItemValueLevel.Purple => new MeltProbability(level, 200, 350, 370, 80),
-          ItemValueLevel.Orange => new MeltProbability(level, 100, 500, 300, 100),
-          ItemValueLevel.LightRed => new MeltProbability(level, 50, 550, 200, 200),
-          ItemValueLevel.Red => new MeltProbability(level, 0, 300, 500, 200),
+          ItemValueLevel.White => new MeltProbability(level, 300, 200, 400, 100),
+          ItemValueLevel.Green => new MeltProbability(level, 250, 250, 400, 100),
+          ItemValueLevel.Blue => new MeltProbability(level, 200, 300, 400, 100),
+          ItemValueLevel.Purple => new MeltProbability(level, 150, 350, 400, 100),
+          ItemValueLevel.Orange => new MeltProbability(level, 100, 400, 350, 150),
+          ItemValueLevel.LightRed => new MeltProbability(level, 50, 450, 300, 200),
+          ItemValueLevel.Red => new MeltProbability(level, 0, 500, 300, 200),
           _ => new MeltProbability(level, 0, 0, 1000, 0)
         };
       }

@@ -186,6 +186,7 @@ namespace DuckovLuckyBox.UI
             CreateSliderSetting(settings.RefreshStockPrice);
             CreateSliderSetting(settings.StorePickPrice);
             CreateSliderSetting(settings.StreetPickPrice);
+            CreateSliderSetting(settings.MeltBasePrice);
 
             // Reset button
             CreateResetButton();

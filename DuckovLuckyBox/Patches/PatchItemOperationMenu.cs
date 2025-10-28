@@ -297,9 +297,6 @@ namespace DuckovLuckyBox.Patches
       {
         Log.Error("Melt action failed");
       }
-
-      // Destroy the dropped item immediately
-      Object.Destroy(targetItem.gameObject);
     }
   }
 

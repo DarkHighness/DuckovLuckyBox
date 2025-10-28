@@ -29,6 +29,7 @@ namespace DuckovLuckyBox.Core
             public static readonly string SettingsRefreshStockPriceKey = "UI_SettingsRefreshStockPrice";
             public static readonly string SettingsStorePickPriceKey = "UI_SettingsStorePickPrice";
             public static readonly string SettingsStreetPickPriceKey = "UI_SettingsStreetPickPrice";
+            public static readonly string SettingsMeltBasePriceKey = "UI_SettingsMeltBasePrice";
             public static readonly string SettingsResetToDefaultKey = "UI_SettingsResetToDefault";
             public static readonly string FreeKey = "UI_Free";
             public static readonly string SettingsEnableDestroyButtonKey = "UI_SettingsEnableDestroyButton";
@@ -58,6 +59,7 @@ namespace DuckovLuckyBox.Core
             public static readonly string MeltLevelDownNotificationKey = "Notification_MeltLevelDown";
             public static readonly string MeltLevelSameNotificationKey = "Notification_MeltLevelSame";
             public static readonly string MeltDestroyedNotificationKey = "Notification_MeltDestroyed";
+            public static readonly string MeltCostFormatKey = "Notification_MeltCostFormat";
         }
 
         private readonly Dictionary<SystemLanguage, Dictionary<string, string>> _localizedStrings = new Dictionary<SystemLanguage, Dictionary<string, string>> {
@@ -80,10 +82,11 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsRefreshStockPriceKey, "Refresh Stock Price" },
             { I18n.SettingsStorePickPriceKey, "Roll from the merchant Price" },
             { I18n.SettingsStreetPickPriceKey, "Roll from the street Price" },
+            { I18n.SettingsMeltBasePriceKey, "Melt Base Price" },
             { I18n.SettingsResetToDefaultKey, "Reset to Default" },
             { I18n.FreeKey, "Free!" },
-            { I18n.SettingsEnableDestroyButtonKey, "Enable Destroy Button" },
-            { I18n.SettingsEnableMeltButtonKey, "Enable Melt Button" },
+            { I18n.SettingsEnableDestroyButtonKey, "Enable Destroy Action" },
+            { I18n.SettingsEnableMeltButtonKey, "Enable Melt Action" },
             { I18n.SettingsEnableDebugKey, "Enable Debug Mode" },
             { I18n.SettingsEnableUseToCreateItemPatchKey, "Enable In—Game Lottery Patch" },
             { I18n.SettingsEnableWeightedLotteryKey, "Enable Weighted Lottery" },
@@ -104,7 +107,8 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltLevelUpNotificationKey, "{originalItem} upgraded to {newItem}!" },
             { I18n.MeltLevelDownNotificationKey, "{originalItem} downgraded to {newItem}..." },
             { I18n.MeltLevelSameNotificationKey, "{originalItem} stayed as {newItem}." },
-            { I18n.MeltDestroyedNotificationKey, "{originalItem} was destroyed!" }
+            { I18n.MeltDestroyedNotificationKey, "{originalItem} was destroyed!" },
+            { I18n.MeltCostFormatKey, "Melt cost: {basePrice} × {level} × {count} = {totalCost}" }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { I18n.RefreshStockKey, "刷新" },
@@ -125,12 +129,13 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsRefreshStockPriceKey, "刷新库存价格" },
             { I18n.SettingsStorePickPriceKey, "商人抽奖价格" },
             { I18n.SettingsStreetPickPriceKey, "街边抽奖价格" },
+            { I18n.SettingsMeltBasePriceKey, "熔炼基本价格" },
             { I18n.SettingsResetToDefaultKey, "恢复默认值" },
             { I18n.FreeKey, "免费！" },
-            { I18n.SettingsEnableDestroyButtonKey, "启用销毁按钮" },
-            { I18n.SettingsEnableMeltButtonKey, "启用抽奖按钮" },
+            { I18n.SettingsEnableDestroyButtonKey, "启用销毁动作" },
+            { I18n.SettingsEnableMeltButtonKey, "启用熔炼动作" },
             { I18n.SettingsEnableDebugKey, "启用调试模式" },
-            { I18n.SettingsEnableUseToCreateItemPatchKey, "启用游戏内抽奖补丁" },
+            { I18n.SettingsEnableUseToCreateItemPatchKey, "启用游戏道具抽奖动画" },
             { I18n.SettingsEnableWeightedLotteryKey, "启用权重抽奖" },
             { I18n.SettingsEnableHighQualitySoundKey, "启用高等级物品音效" },
             { I18n.SettingsHighQualitySoundFilePathKey, "高等级物品音效文件" },
@@ -148,8 +153,9 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltResultFormatKey, "熔炼完成！ 总数: {meltCount}, 升级: {levelUpCount}, 降级: {levelDownCount}, 不变: {sameLevelCount}, 损毁: {destroyedCount}" },
             { I18n.MeltLevelUpNotificationKey, "{originalItem} 升级为 {newItem}！" },
             { I18n.MeltLevelDownNotificationKey, "{originalItem} 降级为 {newItem}..." },
-            { I18n.MeltLevelSameNotificationKey, "{originalItem} 保持为 {newItem}。" },
-            { I18n.MeltDestroyedNotificationKey, "{originalItem} 被损毁了！" }
+            { I18n.MeltLevelSameNotificationKey, "{originalItem} 从等级挑选了 {newItem}。" },
+            { I18n.MeltDestroyedNotificationKey, "{originalItem} 被损毁了！" },
+            { I18n.MeltCostFormatKey, "熔炼费用: {basePrice} × {level} × {count} = {totalCost}" }
         } },
     };
 

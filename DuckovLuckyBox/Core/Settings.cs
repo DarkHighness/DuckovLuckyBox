@@ -146,10 +146,11 @@ namespace DuckovLuckyBox.Core.Settings
     public const long RefreshStockPrice = 100L;
     public const long StorePickPrice = 100L;
     public const long StreetPickPrice = 100L;
+    public const long MeltBasePrice = 100L;
 
     // Price Range Settings
     public const float PriceMinValue = 0f;
-    public const float PriceMaxValue = 5000f;
+    public const float PriceMaxValue = 10000f;
     public const float PriceStep = 100f;
   }
 
@@ -294,6 +295,19 @@ namespace DuckovLuckyBox.Core.Settings
       Step = DefaultSettings.PriceStep,
     };
 
+    public SettingItem MeltBasePrice { get; set; } = new SettingItem
+    {
+      Key = "DuckovLuckyBox.Settings.MeltBasePrice",
+      Label = Localizations.I18n.SettingsMeltBasePriceKey,
+      Description = "熔炼每个物品的每个stack时扣除的基本价格乘以物品等级",
+      Type = Type.Number,
+      Category = Category.Pricing,
+      DefaultValue = DefaultSettings.MeltBasePrice,
+      MinValue = 0f,
+      MaxValue = 10000f,
+      Step = 100f,
+    };
+
     public bool _isInitialized = false;
     public bool IsInitialized => _isInitialized;
 
@@ -314,6 +328,7 @@ namespace DuckovLuckyBox.Core.Settings
         yield return RefreshStockPrice;
         yield return StorePickPrice;
         yield return StreetPickPrice;
+        yield return MeltBasePrice;
       }
     }
 

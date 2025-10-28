@@ -21,6 +21,7 @@ namespace DuckovLuckyBox.Core.Settings
         public long RefreshStockPrice = DefaultSettings.RefreshStockPrice;
         public long StorePickPrice = DefaultSettings.StorePickPrice;
         public long StreetPickPrice = DefaultSettings.StreetPickPrice;
+        public long MeltBasePrice = DefaultSettings.MeltBasePrice;
     }
 
     public class ConfigManager
@@ -211,6 +212,7 @@ namespace DuckovLuckyBox.Core.Settings
                 RefreshStockPrice = settings.RefreshStockPrice.GetAsLong(),
                 StorePickPrice = settings.StorePickPrice.GetAsLong(),
                 StreetPickPrice = settings.StreetPickPrice.GetAsLong(),
+                MeltBasePrice = settings.MeltBasePrice.GetAsLong(),
             };
         }
 
@@ -239,6 +241,7 @@ namespace DuckovLuckyBox.Core.Settings
                 settings.RefreshStockPrice.Value = config.RefreshStockPrice;
                 settings.StorePickPrice.Value = config.StorePickPrice;
                 settings.StreetPickPrice.Value = config.StreetPickPrice;
+                settings.MeltBasePrice.Value = config.MeltBasePrice;
             }
             finally
             {
@@ -263,6 +266,7 @@ namespace DuckovLuckyBox.Core.Settings
             settings.RefreshStockPrice.OnValueChanged += OnSettingChanged;
             settings.StorePickPrice.OnValueChanged += OnSettingChanged;
             settings.StreetPickPrice.OnValueChanged += OnSettingChanged;
+            settings.MeltBasePrice.OnValueChanged += OnSettingChanged;
         }
 
         private void UnsubscribeFromSettingChanges()
@@ -282,6 +286,7 @@ namespace DuckovLuckyBox.Core.Settings
             settings.RefreshStockPrice.OnValueChanged -= OnSettingChanged!;
             settings.StorePickPrice.OnValueChanged -= OnSettingChanged!;
             settings.StreetPickPrice.OnValueChanged -= OnSettingChanged!;
+            settings.MeltBasePrice.OnValueChanged -= OnSettingChanged!;
 #pragma warning restore CS8601
         }
 

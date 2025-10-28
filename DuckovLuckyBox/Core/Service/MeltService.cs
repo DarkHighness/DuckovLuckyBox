@@ -6,9 +6,11 @@ using ItemStatsSystem;
 using UnityEngine;
 using SodaCraft.Localizations;
 using Duckov.UI;
+using Duckov.Economy;
 using DuckovLuckyBox.Core.Settings;
 using FMODUnity;
 using FMOD;
+using Duckov;
 
 namespace DuckovLuckyBox.Core
 {
@@ -18,7 +20,8 @@ namespace DuckovLuckyBox.Core
   /// </summary>
   public static class MeltService
   {
-    public const float MELT_OPERATION_DELAY = 0.5f; // Delay between melt operations
+    private const float MELT_OPERATION_DELAY = 0.5f; // Delay between melt operations
+    private const string SFX_BUY = "UI/buy";
 
     /// <summary>
     /// Represents the result of a melt operation
@@ -206,12 +209,46 @@ namespace DuckovLuckyBox.Core
       }
 
       string displayName = item.DisplayName.ToPlainText();
-      int stackCount = item.StackCount;
+      int stackCount = item.Stackable ? item.StackCount : 1;
       result.MeltCount = stackCount;
       Log.Debug($"Melt: Starting melt on {displayName} (Stack: {stackCount})");
 
+      // Calculate melt cost per stack
+      ItemValueLevel currentLevel = QualityUtils.GetCachedItemValueLevel(item);
+      int levelValue = (int)currentLevel + 1; // White=1, Green=2, Blue=3, Purple=4, Orange=5, Red=6, LightRed=7
+      long meltBasePrice = SettingManager.Instance.MeltBasePrice.GetAsLong();
+      long costPerStack = meltBasePrice * levelValue;
+      long totalCost = costPerStack * stackCount;
+
+      // Check if player has enough money by attempting to pay
+      if (totalCost > 0)
+      {
+        if (!EconomyManager.Pay(new Cost(totalCost), true, true))
+        {
+          var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", totalCost.ToString());
+          NotificationText.Push(notEnoughMoneyMessage);
+          Log.Error($"Melt: Failed to charge player for melt operation. Cost: {totalCost}");
+          return result;
+        }
+        Log.Debug($"Melt: Charged player {totalCost} for melt operation ({costPerStack} per stack x {stackCount} stacks)");
+
+        // Show cost breakdown notification
+        var costMessage = Localizations.I18n.MeltCostFormatKey.ToPlainText()
+          .Replace("{basePrice}", meltBasePrice.ToString())
+          .Replace("{level}", levelValue.ToString())
+          .Replace("{count}", stackCount.ToString())
+          .Replace("{totalCost}", totalCost.ToString());
+        NotificationText.Push(costMessage);
+      }
+
       // Melt each stack individually
       RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
+
+      // Play the buy sound if totalCost > 0
+      if (totalCost > 0)
+      {
+        AudioManager.Post(SFX_BUY);
+      }
 
       void stopAndPlay(Sound? sound)
       {
@@ -235,7 +272,10 @@ namespace DuckovLuckyBox.Core
         var (meltedItem, meltOutcome) = await MeltSingleItemAsync(item);
 
         // Decrement the original item's stack count
-        item.StackCount--;
+        if (item.Stackable)
+        {
+          item.StackCount--;
+        }
 
         // Check if item was destroyed
         if (meltOutcome == MeltOutcome.Destroyed)
@@ -315,6 +355,10 @@ namespace DuckovLuckyBox.Core
       }
 
       Log.Debug($"Melt: Completed - {displayName} (Total: {result.MeltCount}, Up: {result.LevelUpCount}, Down: {result.LevelDownCount}, Same: {result.SameLevelCount}, Destroy: {result.DestroyCount})");
+
+      // Destroy the target item immediately
+      // We periodically decrement the stack count of the original item, so we have no need to destroy it here
+      // UnityEngine.Object.Destroy(item.gameObject);
 
       return result;
     }
