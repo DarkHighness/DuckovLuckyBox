@@ -493,7 +493,8 @@ namespace DuckovLuckyBox.UI
 
         private static Slot CreateSlot(int typeId, Sprite? sprite, string displayName, Color frameColor)
         {
-            var root = new GameObject($"LotterySlot_{typeId}", typeof(RectTransform), typeof(Image));
+            // Root acts as the slot container and is what we position inside the items container
+            var root = new GameObject($"LotterySlot_{typeId}", typeof(RectTransform));
             var rect = root.GetComponent<RectTransform>();
             rect.SetParent(_itemsContainer, false);
             rect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -501,19 +502,50 @@ namespace DuckovLuckyBox.UI
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(IconSize.x + SlotPadding, IconSize.y + SlotPadding);
 
-            var frame = root.GetComponent<Image>();
+            // Background slightly larger than the frame to act as a border
+            // Increase padding to make the border thicker. Change color below to set border color.
+            const float borderPadding = 16f; // increased border thickness
+            var backgroundObj = new GameObject("LotterySlotBackground", typeof(RectTransform), typeof(Image));
+            var bgRect = backgroundObj.GetComponent<RectTransform>();
+            bgRect.SetParent(rect, false);
+            bgRect.anchorMin = new Vector2(0.5f, 0.5f);
+            bgRect.anchorMax = new Vector2(0.5f, 0.5f);
+            bgRect.pivot = new Vector2(0.5f, 0.5f);
+            bgRect.anchoredPosition = Vector2.zero;
+            bgRect.sizeDelta = rect.sizeDelta + new Vector2(borderPadding, borderPadding);
+
+            var bgImage = backgroundObj.GetComponent<Image>();
+            bgImage.sprite = EnsureFallbackSprite();
+            bgImage.type = Image.Type.Simple;
+            // Use black with 80% opacity for the border
+            bgImage.color = new Color(0f, 0f, 0f, 0.8f);
+            bgImage.raycastTarget = false;
+
+            // Frame (the colored background for quality) sits above the white background
+            var frameObj = new GameObject("LotterySlotFrame", typeof(RectTransform), typeof(Image));
+            var frameRect = frameObj.GetComponent<RectTransform>();
+            frameRect.SetParent(rect, false);
+            frameRect.anchorMin = new Vector2(0.5f, 0.5f);
+            frameRect.anchorMax = new Vector2(0.5f, 0.5f);
+            frameRect.pivot = new Vector2(0.5f, 0.5f);
+            frameRect.anchoredPosition = Vector2.zero;
+            frameRect.sizeDelta = rect.sizeDelta; // Match root size (icon + padding)
+
+            var frame = frameObj.GetComponent<Image>();
             frame.sprite = EnsureFallbackSprite();
             frame.type = Image.Type.Simple;
-            frame.color = frameColor;
+            // Force opaque alpha (incoming color may include transparency) so the white border remains visible
+            frame.color = new Color(frameColor.r, frameColor.g, frameColor.b, 1f);
             frame.raycastTarget = false;
             frame.useSpriteMesh = true;
 
-            var frameMask = root.AddComponent<Mask>();
+            var frameMask = frameObj.AddComponent<Mask>();
             frameMask.showMaskGraphic = true;
 
+            // Icon is clipped by the frame mask
             var iconObject = new GameObject("LotterySlotIcon", typeof(RectTransform), typeof(Image));
             var iconRect = iconObject.GetComponent<RectTransform>();
-            iconRect.SetParent(rect, false);
+            iconRect.SetParent(frameRect, false);
             iconRect.anchorMin = new Vector2(0.5f, 0.5f);
             iconRect.anchorMax = new Vector2(0.5f, 0.5f);
             iconRect.pivot = new Vector2(0.5f, 0.5f);
@@ -533,6 +565,7 @@ namespace DuckovLuckyBox.UI
             iconOutline.effectDistance = new Vector2(2f, -2f);
             iconOutline.useGraphicAlpha = false;
 
+            // Return the root RectTransform as Slot.Rect (used for positioning/scaling). The frame remains the visual frame.
             return new Slot(rect, frame, icon, iconOutline, displayName);
         }
 
