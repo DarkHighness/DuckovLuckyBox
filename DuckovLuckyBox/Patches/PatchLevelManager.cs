@@ -8,6 +8,8 @@ namespace DuckovLuckyBox.Patches
     public static void Postfix()
     {
       ItemOperationMenuUI.Instance.Destroy();
+      StockShopViewUI.Instance.Destroy();
+      RecycleSessionUI.Instance.Destroy();
     }
   }
 }
