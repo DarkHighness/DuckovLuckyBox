@@ -8,20 +8,34 @@ using UnityEngine;
 
 namespace DuckovLuckyBox
 {
-  using ItemPredicate = Func<Item, ItemMetaData, bool>;
+  using ItemPredicate = Func<Entry, bool>;
+  public class Entry {
+      public Item Item;
+      public ItemMetaData MetaData;
+      public ItemValueLevel ValueLevel => QualityUtils.GetCachedItemValueLevel(Item);
+
+      public Entry(Item item, ItemMetaData metaData)
+      {
+        Item = item;
+        MetaData = metaData;
+      }
+    }
+
+
   public static class ItemUtils
   {
-    public static List<(Item, ItemMetaData)> QueryGameItems(ItemPredicate predicate, bool includeDynamicItems = true)
+    public static List<Entry> QueryGameItems(ItemPredicate predicate, bool includeDynamicItems = true)
     {
-      var result = new List<(Item, ItemMetaData)>();
+      var result = new List<Entry>();
       var itemDatabase = ItemAssetsCollection.Instance.entries;
       if (itemDatabase != null)
       {
         foreach (var item in itemDatabase)
         {
-          if (predicate(item.prefab, item.metaData))
+          var entry = new Entry(item.prefab, item.metaData);
+          if (predicate(entry))
           {
-            result.Add((item.prefab, item.metaData));
+            result.Add(entry);
           }
         }
       }
@@ -39,9 +53,10 @@ namespace DuckovLuckyBox
               var dynamicMetaData = AccessTools.Field(typeof(ItemAssetsCollection.DynamicEntry), "metaData").GetValue(dynamicEntry) as ItemMetaData?;
               if (dynamicItem != null && dynamicMetaData != null)
               {
-                if (predicate(dynamicItem, (ItemMetaData)dynamicMetaData))
+                var entry = new Entry(dynamicItem, (ItemMetaData)dynamicMetaData);
+                if (predicate(entry))
                 {
-                  result.Add((dynamicItem, (ItemMetaData)dynamicMetaData));
+                  result.Add(entry);
                 }
               }
             }
@@ -52,36 +67,36 @@ namespace DuckovLuckyBox
       return result;
     }
 
-    public static ItemPredicate DefaultItemPredicate = (item, metaData) => true;
+    public static ItemPredicate DefaultItemPredicate = (entry) => true;
 
-    public static ItemPredicate LotteryItemPredicate = (item, metaData) =>
+    public static ItemPredicate LotteryItemPredicate = (entry) =>
     {
       // 1: Exclude items that the quality not in [0, 990]
-      if (metaData.quality < 0 || metaData.quality > 990)
+      if (entry.Item.Quality < 0 || entry.Item.Quality > 990)
       {
         return false;
       }
 
       // 2: Exclude items that are Quest items
-      if (metaData.Catagory == "Quest")
+      if (entry.MetaData.Catagory == "Quest")
       {
         return false;
       }
 
       // 3. Exclude items that icon is the default "cross" icon
-      if (item.Icon == null || item.Icon.name == "cross")
+      if (entry.Item.Icon == null || entry.Item.Icon.name == "cross")
       {
         return false;
       }
 
       // 4. Exclude items that not translated
-      if (item.DisplayName.StartsWith("*Item_"))
+      if (entry.Item.DisplayName.StartsWith("*Item_"))
       {
         return false;
       }
 
       // 5. Exclude items that the description is not translated
-      if (item.Description.StartsWith("*Item_"))
+      if (entry.Item.Description.StartsWith("*Item_"))
       {
         return false;
       }
@@ -89,16 +104,16 @@ namespace DuckovLuckyBox
       return true;
     };
 
-    public static ItemPredicate MeltableItemPredicate = (item, metaData) =>
+    public static ItemPredicate RecycleItemPredicate = (entry) =>
     {
       // 1. If the item is not lottery item, exclude it
-      if (!LotteryItemPredicate(item, metaData))
+      if (!LotteryItemPredicate(entry))
       {
         return false;
       }
 
       // 2. If the item is the Cash, exclude it
-      if (item.TypeID == 451) // Cash TypeID
+      if (entry.Item.TypeID == 451) // Cash TypeID
       {
         return false;
       }
@@ -106,16 +121,16 @@ namespace DuckovLuckyBox
       return true;
     };
 
-    public static ItemPredicate BulletItemPredicate = (item, metaData) =>
+    public static ItemPredicate BulletItemPredicate = (entry) =>
     {
       // 1. If the item is not lottery item, exclude it
-      if (!LotteryItemPredicate(item, metaData))
+      if (!LotteryItemPredicate(entry))
       {
         return false;
       }
 
       // 2. If the item is not a bullet, exclude it
-      if (metaData.Catagory != "Bullet")
+      if (entry.MetaData.Catagory != "Bullet")
       {
         return false;
       }
@@ -125,40 +140,37 @@ namespace DuckovLuckyBox
 
     public class ItemQueryCache
     {
-      private List<(Item, ItemMetaData)> _items;
-      private Dictionary<int, (Item, ItemMetaData)> _itemCache;
-      private Dictionary<int, ItemValueLevel> _itemValueLevelCache;
+      private List<Entry> _items;
+      private Dictionary<int, Entry> _itemCache;
       private Dictionary<ItemValueLevel, List<int>> _itemValueLevelToTypeIdsCache = new Dictionary<ItemValueLevel, List<int>>();
+
+      public IEnumerable<Entry> Entries => _items;
       public string Name;
 
       public ItemQueryCache(string Name, ItemPredicate predicate, bool includeDynamicItems = true)
       {
         this.Name = Name;
         _items = QueryGameItems(predicate, includeDynamicItems);
-        _itemCache = new Dictionary<int, (Item, ItemMetaData)>();
-        _itemValueLevelCache = new Dictionary<int, ItemValueLevel>();
+        _itemCache = new Dictionary<int, Entry>();
         _itemValueLevelToTypeIdsCache = new Dictionary<ItemValueLevel, List<int>>();
 
-        foreach (var (item, metaData) in _items)
+        foreach (var entry in _items)
         {
-          _itemCache[item.TypeID] = (item, metaData);
-          var valueLevel = QualityUtils.GetCachedItemValueLevel(item);
-
-          _itemValueLevelCache[item.TypeID] = valueLevel;
-          if (!_itemValueLevelToTypeIdsCache.ContainsKey(valueLevel))
+          _itemCache[entry.Item.TypeID] = entry;
+          if (!_itemValueLevelToTypeIdsCache.ContainsKey(entry.ValueLevel))
           {
-            _itemValueLevelToTypeIdsCache[valueLevel] = new List<int>();
+            _itemValueLevelToTypeIdsCache[entry.ValueLevel] = new List<int>();
           }
 
-          _itemValueLevelToTypeIdsCache[valueLevel].Add(item.TypeID);
+          _itemValueLevelToTypeIdsCache[entry.ValueLevel].Add(entry.Item.TypeID);
         }
       }
 
       public Item? GetItemById(int typeId)
       {
-        if (_itemCache.TryGetValue(typeId, out var itemTuple))
+        if (_itemCache.TryGetValue(typeId, out var entry))
         {
-          return itemTuple.Item1;
+          return entry.Item;
         }
 
         Log.Warning($"ItemQueryCache[{Name}] - Item with typeId {typeId} not found in cache.");
@@ -167,9 +179,9 @@ namespace DuckovLuckyBox
 
       public ItemMetaData? GetItemMetaDataById(int typeId)
       {
-        if (_itemCache.TryGetValue(typeId, out var itemTuple))
+        if (_itemCache.TryGetValue(typeId, out var entry))
         {
-          return itemTuple.Item2;
+          return entry.MetaData;
         }
 
         Log.Warning($"ItemQueryCache[{Name}] - ItemMetaData with typeId {typeId} not found in cache.");
@@ -178,9 +190,9 @@ namespace DuckovLuckyBox
 
       public ItemValueLevel? GetItemValueLevelById(int typeId)
       {
-        if (_itemValueLevelCache.TryGetValue(typeId, out var valueLevel))
+        if (_itemCache.TryGetValue(typeId, out var entry))
         {
-          return valueLevel;
+          return entry.ValueLevel;
         }
 
         Log.Warning($"ItemQueryCache[{Name}] - ItemValueLevel with typeId {typeId} not found in cache.");
@@ -320,14 +332,14 @@ namespace DuckovLuckyBox
       }
     }
 
-    private static ItemQueryCache? _meltableItemCache = null;
+    private static ItemQueryCache? _RecycleItemCache = null;
 
-    public static ItemQueryCache MeltableItemCache
+    public static ItemQueryCache RecycleItemCache
     {
       get
       {
-        _meltableItemCache ??= new ItemQueryCache("MeltableItems", MeltableItemPredicate, includeDynamicItems: true);
-        return _meltableItemCache;
+        _RecycleItemCache ??= new ItemQueryCache("RecycleItemCache", RecycleItemPredicate, includeDynamicItems: true);
+        return _RecycleItemCache;
       }
     }
 

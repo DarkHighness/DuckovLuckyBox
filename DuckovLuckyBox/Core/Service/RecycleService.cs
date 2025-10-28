@@ -111,7 +111,13 @@ namespace DuckovLuckyBox.Core
         /// <summary>
         /// Gets a random item from the specified categories that matches the desired value level.
         /// </summary>
-        public static async UniTask<Item?> PickRandomItemByCategoriesAndQualityAsync(IEnumerable<string> categories, ItemValueLevel level)
+        /// <summary>
+        /// Pick a random item from the specified categories at the given quality level.
+        /// If materialSources is provided, selection is biased toward the most frequent
+        /// material categories found in materialSources (tries most-common first, then next).
+        /// If no biased candidate is found, falls back to uniform random among all candidates.
+        /// </summary>
+        public static async UniTask<Item?> PickRandomItemByCategoriesAndQualityAsync(IEnumerable<string> categories, ItemValueLevel level, IEnumerable<Item>? materialSources = null)
         {
             if (categories == null)
             {
@@ -124,23 +130,95 @@ namespace DuckovLuckyBox.Core
                 return null;
             }
 
-            var candidateTypeIds = ItemAssetsCollection.Instance.entries
-                .Where(entry => entry != null && entry.prefab != null && categorySet.Contains(entry.metaData.Catagory))
-                .Where(entry => QualityUtils.GetCachedItemValueLevel(entry.prefab) == level)
-                .Select(entry => entry.typeID)
+            var candidateEntries = ItemUtils.RecycleItemCache.Entries
+                .Where(entry => categorySet.Contains(entry.MetaData.Catagory))
+                .Where(entry => entry.ValueLevel == level)
                 .ToList();
+
+            var candidateTypeIds = candidateEntries.Select(e => e.Item.TypeID).ToList();
 
             if (candidateTypeIds.Count == 0)
             {
                 return null;
             }
 
-            // Use uniform random selection for recycling
-            int randomIndex = UnityEngine.Random.Range(0, candidateTypeIds.Count);
-            int selectedItemTypeId = candidateTypeIds[randomIndex];
+            // If no material bias requested, pick uniform random
+            if (materialSources == null)
+            {
+                int randomIndex = UnityEngine.Random.Range(0, candidateTypeIds.Count);
+                int selectedItemTypeId = candidateTypeIds[randomIndex];
+                Item? obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
+                return obj;
+            }
 
-            Item? obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
-            return obj;
+            // Build frequency map of source item categories (material types)
+            var materialCategories = materialSources
+                .Where(i => i != null)
+                .Select(i => GetItemCategory(i.TypeID))
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .GroupBy(c => c, StringComparer.OrdinalIgnoreCase)
+                .Select(g => new { Category = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .ToList();
+
+            // Try each material category in order of frequency to bias selection
+            foreach (var mat in materialCategories)
+            {
+                var biased = candidateEntries
+                    .Where(e => string.Equals(e.MetaData.Catagory, mat.Category, StringComparison.OrdinalIgnoreCase))
+                    .Select(e => e.Item.TypeID)
+                    .ToList();
+
+                if (biased.Count > 0)
+                {
+                    int idx = UnityEngine.Random.Range(0, biased.Count);
+                    int selectedItemTypeId = biased[idx];
+                    Item? obj = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
+                    return obj;
+                }
+            }
+
+            // No biased candidate found; fallback to uniform random across all candidates
+            int fallbackIndex = UnityEngine.Random.Range(0, candidateTypeIds.Count);
+            int fallbackTypeId = candidateTypeIds[fallbackIndex];
+            Item? fallbackObj = await ItemAssetsCollection.InstantiateAsync(fallbackTypeId);
+            return fallbackObj;
+        }
+
+        /// <summary>
+        /// Check whether an item can be recycled given a set of supported reward categories.
+        /// Conditions:
+        /// 1. Item's category must be one of supportedCategories.
+        /// 2. There exists at least one item at item level + 1 in supportedCategories.
+        /// 3. If item is Bullet, it must be a full stack (submit whole stack) and the next-level bullet must exist.
+        /// </summary>
+        public static bool CanRecycleItem(Item? item, IEnumerable<string> supportedCategories)
+        {
+            if (item == null) return false;
+            if (supportedCategories == null) return false;
+
+            var category = GetItemCategory(item.TypeID);
+            var supportedSet = new HashSet<string>(supportedCategories.Where(c => !string.IsNullOrWhiteSpace(c)), StringComparer.OrdinalIgnoreCase);
+            if (!supportedSet.Contains(category)) return false;
+
+            ItemValueLevel currentLevel = QualityUtils.GetCachedItemValueLevel(item);
+            int nextLevelValue = (int)currentLevel + 1;
+            if (!Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue)) return false;
+            var targetLevel = (ItemValueLevel)nextLevelValue;
+
+            // For bullets, require full stack submitted (caller should ensure sending whole stack)
+            if (string.Equals(category, "Bullet", StringComparison.OrdinalIgnoreCase))
+            {
+                // If bullet, require stackable and full stack (caller will normally send full stack)
+                if (!item.Stackable) return false;
+                if (item.StackCount < item.MaxStackCount) return false;
+
+                // Ensure there is a bullet at next level in supported categories
+                return HasCategoryItemAtLevel(new[] { category }, targetLevel);
+            }
+
+            // Generic case: ensure at least one item at next level exists among supported categories
+            return HasCategoryItemAtLevel(supportedSet, targetLevel);
         }
 
         /// <summary>

@@ -105,14 +105,6 @@ namespace DuckovLuckyBox.Core
       ItemValueLevel currentLevel = QualityUtils.GetCachedItemValueLevel(item);
       string category = RecycleService.GetItemCategory(item.TypeID);
 
-      // Special handling for bullets - leave empty for now
-      if (item.Tags.Contains("Bullet"))
-      {
-        Log.Debug($"Melt: Bullet items require special handling - {item.DisplayName}");
-        // TODO: Implement special bullet melt logic
-        return (null, MeltOutcome.SameLevel);
-      }
-
       MeltOutcome meltOutcome = DetermineLevelChange(currentLevel);
 
       if (meltOutcome == MeltOutcome.SameLevel)
@@ -201,10 +193,12 @@ namespace DuckovLuckyBox.Core
       }
 
       // Special handling for bullets - leave empty for now
-      if (item.Tags.Contains("Bullet"))
+      string category = RecycleService.GetItemCategory(item.TypeID);
+
+      // Special handling for bullets - leave empty for now
+      if (category == "Bullet")
       {
-        Log.Warning($"Melt: Bullet items require special handling - {item.DisplayName}");
-        // TODO: Implement special bullet melt logic
+        Log.Debug($"Melt: Bullet items can not be melted - {item.DisplayName}");
         return result;
       }
 
@@ -361,6 +355,41 @@ namespace DuckovLuckyBox.Core
       // UnityEngine.Object.Destroy(item.gameObject);
 
       return result;
+    }
+
+    /// <summary>
+    /// Check whether an item can be melted (can attempt an upgrade)
+    /// Conditions:
+    /// 1. Its upgrade probability (level up) is not zero
+    /// 2. There exists at least one item of level + 1 in the same category
+    /// 3. The item is not a Bullet and not Cash (TypeID 451)
+    /// </summary>
+    public static bool CanMeltItem(Item? item)
+    {
+      if (item == null) return false;
+
+      // Exclude cash
+      if (item.TypeID == 451) return false;
+
+      string category = RecycleService.GetItemCategory(item.TypeID);
+      if (string.Equals(category, "Bullet", StringComparison.OrdinalIgnoreCase))
+      {
+        return false;
+      }
+
+      ItemValueLevel currentLevel = QualityUtils.GetCachedItemValueLevel(item);
+      var meltProb = ProbabilityUtils.MeltProbability.GetMeltProbabilityForLevel(currentLevel);
+
+      // Upgrade probability must be > 0
+      if (meltProb.ProbabilityLevelUp <= 0) return false;
+
+      int nextLevelValue = (int)currentLevel + 1;
+      if (!Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue)) return false;
+      var targetLevel = (ItemValueLevel)nextLevelValue;
+
+      // At least one item of next level in same category
+      bool hasNext = RecycleService.HasCategoryItemAtLevel(new[] { category }, targetLevel);
+      return hasNext;
     }
   }
 }

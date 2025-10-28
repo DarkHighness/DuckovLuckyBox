@@ -328,12 +328,7 @@ namespace DuckovLuckyBox.Patches
       bool lotteryButtonEnabled = (bool)SettingManager.Instance.EnableLotteryButton.Value;
 
       // Check if item is a bullet (should hide melt button)
-      bool isBullet = false;
-      if (targetItem != null)
-      {
-        string category = ItemUtils.MeltableItemCache.GetItemCategory(targetItem.TypeID);
-        isBullet = category == "Bullet";
-      }
+      bool canMelt = MeltService.CanMeltItem(targetItem);
 
       // Show/hide Destroy button based on settings only
       if (state.DestroyButton != null)
@@ -345,7 +340,7 @@ namespace DuckovLuckyBox.Patches
       // Show/hide Lottery button based on settings and item type
       if (state.MeltButton != null)
       {
-        bool shouldShowLottery = lotteryButtonEnabled && !isBullet;
+        bool shouldShowLottery = lotteryButtonEnabled && canMelt;
         state.MeltButton.gameObject.SetActive(shouldShowLottery);
         state.MeltButton.interactable = shouldShowLottery;
       }
