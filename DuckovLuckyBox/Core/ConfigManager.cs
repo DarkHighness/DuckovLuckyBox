@@ -8,6 +8,9 @@ namespace DuckovLuckyBox.Core.Settings
     [Serializable]
     public class ConfigData
     {
+        // Config file version for future migration support
+        // Default 0 means 'unspecified/old format' and will trigger migration
+        public int Version = 0;
         public bool EnableAnimation = DefaultSettings.EnableAnimation;
         public string SettingsHotkey = DefaultSettings.SettingsHotkey.ToString();
         public bool EnableDestroyButton = DefaultSettings.EnableDestroyButton;
@@ -24,8 +27,72 @@ namespace DuckovLuckyBox.Core.Settings
         public long MeltBasePrice = DefaultSettings.MeltBasePrice;
     }
 
+
     public class ConfigManager
     {
+        private const int CurrentConfigVersion = 1;
+
+        // Create a timestamped backup of the current config file (if it exists).
+        private void BackupConfigFile()
+        {
+            try
+            {
+                if (File.Exists(configFilePath))
+                {
+                    string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+                    string backupPath = Path.Combine(configDirectory, $"config.json.{timestamp}.bak");
+                    File.Copy(configFilePath, backupPath);
+                    Log.Info($"Backed up old config to {backupPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed to backup config file: {ex.Message}");
+            }
+        }
+
+        // Migrate a loaded ConfigData up to CurrentConfigVersion. Returns migrated config.
+        private ConfigData MigrateConfig(ConfigData config)
+        {
+            int ver = config.Version;
+            Log.Info($"Starting migration: config version {ver} -> {CurrentConfigVersion}");
+
+            try
+            {
+                // Sequential migrations: apply each version upgrade step
+                while (ver < CurrentConfigVersion)
+                {
+                    switch (ver)
+                    {
+                        case 0:
+                            // For v0 -> v1 migration we intentionally reset all settings to defaults.
+                            Log.Info("Migrating config v0 -> v1: resetting all settings to defaults.");
+
+                            var defaultConfig = new ConfigData();
+                            defaultConfig.Version = CurrentConfigVersion;
+
+                            // Return early with default config to indicate migration result
+                            return defaultConfig;
+                        default:
+                            // Unknown older version: set to current and stop
+                            ver = CurrentConfigVersion;
+                            config.Version = ver;
+                            Log.Error($"Unknown config version encountered during migration; setting to {ver}.");
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error migrating config: {ex.Message}");
+                // On failure, fall back to defaults
+                var defaultConfig = new ConfigData();
+                defaultConfig.Version = CurrentConfigVersion;
+                return defaultConfig;
+            }
+
+            return config;
+        }
         private readonly string configDirectory;
         private readonly string configFilePath;
         private FileSystemWatcher? fileWatcher;
@@ -99,15 +166,37 @@ namespace DuckovLuckyBox.Core.Settings
                 yield return null;
 
                 // JSON parsing
+                bool didMigrate = false;
+                ConfigData? migratedConfig = null;
+
                 if (success && json != null)
                 {
                     try
                     {
                         config = JsonUtility.FromJson<ConfigData>(json);
+
                         if (config != null)
                         {
-                            ApplyConfigToSettings(config);
-                            Log.Debug("Config loaded successfully (async).");
+                            // If the loaded config is an older version, prepare migration
+                            if (config.Version < CurrentConfigVersion)
+                            {
+                                Log.Info($"Config version {config.Version} detected; migrating to {CurrentConfigVersion}...");
+
+                                // Backup original file before modifying
+                                BackupConfigFile();
+
+                                migratedConfig = MigrateConfig(config);
+
+                                // Apply migrated values to settings so we can persist them later
+                                ApplyConfigToSettings(migratedConfig);
+                                didMigrate = true;
+                            }
+                            else
+                            {
+                                // Up-to-date config; apply to settings
+                                ApplyConfigToSettings(config);
+                                Log.Debug("Config loaded successfully (async).");
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -115,11 +204,29 @@ namespace DuckovLuckyBox.Core.Settings
                         Log.Error($"Failed to parse config: {ex.Message}");
                     }
                 }
+
+                // If a migration was prepared, persist the migrated config outside the try/catch block
+                if (didMigrate)
+                {
+                    if (coroutineHost != null)
+                        yield return coroutineHost.StartCoroutine(SaveConfigAsync());
+                    else
+                        yield return null;
+
+                    isLoading = false;
+                    callback?.Invoke();
+                    SubscribeToSettingChanges();
+                    yield break;
+                }
             }
             else
             {
                 // Create default config
-                yield return coroutineHost?.StartCoroutine(SaveConfigAsync());
+                if (coroutineHost != null)
+                    yield return coroutineHost.StartCoroutine(SaveConfigAsync());
+                else
+                    yield return null;
+
                 Log.Debug("Created default config file (async).");
             }
 
@@ -199,6 +306,7 @@ namespace DuckovLuckyBox.Core.Settings
             var settings = SettingManager.Instance;
             return new ConfigData
             {
+                Version = CurrentConfigVersion,
                 EnableAnimation = settings.EnableAnimation.GetAsBool(),
                 SettingsHotkey = settings.SettingsHotkey.GetAsHotkey().ToString(),
                 EnableDestroyButton = settings.EnableDestroyButton.GetAsBool(),
