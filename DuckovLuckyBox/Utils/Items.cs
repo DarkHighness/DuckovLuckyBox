@@ -9,17 +9,18 @@ using UnityEngine;
 namespace DuckovLuckyBox
 {
   using ItemPredicate = Func<Entry, bool>;
-  public class Entry {
-      public Item Item;
-      public ItemMetaData MetaData;
-      public ItemValueLevel ValueLevel => QualityUtils.GetCachedItemValueLevel(Item);
+  public class Entry
+  {
+    public Item Item;
+    public ItemMetaData MetaData;
+    public ItemValueLevel ValueLevel => QualityUtils.GetCachedItemValueLevel(Item);
 
-      public Entry(Item item, ItemMetaData metaData)
-      {
-        Item = item;
-        MetaData = metaData;
-      }
+    public Entry(Item item, ItemMetaData metaData)
+    {
+      Item = item;
+      MetaData = metaData;
     }
+  }
 
 
   public static class ItemUtils
@@ -307,7 +308,10 @@ namespace DuckovLuckyBox
           return;
         }
 
-        ItemUtilities.SendToPlayer(item, dontMerge: false, sendToStorage: true);
+        if (!ItemUtilities.SendToPlayerCharacterInventory(item, dontMerge: false))
+        {
+          ItemUtilities.SendToPlayerStorage(item);
+        }
       }
     }
 
@@ -352,27 +356,5 @@ namespace DuckovLuckyBox
         return _bulletItemCache;
       }
     }
-
-
-    // public static async UniTask<Item?> CreateItemById(int typeId, int count = 1)
-    // {
-    //   Item? item = await ItemAssetsCollection.InstantiateAsync(typeId);
-    //   if (item == null) return null;
-
-    //   item.StackCount = Math.Clamp(count, 1, item.MaxStackCount);
-    //   return item;
-    // }
-
-    // public static async UniTask SendItemToCharacterInventory(int typeId, int count = 1)
-    // {
-    //   Item? item = await CreateItemById(typeId, count);
-    //   if (item == null)
-    //   {
-    //     Log.Warning($"Failed to create item with typeId {typeId}");
-    //     return;
-    //   }
-
-    //   ItemUtilities.SendToPlayer(item, dontMerge: false, sendToStorage: true);
-    // }
   }
 }

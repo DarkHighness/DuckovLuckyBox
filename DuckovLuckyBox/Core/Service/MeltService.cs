@@ -328,7 +328,13 @@ namespace DuckovLuckyBox.Core
         }
 
         // Send melted item to player inventory immediately
-        ItemUtilities.SendToPlayer(meltedItem, dontMerge: false, sendToStorage: true);
+        var sentToStorage =
+        !ItemUtilities.SendToPlayerCharacterInventory(meltedItem, dontMerge: false);
+        if (sentToStorage)
+        {
+          var storageMessage = Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
+          NotificationText.Push(storageMessage);
+        }
         Log.Debug($"Melt: Sent melted item to player (iteration {i + 1}/{stackCount})");
 
         await UniTask.WaitForSeconds(MELT_OPERATION_DELAY); // Small delay to avoid overwhelming the inventory system
