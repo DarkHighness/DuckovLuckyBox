@@ -48,6 +48,12 @@ namespace DuckovLuckyBox.UI
         private const float MinVelocityInSlots = 0.01f; // Minimum velocity before final positioning (slots/second) - decelerate to 0.01 slots/s at the end
         private const float TargetAnimationDurationInSeconds = 7f; // Target animation total duration (seconds) - physics-based rolling phase must last this long (decelerate to 0 after 7s)
 
+        // Animation precision and timing constants
+        private const int AnimationStepsPerSecond = 100; // Samples per second for higher precision (every 0.01s)
+        private const float VelocityAt7Seconds = 0.1f; // Velocity at 7 seconds (slots/second)
+        private const float DecelerationDuration = 7.0f; // Duration of deceleration phase (seconds)
+        private const float TotalCurveDuration = 8.0f; // Total duration of velocity curve (seconds)
+
         // Randomness parameters for animation variation
         // InitialVelocityRandomRange controls how much the animation can vary within the final slot
         // Larger values = more variation in stopping position within final slot
@@ -668,33 +674,27 @@ namespace DuckovLuckyBox.UI
         /// </summary>
         private float[] GenerateVelocityCurve()
         {
-            const int stepsPerSecond = 50; // 50 samples per second (every 0.02s) for higher precision
-            // 8 * 50 = 400
-            int totalSteps = (int)(8f * stepsPerSecond);
+            // AnimationStepsPerSecond samples per second for higher precision
+            int totalSteps = (int)(TotalCurveDuration * AnimationStepsPerSecond);
             var curve = new float[totalSteps];
-
-            // At 7s (index 350) should be 0.1
-            // At 8s (index 399, the last one) should be 0.0 (complete stop)
-            const float velocityAt7s = 0.1f;
 
             for (int i = 0; i < totalSteps; i++)
             {
                 // Current sample point corresponding time
-                // i=0 → 0.00s, i=1 → 0.02s, ..., i=350 → 7.00s, i=399 → 7.98s
-                float timeInSeconds = (float)i / stepsPerSecond;
+                float timeInSeconds = (float)i / AnimationStepsPerSecond;
 
-                if (timeInSeconds < 7.0f)
+                if (timeInSeconds < DecelerationDuration)
                 {
                     // First 7 seconds: decelerate from current initial velocity to 0.1, using ease-out quartic curve for faster deceleration
-                    float t = timeInSeconds / 7.0f; // 0.0 to 1.0
+                    float t = timeInSeconds / DecelerationDuration; // 0.0 to 1.0
                     float easeT = 1f - Mathf.Pow(1f - t, 4f);
-                    curve[i] = Mathf.Lerp(_currentAnimationInitialVelocity, velocityAt7s, easeT);
+                    curve[i] = Mathf.Lerp(_currentAnimationInitialVelocity, VelocityAt7Seconds, easeT);
                 }
                 else
                 {
                     // 7-8 seconds: linearly decelerate from 0.1 to 0.0 (complete stop)
-                    float t = (timeInSeconds - 7.0f) / 1.0f; // 0.0 to 1.0
-                    curve[i] = Mathf.Lerp(velocityAt7s, 0f, t);
+                    float t = (timeInSeconds - DecelerationDuration) / (TotalCurveDuration - DecelerationDuration); // 0.0 to 1.0
+                    curve[i] = Mathf.Lerp(VelocityAt7Seconds, 0f, t);
                 }
             }
 
@@ -706,7 +706,7 @@ namespace DuckovLuckyBox.UI
         /// </summary>
         private float CalculateTotalDistanceInSlots(float[] velocityCurve)
         {
-            const float timeStepInSeconds = 0.02f; // Each sample point is 0.02 seconds apart
+            float timeStepInSeconds = 1.0f / AnimationStepsPerSecond; // Each sample point time interval
             float totalDistance = 0f;
 
             for (int i = 0; i < velocityCurve.Length; i++)
@@ -781,9 +781,8 @@ namespace DuckovLuckyBox.UI
 
                 // Look up current velocity from pre-generated velocity curve
                 // Use FloorToInt: round down to nearest sample point
-                // Example: time 0.12s → index Floor(0.12 * 50) = Floor(6.0) = 6 → use velocity at 0.12s
                 // This avoids array bounds and ensures we use "current or previous" velocity value
-                int curveIndex = Mathf.FloorToInt(elapsedTime * 50f); // One sample every 0.02s
+                int curveIndex = Mathf.FloorToInt(elapsedTime * AnimationStepsPerSecond); // One sample every time step
                 curveIndex = Mathf.Clamp(curveIndex, 0, _velocityCurve.Length - 1);
                 float currentVelocityInSlots = _velocityCurve[curveIndex] * velocityDirection;
 
