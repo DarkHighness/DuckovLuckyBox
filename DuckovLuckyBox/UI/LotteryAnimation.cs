@@ -152,7 +152,7 @@ namespace DuckovLuckyBox.UI
             pointerLineRect.anchorMin = new Vector2(0.5f, 0.5f);
             pointerLineRect.anchorMax = new Vector2(0.5f, 0.5f);
             pointerLineRect.pivot = new Vector2(0.5f, 0.5f);
-            pointerLineRect.sizeDelta = new Vector2(PointerThickness * 1.1f, viewportHeight + 80f);
+            pointerLineRect.sizeDelta = new Vector2(PointerThickness * 1.1f, viewportHeight + 64f);
             pointerLineRect.anchoredPosition = Vector2.zero;
 
             // Rounded capsule for the pointer body
@@ -300,12 +300,17 @@ namespace DuckovLuckyBox.UI
             }
 
             // Auto-initialize if not already initialized
-            if (_overlayRoot == null || _itemsContainer == null || _centerPointer == null || _canvasGroup == null)
+            if (!_isInitialized)
             {
+                Log.Debug("[LotteryAnimation] Auto-initializing");
                 Initialize();
             }
 
-            if (_isAnimating) return;
+            if (_isAnimating)
+            {
+                Log.Warning("Lottery animation is already in progress.");
+                return;
+            }
 
             if (!TryBuildAnimationPlan(candidateTypeIds, finalTypeId, finalIcon, out var plan))
             {
@@ -428,7 +433,6 @@ namespace DuckovLuckyBox.UI
             int totalSlotsNeeded = finalSlotIndex + SlotsAfterFinal + 1;
 
             var slotWidth = SlotFullWidth;
-            var viewportWidth = _viewport.rect.width;
 
             // Check if weighted lottery is enabled
             var enableWeightedLottery = Core.Settings.SettingManager.Instance.EnableWeightedLottery.GetAsBool();
