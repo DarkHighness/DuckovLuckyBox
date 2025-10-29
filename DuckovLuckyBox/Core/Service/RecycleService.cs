@@ -54,31 +54,6 @@ namespace DuckovLuckyBox.Core
         }
 
         /// <summary>
-        /// Determines whether a given category contains an item whose value level is exactly one tier higher than the provided baseline.
-        /// </summary>
-        public static bool HasHigherQualityItemInCategory(string category, ItemValueLevel baseQuality)
-        {
-            if (string.IsNullOrEmpty(category))
-            {
-                return false;
-            }
-
-            if (!ItemLookupByCategoryAndQuality.TryGetValue(category, out var qualityMap) || qualityMap == null)
-            {
-                return false;
-            }
-
-            int nextLevelValue = (int)baseQuality + 1;
-            if (!Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue))
-            {
-                return false;
-            }
-
-            var nextLevel = (ItemValueLevel)nextLevelValue;
-            return qualityMap.TryGetValue(nextLevel, out var nextItems) && nextItems != null && nextItems.Count > 0;
-        }
-
-        /// <summary>
         /// Determines whether any of the specified categories contains an item at the provided value level.
         /// </summary>
         public static bool HasCategoryItemAtLevel(IEnumerable<string> categories, ItemValueLevel level)

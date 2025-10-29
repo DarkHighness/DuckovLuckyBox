@@ -401,8 +401,8 @@ namespace DuckovLuckyBox.Core
       if (!Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue)) return false;
       var targetLevel = (ItemValueLevel)nextLevelValue;
 
-      // At least one item of next level in same category
-      bool hasNext = RecycleService.HasCategoryItemAtLevel(new[] { category }, targetLevel);
+      // At least one item of next level
+      bool hasNext = RecycleService.HasCategoryItemAtLevel(ItemUtils.RecyclableCategories, targetLevel);
       return hasNext;
     }
   }

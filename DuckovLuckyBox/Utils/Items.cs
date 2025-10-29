@@ -130,8 +130,8 @@ namespace DuckovLuckyBox
 
     public static ItemPredicate LotteryItemPredicate = (entry) =>
     {
-      // 1: Exclude items that the quality not in [0, 990]
-      if (entry.Item.Quality < 0 || entry.Item.Quality > 990)
+      // 1: Exclude items that the quality is below 0
+      if (entry.Item.Quality < 0)
       {
         return false;
       }
