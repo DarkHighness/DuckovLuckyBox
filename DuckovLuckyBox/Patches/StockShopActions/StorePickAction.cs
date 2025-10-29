@@ -1,13 +1,9 @@
 using Duckov.Economy.UI;
-using Duckov.Economy;
 using Cysharp.Threading.Tasks;
 using System.Linq;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
-using DuckovLuckyBox.UI;
-using SodaCraft.Localizations;
 using HarmonyLib;
-using System;
 
 namespace DuckovLuckyBox.Patches.StockShopActions
 {

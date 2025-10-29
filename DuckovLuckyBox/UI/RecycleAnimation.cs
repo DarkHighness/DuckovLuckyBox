@@ -3,9 +3,7 @@ using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using FMOD;
 using FMODUnity;
-using Duckov;
 using DuckovLuckyBox.Core;
 using ItemStatsSystem;
 

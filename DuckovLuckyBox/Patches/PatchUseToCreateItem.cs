@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Duckov.Utilities;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
 using HarmonyLib;

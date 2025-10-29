@@ -1,11 +1,6 @@
 using System.Reflection;
-using Duckov.UI;
-using Duckov.Utilities;
-using ItemStatsSystem;
-using TMPro;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.UI;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
 using DuckovLuckyBox.UI;

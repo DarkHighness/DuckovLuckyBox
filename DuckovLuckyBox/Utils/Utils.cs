@@ -1,9 +1,5 @@
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using DuckovLuckyBox.Core;
-using FMOD;
-using FMODUnity;
 using UnityEngine;
 
 namespace DuckovLuckyBox

@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using ItemStatsSystem;
-using UnityEngine;
 using SodaCraft.Localizations;
 using Duckov.UI;
 using Duckov.Economy;

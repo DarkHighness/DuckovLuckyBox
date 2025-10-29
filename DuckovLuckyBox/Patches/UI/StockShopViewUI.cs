@@ -1,16 +1,11 @@
 using System.Collections.Generic;
-using Duckov.UI;
 using Duckov.Economy.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Duckov.Economy;
 using SodaCraft.Localizations;
-using HarmonyLib;
 using Cysharp.Threading.Tasks;
-using System;
-using System.Linq;
-using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
 using DuckovLuckyBox.Patches.StockShopActions;
 

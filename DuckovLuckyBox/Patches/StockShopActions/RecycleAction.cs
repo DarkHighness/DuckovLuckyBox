@@ -1,24 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using Cysharp.Threading.Tasks;
-using Duckov;
 using Duckov.Economy.UI;
-using Duckov.UI;
-using Duckov.UI.Animations;
-using Duckov.Utilities;
 using DuckovLuckyBox.Core;
-using DuckovLuckyBox.Core.Settings;
-using DuckovLuckyBox.UI;
-using HarmonyLib;
-using ItemStatsSystem;
-using SodaCraft.Localizations;
-using TMPro;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace DuckovLuckyBox.Patches.StockShopActions
 {

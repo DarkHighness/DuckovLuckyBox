@@ -2,8 +2,6 @@ using Duckov;
 using Duckov.UI;
 using Duckov.Economy.UI;
 using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
 using Duckov.Economy;
 using SodaCraft.Localizations;
 using HarmonyLib;
@@ -13,9 +11,6 @@ using System.Collections.Generic;
 using ItemStatsSystem;
 using System.Linq;
 using DuckovLuckyBox.Core;
-using DuckovLuckyBox.Core.Settings;
-using DuckovLuckyBox.UI;
-using DuckovLuckyBox.Patches.StockShopActions;
 
 namespace DuckovLuckyBox.Patches
 {

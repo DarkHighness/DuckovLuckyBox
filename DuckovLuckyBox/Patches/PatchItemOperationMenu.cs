@@ -1,16 +1,7 @@
-using System.Collections.Generic;
 using Duckov.UI;
 using DuckovLuckyBox.Core;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-using System.Linq;
-using Cysharp.Threading.Tasks;
-using SodaCraft.Localizations;
-using FMODUnity;
-using FMOD;
-using DuckovLuckyBox.Core.Settings;
 
 namespace DuckovLuckyBox.Patches
 {

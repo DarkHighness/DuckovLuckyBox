@@ -3,7 +3,6 @@ using Duckov.UI;
 using Duckov.Economy.UI;
 using Duckov.Economy;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 using HarmonyLib;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;

@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using FMOD;
 using FMODUnity;
-using UnityEngine;
 
 namespace DuckovLuckyBox
 {

@@ -1,10 +1,7 @@
 using Duckov.Economy.UI;
 using Cysharp.Threading.Tasks;
-using System;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
-using DuckovLuckyBox.UI;
-using SodaCraft.Localizations;
 
 namespace DuckovLuckyBox.Patches.StockShopActions
 {
