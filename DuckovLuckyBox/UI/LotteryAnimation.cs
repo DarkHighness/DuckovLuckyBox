@@ -668,19 +668,19 @@ namespace DuckovLuckyBox.UI
         /// </summary>
         private float[] GenerateVelocityCurve()
         {
-            const int stepsPerSecond = 20; // 20 samples per second (every 0.05s)
-            // 8 * 20 = 160
+            const int stepsPerSecond = 50; // 50 samples per second (every 0.02s) for higher precision
+            // 8 * 50 = 400
             int totalSteps = (int)(8f * stepsPerSecond);
             var curve = new float[totalSteps];
 
-            // At 7s (index 140) should be 0.1
-            // At 8s (index 159, the last one) should be 0.0 (complete stop)
+            // At 7s (index 350) should be 0.1
+            // At 8s (index 399, the last one) should be 0.0 (complete stop)
             const float velocityAt7s = 0.1f;
 
             for (int i = 0; i < totalSteps; i++)
             {
                 // Current sample point corresponding time
-                // i=0 → 0.00s, i=1 → 0.05s, ..., i=140 → 7.00s, i=159 → 7.95s
+                // i=0 → 0.00s, i=1 → 0.02s, ..., i=350 → 7.00s, i=399 → 7.98s
                 float timeInSeconds = (float)i / stepsPerSecond;
 
                 if (timeInSeconds < 7.0f)
@@ -706,7 +706,7 @@ namespace DuckovLuckyBox.UI
         /// </summary>
         private float CalculateTotalDistanceInSlots(float[] velocityCurve)
         {
-            const float timeStepInSeconds = 0.05f; // Each sample point is 0.05 seconds apart
+            const float timeStepInSeconds = 0.02f; // Each sample point is 0.02 seconds apart
             float totalDistance = 0f;
 
             for (int i = 0; i < velocityCurve.Length; i++)
@@ -781,16 +781,27 @@ namespace DuckovLuckyBox.UI
 
                 // Look up current velocity from pre-generated velocity curve
                 // Use FloorToInt: round down to nearest sample point
-                // Example: time 0.12s → index Floor(0.12 * 20) = Floor(2.4) = 2 → use velocity at 0.10s
+                // Example: time 0.12s → index Floor(0.12 * 50) = Floor(6.0) = 6 → use velocity at 0.12s
                 // This avoids array bounds and ensures we use "current or previous" velocity value
-                int curveIndex = Mathf.FloorToInt(elapsedTime * 20f); // One sample every 0.05s
+                int curveIndex = Mathf.FloorToInt(elapsedTime * 50f); // One sample every 0.02s
                 curveIndex = Mathf.Clamp(curveIndex, 0, _velocityCurve.Length - 1);
                 float currentVelocityInSlots = _velocityCurve[curveIndex] * velocityDirection;
 
                 // Convert slot/s to pixel/s, then calculate displacement
                 float velocityInPixels = currentVelocityInSlots * SlotFullWidth;
                 float movementInPixels = velocityInPixels * deltaTime;
-                currentPositionInPixels += movementInPixels;
+                float nextPositionInPixels = currentPositionInPixels + movementInPixels;
+
+                // Fallback: If the next position would overshoot the target, clamp to target and stop
+                if ((velocityDirection == -1 && nextPositionInPixels <= targetPositionInPixels) ||
+                    (velocityDirection == 1 && nextPositionInPixels >= targetPositionInPixels))
+                {
+                    currentPositionInPixels = targetPositionInPixels;
+                    _itemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
+                    break;
+                }
+
+                currentPositionInPixels = nextPositionInPixels;
 
                 // Set base position first
                 _itemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
