@@ -90,6 +90,17 @@ namespace DuckovLuckyBox.Core
     /// </summary>
     public static class LotteryService
     {
+        // High level item threshold (>= Orange)
+        private const ItemValueLevel HIGH_LEVEL_THRESHOLD = ItemValueLevel.Orange; // ItemValueLevel.Orange = 4
+
+        // Consecutive failure threshold for probability adjustment
+        private const int CONSECUTIVE_FAILURE_THRESHOLD = 5;
+
+        // Probability bonus per excess failure for high level items (in thousandths)
+        private const int HIGH_LEVEL_BONUS_PER_FAILURE = 50; // 50 thousandths = 5%
+
+        // Counter for consecutive high level item failures
+        private static int consecutiveHighLevelFailures = 0;
         /// <summary>
         /// Performs weighted random selection on a collection of items
         /// Used by animation and other UI components for weighted sampling
@@ -205,6 +216,12 @@ namespace DuckovLuckyBox.Core
                     foreach (var level in nonEmptyItemsByQuality.Keys)
                     {
                         float probability = ProbabilityUtils.GetProbabilityForItemValueLevel(level);
+                        // Apply bonus for high level items if consecutive failures exceed threshold
+                        if (consecutiveHighLevelFailures >= CONSECUTIVE_FAILURE_THRESHOLD && (int)level >= (int)HIGH_LEVEL_THRESHOLD)
+                        {
+                            int excessFailures = consecutiveHighLevelFailures - CONSECUTIVE_FAILURE_THRESHOLD + 1;
+                            probability += excessFailures * HIGH_LEVEL_BONUS_PER_FAILURE;
+                        }
                         qualityWeights.Add(new WeightedItem((int)level, probability));
                     }
 
@@ -307,6 +324,17 @@ namespace DuckovLuckyBox.Core
 
             // Call context success hook
             context?.OnLotterySuccess(item, sentToStorage);
+
+            // Update consecutive high level failure counter
+            var itemLevel = QualityUtils.GetCachedItemValueLevel(item);
+            if ((int)itemLevel >= (int)HIGH_LEVEL_THRESHOLD)
+            {
+                consecutiveHighLevelFailures = 0; // Reset on high level item
+            }
+            else
+            {
+                consecutiveHighLevelFailures++; // Increment on non-high level item
+            }
 
             return (true, item, sentToStorage);
         }
