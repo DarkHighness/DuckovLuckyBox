@@ -17,7 +17,7 @@ namespace DuckovLuckyBox.Core
   /// </summary>
   public static class MeltService
   {
-    private const float MELT_OPERATION_DELAY = 0.5f; // Delay between melt operations
+    private const float MELT_OPERATION_DELAY = 0.8f; // Delay between melt operations
     private const string SFX_BUY = "UI/buy";
 
     /// <summary>
@@ -318,10 +318,21 @@ namespace DuckovLuckyBox.Core
           result.SameLevelCount++;
           stopAndPlay(Constants.Sound.MELT_LEVEL_SAME_SOUND);
           // Show notification for same level
-          string message = Localizations.I18n.MeltLevelSameNotificationKey.ToPlainText()
-            .Replace("{originalItem}", item.DisplayName.ToPlainText())
-            .Replace("{newItem}", meltedItemDisplayName);
-          NotificationText.Push(message);
+          if (meltedItem.TypeID == item.TypeID)
+          {
+            // Same item - use special notification
+            string message = Localizations.I18n.MeltSameItemNotificationKey.ToPlainText()
+              .Replace("{originalItem}", item.DisplayName.ToPlainText());
+            NotificationText.Push(message);
+          }
+          else
+          {
+            // Different item at same level
+            string message = Localizations.I18n.MeltLevelSameNotificationKey.ToPlainText()
+              .Replace("{originalItem}", item.DisplayName.ToPlainText())
+              .Replace("{newItem}", meltedItemDisplayName);
+            NotificationText.Push(message);
+          }
         }
 
         // Send melted item to player inventory immediately

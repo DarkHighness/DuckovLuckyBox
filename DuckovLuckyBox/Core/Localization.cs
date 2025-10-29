@@ -69,6 +69,7 @@ namespace DuckovLuckyBox.Core
             public static readonly string MeltLevelUpNotificationKey = "Notification_MeltLevelUp";
             public static readonly string MeltLevelDownNotificationKey = "Notification_MeltLevelDown";
             public static readonly string MeltLevelSameNotificationKey = "Notification_MeltLevelSame";
+            public static readonly string MeltSameItemNotificationKey = "Notification_MeltSameItem";
             public static readonly string MeltDestroyedNotificationKey = "Notification_MeltDestroyed";
             public static readonly string MeltCostFormatKey = "Notification_MeltCostFormat";
         }
@@ -129,6 +130,7 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltLevelUpNotificationKey, "{originalItem} upgraded to {newItem}!" },
             { I18n.MeltLevelDownNotificationKey, "{originalItem} downgraded to {newItem}..." },
             { I18n.MeltLevelSameNotificationKey, "{originalItem} stayed as {newItem}." },
+            { I18n.MeltSameItemNotificationKey, "{originalItem} stayed the same!" },
             { I18n.MeltDestroyedNotificationKey, "{originalItem} was destroyed!" },
             { I18n.MeltCostFormatKey, "Melt cost: {basePrice} (Base Price) × {level} (Level Fee) × {count} (Quantity) = {totalCost}" }
         } },
@@ -187,6 +189,7 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltLevelUpNotificationKey, "{originalItem} 升级为 {newItem}！" },
             { I18n.MeltLevelDownNotificationKey, "{originalItem} 降级为 {newItem}..." },
             { I18n.MeltLevelSameNotificationKey, "{originalItem} 平级转换为 {newItem}。" },
+            { I18n.MeltSameItemNotificationKey, "{originalItem} 未起一丝波澜！" },
             { I18n.MeltDestroyedNotificationKey, "{originalItem} 被损毁了！" },
             { I18n.MeltCostFormatKey, "熔炼费用: {basePrice} (基础价格) × {level} (等级付费) × {count} (数量) = {totalCost}" }
         } },
