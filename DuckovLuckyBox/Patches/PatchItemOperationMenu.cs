@@ -6,33 +6,33 @@ using UnityEngine;
 namespace DuckovLuckyBox.Patches
 {
 
-  [HarmonyPatch(typeof(ItemOperationMenu), "Initialize")]
-  public class PatchItemOperationMenu_Initialize
-  {
-    public static void Postfix(ItemOperationMenu __instance, RectTransform ___contentRectTransform)
+    [HarmonyPatch(typeof(ItemOperationMenu), "Initialize")]
+    public class PatchItemOperationMenu_Initialize
     {
-      if (___contentRectTransform == null) return;
+        public static void Postfix(ItemOperationMenu __instance, RectTransform ___contentRectTransform)
+        {
+            if (___contentRectTransform == null) return;
 
-      ItemOperationMenuUI.Instance.Setup(__instance);
+            ItemOperationMenuUI.Instance.Setup(__instance);
+        }
     }
-  }
 
-  [HarmonyPatch(typeof(ItemOperationMenu), "Setup")]
-  public class PatchItemOperationMenu_Setup
-  {
-    public static void Postfix(ItemOperationMenu __instance)
+    [HarmonyPatch(typeof(ItemOperationMenu), "Setup")]
+    public class PatchItemOperationMenu_Setup
     {
-      ItemOperationMenuUI.Instance.Setup(__instance);
-      ItemOperationMenuUI.Instance.Open();
+        public static void Postfix(ItemOperationMenu __instance)
+        {
+            ItemOperationMenuUI.Instance.Setup(__instance);
+            ItemOperationMenuUI.Instance.Open();
+        }
     }
-  }
 
-  [HarmonyPatch(typeof(ItemOperationMenu), "OnClose")]
-  public class PatchItemOperationMenu_OnClose
-  {
-    public static void Postfix(ItemOperationMenu __instance)
+    [HarmonyPatch(typeof(ItemOperationMenu), "OnClose")]
+    public class PatchItemOperationMenu_OnClose
     {
-      ItemOperationMenuUI.Instance.Close();
+        public static void Postfix(ItemOperationMenu __instance)
+        {
+            ItemOperationMenuUI.Instance.Close();
+        }
     }
-  }
 }
