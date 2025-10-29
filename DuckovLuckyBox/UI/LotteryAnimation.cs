@@ -45,14 +45,13 @@ namespace DuckovLuckyBox.UI
 
         // Physics-based animation parameters (CSGO-style) - using slot as the unit
         private const float BaseInitialVelocityInSlots = 50f; // Base initial scroll speed (slots/second) - scroll 50 slots per second initially
-        private const float MinVelocityInSlots = 0.01f; // Minimum velocity before final positioning (slots/second) - decelerate to 0.01 slots/s at the end
-        private const float TargetAnimationDurationInSeconds = 7f; // Target animation total duration (seconds) - physics-based rolling phase must last this long (decelerate to 0 after 7s)
+        private const float MaxAnimationDurationInSeconds = 10f; // Maximum animation duration (seconds) - force stop if final slot not reached by this time
 
         // Animation precision and timing constants
         private const int AnimationStepsPerSecond = 100; // Samples per second for higher precision (every 0.01s)
-        private const float VelocityAt7Seconds = 0.1f; // Velocity at 7 seconds (slots/second)
+        private const float VelocityAt7Seconds = 1f; // Velocity at 7 seconds (slots/second)
         private const float DecelerationDuration = 7.0f; // Duration of deceleration phase (seconds)
-        private const float TotalCurveDuration = 8.0f; // Total duration of velocity curve (seconds)
+        private const float TotalCurveDuration = 8.5f; // Total duration of velocity curve (seconds)
 
         // Randomness parameters for animation variation
         // InitialVelocityRandomRange controls how much the animation can vary within the final slot
@@ -692,7 +691,7 @@ namespace DuckovLuckyBox.UI
                 }
                 else
                 {
-                    // 7-8 seconds: linearly decelerate from 0.1 to 0.0 (complete stop)
+                    // 7-8 seconds: linearly decelerate from 1 to 0.0 (complete stop)
                     float t = (timeInSeconds - DecelerationDuration) / (TotalCurveDuration - DecelerationDuration); // 0.0 to 1.0
                     curve[i] = Mathf.Lerp(VelocityAt7Seconds, 0f, t);
                 }
@@ -773,11 +772,9 @@ namespace DuckovLuckyBox.UI
                 float deltaTime = Time.deltaTime;
                 elapsedTime += deltaTime;
 
-                // Force stop after target duration (regardless of whether target position is reached)
-                if (elapsedTime >= TargetAnimationDurationInSeconds)
-                {
-                    break;
-                }
+                // DEBUG: Log elapsed time and distance to target
+                float distanceToTarget = Mathf.Abs(targetPositionInPixels - currentPositionInPixels);
+                Log.Debug($"[Animation] Elapsed: {elapsedTime:F2}s, Distance to target: {distanceToTarget:F1}px ({distanceToTarget / SlotFullWidth:F2} slots)");
 
                 // Look up current velocity from pre-generated velocity curve
                 // Use FloorToInt: round down to nearest sample point
@@ -791,12 +788,14 @@ namespace DuckovLuckyBox.UI
                 float movementInPixels = velocityInPixels * deltaTime;
                 float nextPositionInPixels = currentPositionInPixels + movementInPixels;
 
-                // Fallback: If the next position would overshoot the target, clamp to target and stop
+                // Primary stopping condition: Check if next position reaches or overshoots target
                 if ((velocityDirection == -1 && nextPositionInPixels <= targetPositionInPixels) ||
                     (velocityDirection == 1 && nextPositionInPixels >= targetPositionInPixels))
                 {
+                    // Clamp to target position and stop
                     currentPositionInPixels = targetPositionInPixels;
                     _itemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
+                    Log.Debug($"[Animation] Reached target position at {elapsedTime:F2}s (next: {nextPositionInPixels:F1}, target: {targetPositionInPixels:F1})");
                     break;
                 }
 
@@ -835,6 +834,14 @@ namespace DuckovLuckyBox.UI
                     }
 
                     lastHighlightedIndex = currentIndex;
+                }
+
+                // Secondary condition: Force stop after extended duration if target not reached
+                // This allows for slight timing variations but prevents infinite loops
+                if (elapsedTime >= MaxAnimationDurationInSeconds)
+                {
+                    Log.Warning($"[Animation] Force stopped after {elapsedTime:F2}s - target position not reached (pos: {currentPositionInPixels:F1}, target: {targetPositionInPixels:F1})");
+                    break;
                 }
             }
 
