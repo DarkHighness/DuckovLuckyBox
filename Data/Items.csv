@@ -1,0 +1,1246 @@
+ID,Name,DisplayName,Description,GameQuality,Quality,MaxStackCount,DefaultStackCount,PriceEach,Category,IsAddon
+0,"Character","躯壳","灵魂的载体。",999,White,1,1,0,"Character",False
+1,"0_MeleeWeapon_Template","切肉刀","看起来很粗犷的刀，不是很锋利。",9,LightRed,1,1,17501,"Weapon",False
+2,"ArmorLV3","三级防弹衣","三级防弹衣，在某些时候能够保住你的小命。",3,Blue,1,1,1775,"Armor",False
+3,"Gem","金色五角星","神秘物质构成的金色五角星。增加近战武器攻击力。",4,Purple,1,1,4587,"Gem",False
+4,"1_Rifle-A_template","GunTemplate","?",9,Red,1,1,37500,"Weapon",False
+8,"BatteryR6","R6电池","在各种用电器中被广泛使用的电池。",1,White,5,1,194,"Electric",False
+10,"Bandage","止血绷带","可以止血,并回复微少生命值。",1,White,3,3,80,"Medic",False
+11,"BatteryPP3","PP3电池","通常用于烟雾探测器、遥控玩具发射器以及作为闹钟的后备电池。",2,White,3,1,323,"Electric",False
+12,"BeanCan","焗豆罐头","焗豆罐头。",2,White,3,1,102,"Food",False
+13,"Biscuit","苏打饼干","一摞苏打饼干。",1,White,3,1,51,"Food",False
+14,"Cola","可乐","有糖的可乐才有灵魂。",4,Blue,1,1,1995,"Food",False
+15,"FirstAidKit_L","大急救箱","可以恢复大量生命值。",4,Blue,1,1,1322,"Medic",False
+16,"FirstAidKit_M","急救箱","可以恢复生命值。",3,Green,1,1,807,"Medic",False
+17,"FirstAidKit_S","小急救箱","可以恢复少量生命值。",2,White,1,1,206,"Medic",False
+18,"TunaCan_1","水浸金枪鱼罐头","水浸金枪鱼罐头。",2,White,3,1,172,"Food",False
+19,"TunaCan_2","油浸金枪鱼罐头","油浸金枪鱼罐头。",3,White,3,1,376,"Food",False
+20,"Aspirin","阿司匹林","小剂量药品，回复血量，并提供镇痛效果。",1,White,3,3,32,"Medic",False
+21,"Bleach","漂白剂","一壶漂白剂。",1,White,1,1,139,"Daily",False
+22,"Cigarette","红条香烟","一盒普通的香烟。",2,White,3,1,105,"Food",False
+23,"Dynamite","管状炸弹","一颗管状炸弹。",1,White,1,1,140,"Explosive",False
+24,"DynamiteMultiple","集束管状炸弹","一束管状炸弹。",5,White,1,1,302,"Explosive",False
+25,"Flashlight","手电","一只手电筒。",3,Green,1,1,560,"Tool",False
+26,"GasMask_01","防毒面具","普通的防毒面具。",3,Blue,1,1,535,"FaceMask",False
+27,"Goggle","滑雪镜","滑雪眼镜。",1,White,1,1,125,"FaceMask",False
+28,"Nail","钉子","钉子。",1,White,10,1,149,"Tool",False
+29,"Vodka","伏特加","喝了会开心,然后脱水。",3,Green,1,1,902,"Food",False
+30,"WD40","MD40","一瓶MD40除锈剂。",3,White,1,1,216,"Tool",False
+31,"Wrench","扳手","一个扳手。",2,White,1,1,257,"Tool",False
+32,"ArmorLV1","一级防弹衣","比纸还薄，能挡一发水弹枪。",1,White,1,1,285,"Armor",False
+33,"ArmorLV2","二级防弹衣","看起来很专业，能够提供心理层面的鼓励。",2,Green,1,1,784,"Armor",False
+34,"ArmorLV4","四级防弹衣","有真正的防弹性能，可靠之选。",4,Purple,1,1,3316,"Armor",False
+35,"ArmorLV5","五级防弹衣","提供终极的防护，子弹打在身上就像洒洒水。",5,Orange,1,1,5827,"Armor",False
+36,"BackpackLV1","装饰包","也就能装点口红化妆品啥的。",1,White,1,1,87,"Backpack",False
+37,"BackpackLV2","小学背包","能装很多的作业本。",2,Green,1,1,338,"Backpack",False
+38,"BackpackLV3","旅行包","多功能用途背包，旅行首选。",3,Blue,1,1,995,"Backpack",False
+39,"BackpackLV4","生存者背包","杀哥联名，户外生存必备。",4,Purple,1,1,2385,"Backpack",False
+40,"BackpackLV5","行军背包MAX","使用蓝胖子口袋内衬同款材料，非常能装。",5,Orange,1,1,4706,"Backpack",False
+41,"HelmatLV1","摩托头盔","晶莹剔透，吹弹可破。",1,White,1,1,97,"Helmat",False
+42,"HelmatLV2","老钢盔","没怎么保养的头盔，爷爷传下来的。里面有个洞。",2,Green,1,1,378,"Helmat",False
+43,"HelmatLV3","特警头盔","具有初级的防弹性能。",3,Blue,1,1,1183,"Helmat",False
+44,"HelmatLV4","SightPRO头盔","具有AR+VR功能，飞过来的子弹可能会眩晕从而打偏。",4,Purple,1,1,2551,"Helmat",False
+45,"HelmatLV5","SCIFI面罩","给予头部全方位的防护，科幻造型，非常的拉风。",5,Orange,1,1,4855,"Helmat",False
+46,"HelmatLV6","神之电焊头","古希腊掌管头盔的神打造，子弹看了会吓软。",6,LightRed,1,1,8778,"Helmat",False
+47,"Wrench02","汽车扳手","更好用的扳手。",4,Green,1,1,1062,"Tool",False
+48,"ContinerL","大扩容箱","大型扩容箱，可用作扩展藏身处。重到拿不动。",5,Orange,1,1,8578,"Continer",False
+49,"ContinerM","中扩容箱","中型扩容箱，可用作扩展藏身处。很重。",4,Purple,1,1,4713,"Continer",False
+50,"ContinerS","小扩容箱","小型扩容箱，可用作扩展藏身处。",3,Purple,1,1,2484,"Continer",False
+51,"Clock","闹钟","定格在了三点钟。",2,Green,1,1,667,"Daily",False
+52,"Detergent","洁厕灵","一瓶洁厕灵。",1,White,1,1,102,"Daily",False
+53,"Drum1","红色大桶","一个大空桶。",3,Blue,1,1,1277,"Daily",False
+54,"Drum2","蓝色大桶","一个大空桶。",3,Blue,1,1,1276,"Daily",False
+55,"Drum3","黄色大桶","一个大空桶。",3,Blue,1,1,1238,"Daily",False
+56,"Drum4","金属油桶","一个大空桶，装过汽油。",4,Purple,1,1,3578,"Daily",False
+57,"GolfClub","高尔夫球棒","打人疼。",4,Blue,1,1,2270,"Daily",False
+58,"Ink","墨水","钢笔墨水。",2,White,1,1,269,"Daily",False
+59,"Pot","锅","可以用来煮食物。",2,Green,1,1,465,"Daily",False
+60,"Tissue","卷纸","一卷卫生纸。",1,White,1,1,55,"Daily",False
+61,"Zippo","Cippo","Cippo打火机。",1,White,1,1,242,"Daily",False
+62,"PressionSencer","压力传感器","踩上去就能感应到。",4,Green,1,1,541,"Electric",False
+63,"uPhone","uPhone手机","已经坏掉了，从外观上看不出是第几代产品。",4,Blue,1,1,1867,"Electric",False
+64,"Walkie_Talkie","对讲机","普通的对讲机。",3,White,1,1,377,"Electric",False
+65,"Walkie_Talkie02","军用对讲机","经过加密的军用对讲机。",4,Blue,1,1,2312,"Electric",False
+66,"FlashGrenade","闪光手雷","眩晕敌人。",2,White,1,1,205,"Explosive",False
+67,"Grenade","手雷","手雷。",2,White,1,1,300,"Explosive",False
+68,"Chocalate","巧克力","有人说它能减肥。",3,Green,3,1,433,"Food",False
+69,"EnergyStick","能量棒","吃了就不饿了，但是会渴。",3,White,3,1,371,"Food",False
+70,"Honey","蜂蜜","很甜很甜。",3,White,3,1,320,"Food",False
+71,"Ketchup","番茄酱","酸酸甜甜的番茄酱。不好吃。",2,White,3,1,127,"Food",False
+72,"Book","书","胡扯的书。",1,Green,1,1,449,"Information",False
+73,"Letter","信件","一封信件。",1,White,1,1,242,"Information",False
+74,"Key_BlueHouse","安全屋隔间钥匙","能够打开仓库区中安全屋隔间的钥匙。",3,White,1,1,101,"Key",False
+75,"AirplaneToy","飞机模型","航空公司售卖的飞机模型，做工劣质。",1,Green,1,1,998,"Luxury",False
+76,"Ball","足球","气不太够的足球。",1,Green,1,1,845,"Luxury",False
+77,"BicyleToy","自行车模型","精致的自行车模型。",2,Blue,1,1,1432,"Luxury",False
+78,"Cannon","大炮","玩具大炮。",1,Green,1,1,1045,"Luxury",False
+79,"Compass","指南针","精致的指南针。",3,Purple,1,1,3070,"Luxury",False
+80,"Dice 2","骰子","一个外表十分正常的骰子，但是感觉有点偏坠。",2,Blue,1,1,1570,"Luxury",False
+81,"Dice","骰子","一个正常的骰子。",2,Green,1,1,1195,"Luxury",False
+82,"Fish","玩具鱼","浓浓的塑料味。",1,Green,1,1,895,"Luxury",False
+83,"Watch","怀表","银色的怀表。",4,Purple,1,1,4718,"Luxury",False
+84,"Egg","鸭蛋","没人要的蛋。",1,White,4,1,87,"Food",False
+85,"Heat","铝热剂","非常不易燃。",3,Green,1,1,559,"Tool",False
+86,"Propane","丙烷","装满丙烷的罐子。",3,Green,1,1,1006,"Tool",False
+87,"Rope","绳子","攀登用的绳子。",2,White,1,1,200,"Tool",False
+88,"Drugs","一堆药","不能吃，里面什么都有。",1,White,5,1,127,"Medic",False
+89,"Lv","输液药品","一些静脉注射用的药品。",2,White,1,1,192,"Medic",False
+90,"Broom","扫帚","普通的扫帚。",99,White,1,1,258,"Tool",False
+91,"Driver","平头螺丝刀","平头螺丝刀。",2,White,1,1,237,"Tool",False
+92,"ElectricSaw","电锯","小巧的电锯。",9,White,1,1,375,"Tool",False
+93,"GasCanL","金属桶","盛装汽油的金属桶。",5,Purple,1,1,3060,"Tool",False
+94,"GasCanS","塑料桶","盛装汽油的塑料桶。",4,Blue,1,1,1799,"Tool",False
+95,"HammerL","大锤子","装修利器。",4,Blue,1,1,2313,"Tool",False
+96,"HammerS","锤子","砸钉子好用。",2,Green,1,1,459,"Tool",False
+97,"Lantern","煤油灯","没油了。",4,Green,1,1,566,"Tool",False
+98,"Shovel","铲子","曾经有一位骑士用它打遍天下无敌手。但不算是一个好的武器。",3,Green,1,1,459,"Tool",False
+99,"Telescope","望远镜","坏掉的望远镜，但镜片还是好的。",4,Green,1,1,689,"Tool",False
+100,"Trap","捕兽陷阱","算是一块好废铁。",3,White,1,1,205,"Explosive",False
+101,"Wrench03","撬棍","挥舞起来可以穿透几乎所有的护甲，在物理学上非常合理。",3,White,1,1,282,"Tool",False
+102,"1_AccessoryTemplate","配件模板","可增加精确度。",9,White,1,1,17000,"Accessory",False
+103,"CowMask","奶牛面具","外表十分凶狠的奶牛头面具。",2,Green,1,1,327,"Helmat",False
+104,"Hat","牛仔帽","牛仔帽。",2,Green,1,1,167,"Helmat",False
+105,"CocoMilk","可可奶","带有巧克力味道的牛奶。",1,White,1,1,124,"Food",False
+106,"Soda","苏打水","清爽的苏打水。",1,White,1,1,102,"Food",False
+107,"Waterbottle","水壶","行军水壶，吨吨吨。",4,Green,1,1,869,"Food",False
+108,"Whisky","威士忌","上流，但是脱水。",5,Purple,1,1,3431,"Food",False
+109,"Pen","钢笔","没有墨水的钢笔。",3,Blue,1,1,1368,"Daily",False
+110,"Scissors","剪刀","手工剪刀。",1,White,1,1,128,"Daily",False
+111,"Trophy","奖杯","金色的奖杯，有点掉漆。",4,Purple,1,1,2837,"Luxury",False
+112,"Mike","麦克风","卡拉OK麦克风，唱歌让人快乐。",2,White,1,1,355,"Electric",False
+113,"Radio","收音机","看起来像玩具，但确实也是个收音机。",2,Green,1,1,482,"Electric",False
+114,"TOMSUNGPhone","TOMSUNG手机","TOMSUNG手机，看起来很久了。",3,Green,1,1,1063,"Electric",False
+115,"Yogurt","酸奶","疯味酸奶。",3,White,3,1,324,"Food",False
+116,"Newspaper","报纸","一份报纸，有年头了。",2,White,1,1,347,"Information",False
+117,"Note","笔记","上面记着各种让人看不懂的公式。",2,Green,1,1,761,"Information",False
+118,"Lipstick","口红","看起来很贵的口红，不知道是什么色号。",5,Orange,1,1,6587,"Luxury",False
+119,"Ring","金戒指","上面镶嵌着黄色的宝石。有点旧，但感觉价值不菲。",4,Purple,1,1,3760,"Luxury",False
+120,"RingToy","花花戒指","看起来像玩具，但是沉甸甸的。",1,Blue,1,1,1678,"Luxury",False
+121,"Robot","智能机器人","没电了。",5,Orange,1,1,5783,"Luxury",False
+122,"Rocket","玩具火箭","造型非常没有创意。",1,Green,1,1,875,"Luxury",False
+123,"Skull","头骨饰品","不知道是什么生物的头骨。",9,Green,1,1,675,"Luxury",False
+124,"Tambourine","手鼓","声音依然非常好听。",1,Blue,1,1,1265,"Luxury",False
+125,"Trumpet","小号","吹起来应该没问题。",4,Purple,1,1,4015,"Luxury",False
+126,"Xylophone","木琴","看起来音调不是很全。",1,Green,1,1,984,"Luxury",False
+127,"Wheel","轮胎","打打气就能用。",3,Green,1,1,484,"Tool",False
+128,"Yarn","线","缝制衣服用的线。",2,White,1,1,270,"Daily",False
+129,"Pumpkin","南瓜","真的就是个南瓜。",3,Blue,1,1,420,"Helmat",False
+130,"Basket","购物框","装不了多少东西。",2,White,1,1,176,"Daily",False
+131,"Cup","杯子","喝水用的杯子。",1,White,1,1,177,"Daily",False
+132,"Cake","蛋糕","不知道放了多久，但是看起来依然很好吃。",3,Green,3,1,406,"Food",False
+133,"Carrot","胡萝卜","富含营养，看起来很新鲜。",1,White,3,1,120,"Food",False
+134,"Bone","骨头玩具","不知道给谁玩的。",1,Green,1,1,780,"Luxury",False
+135,"Heart","心","心形的饰物。",4,Purple,1,1,2552,"Luxury",False
+136,"Injection","注射器","没用过的注射器。",2,White,3,1,295,"Medic",False
+137,"Injection_A","黄针","提升25%移动速度，持续120s。",3,Green,3,1,629,"Injector",False
+138,"HeadLantern","头灯","让你看的更远。",3,Blue,1,1,238,"Helmat",False
+139,"Bullet_Template","子弹模板","子弹。",9,Blue,60,30,60,"Bullet",False
+140,"Bullet_AR_L_Normal","L-普通弹","制式大口径子弹。",999,White,180,30,4,"Bullet",False
+141,"Bullet_AR_L_Burn","L-燃烧弹","装填可持续燃烧的弹药，造成灼烧。有概率点燃。",999,Green,180,30,18,"Bullet",False
+142,"Bullet_AR_L_Piercing3","L-穿甲弹","能够穿透一定的防护。",999,White,180,30,10,"Bullet",False
+143,"Bullet_AR_S_Normal","S-普通弹","制式小口径子弹。",999,White,240,30,3,"Bullet",False
+144,"Bullet_AR_S_Dumdums","S-达姆弹","对肉体造成更高的伤害，但更难以穿透护甲。",999,White,240,30,10,"Bullet",False
+145,"Bullet_AR_S_Burn","S-燃烧弹","装填可持续燃烧的弹药，造成灼烧。有概率点燃。",999,Green,240,30,15,"Bullet",False
+146,"Bullet_SHOT_Normal","霰弹-鹿弹","打猎用的鹿弹，杀伤距离较近。",999,White,80,20,11,"Bullet",False
+153,"Quest_Letter_Explorer","探索者的信","先行来到Duckov的探索者的信件。",2,White,1,1,1,"Quest",False
+154,"Key_Dormitory103","宿舍楼103钥匙","一把宿舍楼的钥匙。也许可以打开103的门。",1,White,1,1,350,"Key",False
+155,"Key_Dormitory106","宿舍楼106钥匙","一把宿舍楼的钥匙。也许可以打开106的门。",2,Green,1,1,578,"Key",False
+157,"Bullet_AR_L_Poison","L-涂毒弹","子弹表面涂抹毒药。",999,Green,180,30,15,"Bullet",False
+158,"Bullet_AR_L_Piercing5","L-高级穿甲弹","能够穿透大多数防护。",999,Green,180,30,35,"Bullet",False
+159,"Bullet_AR_S_Piercing2","S-穿甲弹","能够穿透较低等级的护甲。",999,White,240,30,8,"Bullet",False
+160,"Bullet_AR_S_Piercing4","S-高级穿甲弹","能够穿透更高等级的护甲。",999,Green,240,30,18,"Bullet",False
+161,"Bullet_SHOT_Piranha","霰弹-食人鱼","穿甲能力弱，但对肉体造成更大伤害。",999,Green,80,20,30,"Bullet",False
+162,"Bullet_SHOT_Burn","霰弹-龙息","造成大量灼烧伤害。",999,Blue,80,20,50,"Bullet",False
+163,"Bullet_SHOT_Piercing4","霰弹-箭形弹","有更高的穿甲等级。",999,Blue,80,20,55,"Bullet",False
+164,"Bullet_SHOT_Electric","霰弹-电击","电能装药，能够造成电击伤害。",999,Blue,80,20,60,"Bullet",False
+165,"Bullet_Sniper_Normal","狙击-普通弹","普通的狙击弹药。",999,Blue,30,10,40,"Bullet",False
+166,"Bullet_Sniper_Piercing3","狙击-穿甲弹","能够穿透较低等级的护甲。",999,Purple,30,10,80,"Bullet",False
+167,"Bullet_Sniper_Electric","狙击-电击弹","电能装药，能够造成电击伤害。",999,Orange,30,10,180,"Bullet",False
+168,"Bullet_Sniper_Space","狙击-空间弹","具有空间属性的狙击弹药。",999,Orange,30,10,600,"Bullet",False
+169,"Bullet_Sniper_Piercing5","狙击-高级穿甲弹","能够穿透大多数护甲。",999,Orange,30,10,250,"Bullet",False
+174,"Grip_AS_Lv_1","突击握把 Lv1","增强稳定性。",999,White,1,1,380,"Accessory",False
+175,"Grip_AS_Lv_2","突击握把 Lv2","增强稳定性。",999,Blue,1,1,900,"Accessory",False
+176,"Grip_AS_Lv_3","突击握把 Lv3","增强稳定性。",999,Purple,1,1,2100,"Accessory",False
+177,"Grip_SP_Lv_1","快拆握把 Lv1","增强稳定性。",999,White,1,1,380,"Accessory",False
+178,"Grip_SP_Lv_2","快拆握把 Lv2","增强稳定性。",999,Blue,1,1,900,"Accessory",False
+179,"Grip_SP_Lv_3","快拆握把 Lv3","增强稳定性。",999,Purple,1,1,2100,"Accessory",False
+180,"Grip_Verticle_Lv_1","垂直握把 Lv1","增强稳定性。",999,White,1,1,380,"Accessory",False
+181,"Grip_Verticle_Lv_2","垂直握把 Lv2","增强稳定性。",999,Blue,1,1,900,"Accessory",False
+182,"Grip_Verticle_Lv_3","垂直握把 Lv3","增强稳定性。",999,Purple,1,1,2100,"Accessory",False
+183,"Muzzle_L_Type_1","大口径制退器 Lv.1","可增加精确度。",999,White,1,1,380,"Accessory",False
+184,"Muzzle_L_Type_2","大口径制退器 Lv.2","可增加精确度。",999,Blue,1,1,900,"Accessory",False
+185,"Muzzle_L_Type_3","大口径制退器 Lv.3","可增加精确度。",999,Purple,1,1,2100,"Accessory",False
+186,"Muzzle_Shot_Type_1","霰弹枪集束器 Lv.1","可增加精确度。",999,White,1,1,380,"Accessory",False
+187,"Muzzle_Shot_Type_2","霰弹枪集束器 Lv.2","可增加精确度。",999,Blue,1,1,900,"Accessory",False
+188,"Muzzle_Shot_Type_3","霰弹枪集束器 Lv.3","可增加精确度。",999,Purple,1,1,2100,"Accessory",False
+189,"Muzzle_Sniper_Type_1","狙击枪消音器 Lv.1","可增加精确度。",999,White,1,1,380,"Accessory",False
+190,"Muzzle_Sniper_Type_2","狙击枪消音器 Lv.2","可增加精确度。",999,Blue,1,1,900,"Accessory",False
+191,"Muzzle_Sniper_Type_3","狙击枪消音器 Lv.3","可增加精确度。",999,Purple,1,1,2100,"Accessory",False
+192,"Muzzle_S_Type_1","小口径制退器 Lv.1","可增加精确度。",999,White,1,1,380,"Accessory",False
+193,"Muzzle_S_Type_2","小口径制退器 Lv.2","可增加精确度。",999,Blue,1,1,900,"Accessory",False
+194,"Muzzle_S_Type_3","小口径制退器 Lv.3","可增加精确度。",999,Purple,1,1,2100,"Accessory",False
+195,"Scope_4X_Lv_1","4倍镜 Lv1","可增加精确度。",999,White,1,1,380,"Accessory",False
+196,"Scope_4X_Lv_2","4倍镜 Lv2","可增加精确度。",999,Blue,1,1,900,"Accessory",False
+197,"Scope_4X_Lv_3","4倍镜 Lv3","可增加精确度。",999,Purple,1,1,2100,"Accessory",False
+198,"Scope_8X_Lv_1","8倍镜 Lv1","可增加精确度。",999,White,1,1,380,"Accessory",False
+199,"Scope_8X_Lv_2","8倍镜 Lv2","可增加精确度。",999,Blue,1,1,900,"Accessory",False
+200,"Scope_8X_Lv_3","8倍镜 Lv3","可增加精确度。",999,Purple,1,1,2100,"Accessory",False
+201,"Scope_Digit_Lv_1","数字瞄具 Lv1","可增加精确度。",999,White,1,1,380,"Accessory",False
+202,"Scope_Digit_Lv_2","数字瞄具 Lv2","可增加精确度。",999,Blue,1,1,900,"Accessory",False
+203,"Scope_Digit_Lv_3","数字瞄具 Lv3","可增加精确度。",999,Purple,1,1,2100,"Accessory",False
+204,"Scope_Holo_Lv_1","全息瞄具 Lv1","可增加精确度。",999,White,1,1,380,"Accessory",False
+205,"Scope_Holo_Lv_2","全息瞄具 Lv2","可增加精确度。",999,Blue,1,1,900,"Accessory",False
+206,"Scope_Holo_Lv_3","全息瞄具 Lv3","可增加精确度。",999,Purple,1,1,2100,"Accessory",False
+207,"Scope_Long_Lv_1","快速瞄具 Lv1","可增加精确度。",999,White,1,1,380,"Accessory",False
+208,"Scope_Long_Lv_2","快速瞄具 Lv2","可增加精确度。",999,Blue,1,1,900,"Accessory",False
+209,"Scope_Long_Lv_3","快速瞄具 Lv3","可增加精确度。",999,Purple,1,1,2100,"Accessory",False
+210,"Scope_RedDot_Lv_1","红点瞄具 Lv1","可增加精确度。",999,White,1,1,380,"Accessory",False
+211,"Scope_RedDot_Lv_2","红点瞄具 Lv2","可增加精确度。",999,Blue,1,1,900,"Accessory",False
+212,"Scope_RedDot_Lv_3","红点瞄具 Lv3","可增加精确度。",999,Purple,1,1,2100,"Accessory",False
+213,"Stock_Rifle_Lv_1","步枪枪托 Lv1","增强稳定性。",999,White,1,1,380,"Accessory",False
+214,"Stock_Rifle_Lv_2","步枪枪托 Lv2","增强稳定性。",999,Blue,1,1,900,"Accessory",False
+215,"Stock_Rifle_Lv_3","步枪枪托 Lv3","增强稳定性。",999,Purple,1,1,2100,"Accessory",False
+216,"Stock_Shot_Lv_1","霰弹枪托 Lv1","增强稳定性。",999,White,1,1,380,"Accessory",False
+217,"Stock_Shot_Lv_2","霰弹枪托 Lv2","增强稳定性。",999,Blue,1,1,900,"Accessory",False
+218,"Stock_Shot_Lv_3","霰弹枪托 Lv3","增强稳定性。",999,Purple,1,1,2100,"Accessory",False
+219,"Stock_SMG_Lv_1","冲锋枪枪托 Lv1","增强稳定性。",999,White,1,1,380,"Accessory",False
+220,"Stock_SMG_Lv_2","冲锋枪枪托 Lv2","增强稳定性。",999,Blue,1,1,900,"Accessory",False
+221,"Stock_SMG_Lv_3","冲锋枪枪托 Lv3","增强稳定性。",999,Purple,1,1,2100,"Accessory",False
+222,"Stock_Sniper_Lv_1","狙击枪枪托 Lv1","增强稳定性。",999,White,1,1,380,"Accessory",False
+223,"Stock_Sniper_Lv_2","狙击枪枪托 Lv2","增强稳定性。",999,Blue,1,1,900,"Accessory",False
+224,"Stock_Sniper_Lv_3","狙击枪枪托 Lv3","增强稳定性。",999,Purple,1,1,2100,"Accessory",False
+225,"Tec_Lazer_Lv_1","战术激光 Lv1","更加精准的射击。",999,White,1,1,380,"Accessory",False
+226,"Tec_Lazer_Lv_2","战术激光 Lv2","更加精准的射击。",999,Blue,1,1,900,"Accessory",False
+227,"Tec_Lazer_Lv_3","战术激光 Lv3","更加精准的射击。",999,Purple,1,1,2100,"Accessory",False
+228,"Tec_Light_Lv_1","战术手电 Lv1","照射对方头部，使其变得脆弱。",999,White,1,1,380,"Accessory",False
+229,"Tec_Light_Lv_2","战术手电 Lv2","照射对方头部，使其变得脆弱。",999,Blue,1,1,900,"Accessory",False
+230,"Tec_Light_Lv_3","战术手电 Lv3","照射对方头部，使其变得脆弱。",999,Purple,1,1,2100,"Accessory",False
+231,"Magazine_Rifle_Lv_1","大口径扩容弹匣 Lv1","增加弹药数量。",999,White,1,1,380,"Accessory",False
+232,"Magazine_Rifle_Lv_2","大口径扩容弹匣 Lv2","增加弹药数量。",999,Blue,1,1,900,"Accessory",False
+233,"Magazine_Rifle_Lv_3","大口径扩容弹匣 Lv3","增加弹药数量。",999,Purple,1,1,2100,"Accessory",False
+234,"Magazine_SMG_Lv_1","小口径扩容弹匣 Lv1","增加弹药数量。",999,White,1,1,380,"Accessory",False
+235,"Magazine_SMG_Lv_2","小口径扩容弹匣 Lv2","增加弹药数量。",999,Blue,1,1,900,"Accessory",False
+236,"Magazine_SMG_Lv_3","小口径扩容弹匣 Lv3","增加弹药数量。",999,Purple,1,1,2100,"Accessory",False
+238,"L_AK102_Lv_2","AK-103","AK-47的现代化版本，继承了其可靠性的同时，在各方面也有进一步的提升。",4,Orange,1,1,6049,"Weapon",False
+240,"L_AK47_Lv_2","AK-47","经典的制式步枪，威力较大，结构简单，维护方便，但后座力较大，精度一般。",3,Purple,1,1,3550,"Weapon",False
+242,"L_MF_Lv_2","MF","装备非常广泛的制式武器，精度高，后坐力小的同时能支持大部分配件的安装。",3,Purple,1,1,3956,"Weapon",False
+244,"L_RPK_Lv_2","RPK","基于AK-47设计的轻型机枪，载弹量巨大，通常用于火力支援。",5,LightRed,1,1,12181,"Weapon",False
+246,"Sniper_VPO","VPO-101","射击精度高且有不俗的爆头伤害，虽然口径看上去是步枪，但在鸭科夫被当作狙击枪使用。",3,Orange,1,1,5086,"Weapon",False
+248,"Shot_Hand_Lv_2","土制猎枪","小作坊里手搓的霰弹枪，各方面的性能表现都非常一般。",1,White,1,1,264,"Weapon",False
+250,"Shot_MP155_Lv_2","MP-155","泵动式霰弹枪，虽然需要手动装填，但载弹量在霰弹枪中相当不错。",2,Blue,1,1,1703,"Weapon",False
+252,"S_AK74_Lv_2","AK-74U","基于AK-47进行了短管设计，因为威力下降，被鸭鸭们降格为了冲锋枪。",2,Blue,1,1,1510,"Weapon",False
+254,"S_GLick_Lv_2","格力克","重量轻，可靠性高，弹容量大，深受各路鸭鸭的喜欢。",2,Green,1,1,1030,"Weapon",False
+256,"S_MMG_Lv_2","MMG","MF的前身，各方面都非常均衡的制式武器。",3,Purple,1,1,4242,"Weapon",False
+258,"S_MP7_Lv_2","MP7","射程和稳定性都相当出色的制式冲锋枪，对配件的支持也相当好。",3,Purple,1,1,4042,"Weapon",False
+260,"S_UAK45_Lv_2","UP-45","各方面表现都相当均衡的民用冲锋枪。",2,Blue,1,1,1678,"Weapon",False
+262,"S_UZI_Lv_2","UZI","非常紧凑轻巧的制式冲锋枪，相较于其他冲锋枪有非常高的爆头伤害。",3,Purple,1,1,3473,"Weapon",False
+263,"Grip_AS_Lv_4","突击握把 Lv4","增强稳定性。",999,Orange,1,1,5000,"Accessory",False
+264,"Grip_SP_Lv_4","快拆握把 Lv4","增强稳定性。",999,Orange,1,1,5000,"Accessory",False
+265,"Grip_Verticle_Lv_4","垂直握把 Lv4","增强稳定性。",999,Orange,1,1,5000,"Accessory",False
+266,"Magazine_Rifle_Lv_4","大口径扩容弹匣 Lv4","增加弹药数量。",999,Orange,1,1,5000,"Accessory",False
+267,"Magazine_SMG_Lv_4","小口径扩容弹匣 Lv4","增加弹药数量。",999,Orange,1,1,5000,"Accessory",False
+268,"Muzzle_L_Type_4","大口径制退器 Lv.4","可增加精确度。",999,Orange,1,1,5000,"Accessory",False
+269,"Muzzle_Shot_Type_4","霰弹枪集束器 Lv.4","可增加精确度。",999,Orange,1,1,5000,"Accessory",False
+270,"Muzzle_Sniper_Type_4","狙击枪消音器 Lv.4","可增加精确度。",999,Orange,1,1,5000,"Accessory",False
+271,"Muzzle_S_Type_4","小口径制退器 Lv.4","可增加精确度。",999,Orange,1,1,5000,"Accessory",False
+272,"Scope_4X_Lv_4","4倍镜 Lv4","可增加精确度。",999,Orange,1,1,5000,"Accessory",False
+273,"Scope_8X_Lv_4","8倍镜 Lv4","可增加精确度。",999,Orange,1,1,5000,"Accessory",False
+274,"Scope_Digit_Lv_4","数字瞄具 Lv4","可增加精确度。",999,Orange,1,1,5000,"Accessory",False
+275,"Scope_Holo_Lv_4","全息瞄具 Lv4","可增加精确度。",999,Orange,1,1,5000,"Accessory",False
+276,"Scope_Long_Lv_4","快速瞄具 Lv4","可增加精确度。",999,Orange,1,1,5000,"Accessory",False
+277,"Scope_RedDot_Lv_4","红点瞄具 Lv4","可增加精确度。",999,Orange,1,1,5000,"Accessory",False
+278,"Stock_Rifle_Lv_4","步枪枪托 Lv4","增强稳定性。",999,Orange,1,1,5000,"Accessory",False
+279,"Stock_Shot_Lv_4","霰弹枪托 Lv4","增强稳定性。",999,Orange,1,1,5000,"Accessory",False
+280,"Stock_SMG_Lv_4","冲锋枪枪托 Lv4","增强稳定性。",999,Orange,1,1,5000,"Accessory",False
+281,"Stock_Sniper_Lv_4","狙击枪枪托 Lv4","增强稳定性。",999,Orange,1,1,5000,"Accessory",False
+282,"Tec_Lazer_Lv_4","战术激光 Lv4","更加精准的射击。",999,Orange,1,1,5000,"Accessory",False
+283,"Tec_Light_Lv_4","战术手电 Lv4","照射对方头部，使其变得脆弱。",999,Orange,1,1,5000,"Accessory",False
+284,"1_Blueprint","蓝图模板","用于研发武器：XXXX。",9,LightRed,1,1,10500,"Formula",False
+285,"BP_AK102","蓝图：AK-103","用于在工作台研发武器：AK-103。",4,Purple,1,1,50,"Formula",False
+286,"BP_AK47","蓝图：AK-47","用于在工作台研发武器：AK-47。",3,Blue,1,1,50,"Formula",False
+287,"BP_AK74U","蓝图：AK-74U","用于在工作台研发武器：AK-74U。",2,White,1,1,50,"Formula",False
+289,"BP_HAND","蓝图：土制猎枪","用于在工作台研发武器：土制猎枪。",1,White,1,1,50,"Formula",False
+290,"BP_MF","蓝图：MF","用于在工作台研发武器：MF。",3,Blue,1,1,50,"Formula",False
+291,"BP_MMG","蓝图：MMG","用于在工作台研发武器：MMG。",4,White,1,1,50,"Formula",False
+292,"BP_MP155","蓝图：MP-155","用于在工作台研发武器：MP-155。",2,White,1,1,50,"Formula",False
+293,"BP_MP7","蓝图：MP7","用于在工作台研发武器：MP7。",4,Purple,1,1,50,"Formula",False
+294,"BP_RPK","蓝图：RPK","用于在工作台研发武器：RPK。",5,Purple,1,1,50,"Formula",False
+295,"BP_VPO","蓝图：VPO-101","用于在工作台研发武器：VPO-101。",6,Orange,1,1,50,"Formula",False
+296,"BP_UAK45","蓝图：UAK-45","用于在工作台研发武器：UAK-45。",3,Blue,1,1,50,"Formula",False
+297,"BP_UZI","蓝图：UZI","用于在工作台研发武器：UZI。",4,Purple,1,1,50,"Formula",False
+298,"HardDrive","移动硬盘","能够承载数据的移动硬盘，质量非常好。",3,White,1,1,239,"Electric",False
+299,"Quest_HardDrive_Dormitory","移动硬盘：宿舍楼","装有宿舍电脑数据的硬盘。",2,White,1,1,1,"Quest",False
+300,"Quest_HardDrive_GasStation","移动硬盘：加油站录像","装有加油站监控录像的硬盘。",2,White,1,1,1,"Quest",False
+301,"FloppyDisk","J-Lab软盘","装有加密数据的软盘。",4,Blue,1,1,1200,"Electric",False
+302,"1_EnemyGun_Template","枪","一挺机枪，高续航。",9,Red,1,1,95000,"Weapon",False
+303,"EGun_SHOT_Storm_NoGraphic","???","*Item_EGun_SHOT_Storm_NoGraphic_Desc*",9,White,1,1,284,"Weapon",False
+304,"EGun_AR_Storm_NoGraphic","???","*Item_EGun_AR_Storm_NoGraphic_Desc*",9,White,1,1,284,"Weapon",False
+305,"PigKnife","切肉刀","看起来很粗犷的刀，不是很锋利。",1,White,1,1,175,"Weapon",False
+306,"Axe","战斧","狂战士专用。",5,Blue,1,1,1975,"Weapon",False
+307,"1_Armor_Template","一级防弹衣","比纸还薄，能挡一发水弹枪。",9,LightRed,1,1,13000,"Armor",False
+308,"ColdCore","冷核碎片","发出幽幽的蓝光。",2,Blue,6,1,250,"Special",False
+309,"FlamingCore","赤核碎片","不稳定，散发巨大能量。",2,Orange,6,1,500,"Special",False
+310,"EGun_Magic","???","*Item_EGun_Magic_Desc*",9,White,1,1,284,"Weapon",False
+311,"EGun_SMG_Storm_NoGraphic","???","*Item_EGun_SMG_Storm_NoGraphic_Desc*",9,White,1,1,284,"Weapon",False
+312,"Key_Card_Factory","工厂门禁卡","工厂员工的门禁卡。",3,Blue,1,1,2185,"Key",False
+313,"Key_Card_Factory_Uncrack","工厂门禁卡(加密)","工厂员工的门禁卡（已被加密，无法使用）。",6,White,1,1,1,"Quest",False
+314,"BP_Weapon_0_Basic","武器蓝图：基础","用于研发武器的基础蓝图。",99,Green,1,1,800,"Formula",False
+315,"BP_Weapon_2_Pro","武器蓝图：专业","用于研发武器的专业蓝图。",99,Orange,1,1,3000,"Formula",False
+316,"BP_Weapon_1_Advanced","武器蓝图：进阶","用于研发武器的进阶蓝图。",99,Purple,1,1,2000,"Formula",False
+317,"BP_Weapon_3_Ultimate","武器蓝图：终极","用于研发武器的终极蓝图。",99,Red,1,1,3000,"Formula",False
+318,"Totem_Armor 2","图腾:甲胄 Ⅱ","大幅增强防护属性。",3,Blue,1,1,2000,"Totem",False
+319,"Totem_Armor","图腾:甲胄 Ⅰ","增强防护属性。",1,White,1,1,350,"Totem",False
+320,"Totem_GunDamage 2","图腾:进击 Ⅱ","大幅提高枪械的伤害。",4,Purple,1,1,3500,"Totem",False
+321,"Totem_GunDamage","图腾:进击 Ⅰ","提高枪械的伤害。",2,Green,1,1,1000,"Totem",False
+322,"Totem_MeleeAttack 2","图腾:战士 II","中幅增加近战输出。",3,Blue,1,1,2000,"Totem",False
+323,"Totem_MeleeAttack","图腾:战士 I","小幅增加近战输出。",2,Green,1,1,1000,"Totem",False
+324,"Totem_Speed 2","图腾:轻盈 Ⅱ","增加移动能力。",4,Purple,1,1,3500,"Totem",False
+325,"Totem_Strong 3","图腾:健壮 Ⅲ","负重属性增强，背包容量增加。",4,Purple,1,1,3500,"Totem",False
+326,"Bullet_Rocket","火箭弹 Lv1","发射器弹药。",5,Orange,5,1,500,"Bullet",False
+327,"Rocket_RPG_Lv_1","RPG-7","爆炸性伤害，咻~~~砰！",6,Orange,1,1,8531,"Weapon",False
+328,"GPU","显示卡","久经沙场的图形处理卡，布满灰尘。",5,Red,1,1,21436,"Electric",False
+329,"PowerBank","充电宝","物美价廉的充电宝，不过充不了几次。",3,Blue,1,1,810,"Electric",False
+330,"InformationFiles","情报文件","包含了各种机密信息的情报文件。",5,Purple,1,1,4176,"Information",False
+331,"LEDX","LEDX皮肤透照仪","血管显像仪，用于显示血管，便于注射。",5,Red,1,1,32514,"Medic",False
+332,"Bolt","螺栓","略微生锈的螺栓，硬度够用。",1,White,10,1,193,"Tool",False
+333,"Bulb","灯泡","普通的灯泡，看起来还能工作。",2,White,10,1,255,"Tool",False
+334,"Bulb2","节能灯","亮起来更加省电，不过看起来质量不太好。",3,Green,3,1,827,"Tool",False
+335,"Nut","螺母","充满划痕的螺母。",1,White,10,1,222,"Tool",False
+336,"Cable","电源线","电脑用的电源线。",2,Green,1,1,514,"Electric",False
+337,"Cables","电线","各种电线。",1,White,5,1,150,"Electric",False
+338,"CDDriver","CD驱动器","用来读取CD光盘。",2,Green,1,1,579,"Electric",False
+339,"CircuitBoard","电路板","电脑主板。",2,Green,1,1,496,"Electric",False
+340,"ElectricParts","电子元件","不知道是啥的奇怪电子零件。",1,White,5,1,235,"Electric",False
+341,"EnemyGun_Spider_Rifle","???","*Item_EnemyGun_Spider_Rifle_Desc*",9,White,1,1,218,"Weapon",False
+342,"EnemyGun_Spider_Ring","???","*Item_EnemyGun_Spider_Ring_Desc*",9,White,1,1,229,"Weapon",False
+343,"FishingRod","破旧鱼竿","又破又旧的钓竿。",1,White,1,1,287,"Tool",False
+344,"Bait1","*Item_Bait1*","*Item_Bait1_Desc*",93,White,3,1,212,"Bait",False
+345,"Bait2","*Item_Bait2*","*Item_Bait2_Desc*",94,White,3,1,212,"Bait",False
+346,"Fish1","一级鱼","*Item_Fish1_Desc*",92,White,1,1,83,"Fish",False
+347,"Fish2","二级鱼","*Item_Fish2_Desc*",93,White,1,1,83,"Fish",False
+348,"Bait3","*Item_Bait3*","*Item_Bait3_Desc*",95,White,3,1,212,"Bait",False
+349,"Fish3","三级鱼","*Item_Fish3_Desc*",94,White,1,1,83,"Fish",False
+350,"Bullet_AR_S_Poison","S-涂毒弹","子弹表面涂抹毒药。",999,White,240,30,12,"Bullet",False
+351,"Bullet_AR_S_Electric","S-电击弹","释放电流的子弹，有时候能麻痹敌人。",999,Green,240,30,22,"Bullet",False
+352,"Bullet_AR_L_Electric","L-电击弹","集中的瞬间释放电力。",999,Green,180,30,20,"Bullet",False
+353,"Bullet_AR_L_Space","L-空间弹","借助地核力量，能够扭曲空间，破坏坚硬的结构。",999,Green,180,30,35,"Bullet",False
+354,"Bullet_AR_S_Space","S-空间弹","借助地核力量，能够扭曲空间，破坏坚硬的结构。",999,Green,240,30,30,"Bullet",False
+355,"Bullet_SHOT_Piercing2","霰弹-穿甲弹","能够穿透低级护甲。",999,Green,80,20,30,"Bullet",False
+356,"AnimalWeapon","空手","*Item_AnimalWeapon_Desc*",9,White,1,1,175,"Weapon",False
+357,"A_Bow_Lv_1","劣质弓","就是一根木棒中间绑了根绳子，可以凑合用用。",1,White,1,1,218,"Weapon",False
+358,"Bullet_Arrow_Normal","木箭矢","用树枝制作的箭矢。",999,Green,20,10,25,"Bullet",False
+359,"Key_GroundZero_GHouse","灰房子钥匙","零号区域的一处民房钥匙。",2,White,1,1,380,"Key",False
+360,"Key_GroundZero_Storage","杂物围栏钥匙","山丘一处不起眼的杂物堆放处。",2,Green,1,1,459,"Key",False
+361,"Wood","木料","经过了加工的木料。",1,White,10,1,102,"Tool",False
+362,"MetalSlice","金属片","略微生锈的金属片。",1,White,10,2,89,"Tool",False
+363,"Bullet_AR_L_Rusted","L-过期子弹","已经过了使用年限，一碰就碎。甚至连纸都打不穿。打这种子弹会较快降低枪械耐久。",999,White,180,30,1,"Bullet",False
+364,"Bullet_AR_S_Rusted","S-生锈子弹","生了锈的小口径子弹。打不穿任何东西。打这种子弹会较快降低枪械耐久。",999,White,240,30,1,"Bullet",False
+365,"WoodStick","木棍","可以挥来挥去的木棍，非常直。",1,White,1,1,10,"Weapon",False
+366,"Quest_Letter_EquipmentMercent","老朋友的信","看见对面的营地没，后面有一块铁丝网坏掉了，然后他们用铁皮给补上了，但是一点也不牢靠，我用一个撬棍就能轻松打开。我之前从那进了不少货。",2,White,1,1,1,"Quest",False
+367,"WeaponParts","武器零件","一堆用来制造枪械的零件。",1,White,5,1,128,"Tool",False
+368,"Feather","虚化的羽毛","感觉很快就会消失。",2,Blue,15,1,200,"Special",False
+369,"Totem_PhysicResist","图腾:抗物 Ⅰ","免疫流血。",2,Green,1,1,1000,"Totem",False
+370,"Totem_FinalDash","图腾：马拉松 Ⅰ","小幅减少耐力消耗。",2,Green,1,1,1000,"Totem",False
+371,"Totem_Hunger","图腾：饥饿大师","减少能量和水分的消耗。",3,Blue,1,1,2000,"Totem",False
+372,"Totem_Stamina","图腾：耐力","增加耐力上限，并加快体力恢复速度。",3,Blue,1,1,1900,"Totem",False
+373,"Quest_Blueprint_TeleporterMachine","传送装置图纸","详细描述了传送装置的制作过程，异常的简单。",2,White,1,1,200,"Quest",False
+374,"Formula_Template","配方：MD40","制作MD40的配方。",99,White,1,1,253,"Formula",False
+375,"Quest_HardDrive_GroundZero_Signal","农场镇传送密钥","有了这个，我们就可以传送到农场镇了。",2,White,1,1,1,"Quest",False
+376,"BP_RPG","蓝图：RPG发射器","用于在工作台研发武器：RPG。",6,Orange,1,1,50,"Formula",False
+377,"Formula_Trap","配方：捕兽夹","制作捕兽陷阱的配方。",99,White,1,1,253,"Formula",False
+378,"Formula_WD40","配方：MD40","制作MD40的配方。",99,White,1,1,253,"Formula",False
+379,"ArmorCai","背带衣","Music~",9,White,1,1,350,"Armor",False
+380,"Basketball","T.H篮球","气还很足。",3,Green,1,1,500,"Daily",False
+381,"Formula_ArmorCai","配方：背带衣","谢谢。",99,White,1,1,253,"Formula",False
+382,"Formula_Wrench03","配方：撬棍","制作撬棍的配方。",99,White,1,1,253,"Formula",False
+383,"Formula_Cable","配方：电源线","制作电源线的配方。",99,White,1,1,253,"Formula",False
+384,"Key_Machine","机械钥匙","打开某个车门的钥匙。",1,White,1,1,220,"Key",False
+385,"Quest_Watch","怀表","好像是锌合金做的。",4,Green,1,1,774,"Quest",False
+386,"Quest_List_GroundZeroGoods","货物清单","武器运送货物清单。",2,White,1,1,1,"Quest",False
+387,"Formula_CircuitBoard","配方：电路板","在工作台制作电路板的配方。",99,White,1,1,253,"Formula",False
+388,"BitCoin","0.2BTC","这玩意也有实体的？",5,LightRed,1,1,15631,"Luxury",False
+389,"Quest_Letter_InShop","神秘留言","告诉你，售货机里的东西，都超贵！售卖价格翻了好几倍！而且回收价竟然只有原价的一半！奸商，奸商！",9,White,1,1,1,"Special",False
+390,"Bullet_Energy_S","小型能量弹","为小型能量武器提供能量。",999,Green,120,30,25,"Bullet",False
+391,"Energy_CubeGun","方块枪","小巧的电属性能量发射武器。",9,Green,1,1,1018,"Weapon",False
+392,"BP_CubeGun","蓝图：方块枪","用于研发能量武器：方块枪。",6,Orange,1,1,50,"Formula",False
+393,"BP_Bullet_Energy_S","蓝图：小型能量弹药","手工制作小型能量弹药的方法。",6,Orange,1,1,50,"Formula",False
+394,"ComputeCore","计算核心","蜘蛛型机器人的计算核心。",2,Orange,5,1,500,"Special",False
+395,"Jinitaimei","黑色针剂","原型是BeLand公司研发的“脏水”生化药剂。J-Lab经过两年半研究，对其进行改良，极大降低了对宿主造成的副作用。药物全称是Ginius-PEP-Mg，也可称作基尼肽镁。",6,White,3,1,34,"Injector",False
+396,"Formula_Jinitaimei","配方：黑色药剂","在医疗站解锁黑色药剂的配方。",99,White,1,1,253,"Formula",False
+397,"BitcoinMiner","比特币矿机","*Item_BitcoinMiner_Desc*",2,Orange,1,1,500,"Special",False
+398,"Injection_Weight","负重针","增加负重，持续240秒。",3,Green,3,1,648,"Injector",False
+399,"Bullet_Arrow_Explosion","爆炸箭","这玩意没有安全爆炸距离。",999,Orange,5,1,500,"Bullet",False
+400,"BP_ArrowExplosion","蓝图：爆炸箭","在工作台制作爆炸箭的配方。",6,Orange,1,1,50,"Formula",False
+401,"BP_GPU_Potato","蓝图：土豆显卡","手搓土豆显卡的图纸，上面还画了大便的俯视图，不知是何用意。",6,White,1,1,50,"Formula",False
+402,"GPU_Potato","土豆显卡","真是一场奇迹。",9,Green,1,1,800,"Electric",False
+403,"Potato","土豆","土豆的香气。",1,White,3,1,230,"Food",False
+404,"Bullet_SHOT_Rusted","霰弹-破烂","弹壳已经老化了，里面的弹丸估计也好不到哪去。",999,White,80,20,3,"Bullet",False
+405,"BP_GasMask","蓝图：防毒面具","制作防毒面具的蓝图。",99,Orange,1,1,50,"Formula",False
+406,"Bullet_Sniper_Rusted","狙击-劣质子弹","偷工减料的子弹。",999,Green,30,10,19,"Bullet",False
+407,"Sniper_Balett","M107","很猛，甚至不像是用来与有机生物作战的武器，重量也相当夸张。",6,Red,1,1,23102,"Weapon",False
+408,"Injection_ElecResist","电抗性针","一段时间内受到的电属性伤害降低。",3,Green,3,1,648,"Injector",False
+409,"Injection_PainResist","镇痛剂","让你在一段时间内无视疼痛。",3,Green,3,1,648,"Injector",False
+410,"Formula_Injection_ElecResist","配方：抗电性针","在医疗站制作抗电性针的配方。",99,White,1,1,253,"Formula",False
+411,"Formula_Injection_PainResist","配方：镇痛剂","在医疗站制作镇痛剂的配方。",99,White,1,1,253,"Formula",False
+412,"Magazine_Sniper_Lv_1","狙击枪弹匣 Lv1","扩容弹匣。",999,White,1,1,1590,"Accessory",False
+413,"Magazine_Sniper_Lv_2","狙击枪弹匣 Lv2","扩容弹匣。",999,Blue,1,1,3250,"Accessory",False
+414,"Magazine_Sniper_Lv_3","狙击枪弹匣 Lv3","扩容弹匣。",999,Purple,1,1,5600,"Accessory",False
+415,"Magazine_Sniper_Lv_4","狙击枪弹匣 Lv4","扩容弹匣。",999,Orange,1,1,9800,"Accessory",False
+416,"Muzzle_L_Slience_1","大口径消音器 Lv1","减弱声音传播距离。",999,White,1,1,1200,"Accessory",False
+417,"Muzzle_L_Slience_2","大口径消音器 Lv2","减弱声音传播距离。",999,Blue,1,1,2000,"Accessory",False
+418,"Muzzle_L_Slience_3","大口径消音器 Lv3","减弱声音传播距离。",999,Purple,1,1,3250,"Accessory",False
+419,"Muzzle_L_Slience_4","大口径消音器 Lv4","减弱声音传播距离。",999,Orange,1,1,6800,"Accessory",False
+420,"Muzzle_S_Slience_1","小口径消音器 Lv1","减弱声音传播距离。",999,White,1,1,1200,"Accessory",False
+421,"Muzzle_S_Slience_2","小口径消音器 Lv2","减弱声音传播距离。",999,Blue,1,1,2000,"Accessory",False
+422,"Muzzle_S_Slience_3","小口径消音器 Lv3","减弱声音传播距离。",999,Purple,1,1,3250,"Accessory",False
+423,"Muzzle_S_Slience_4","小口径消音器 Lv4","减弱声音传播距离。",999,Orange,1,1,6800,"Accessory",False
+424,"Note_BlackMarket","黑市联络笔记","沾满黑乎乎的东西，记录着各路商人的信息，但是用某种方式加密了。",3,Purple,1,1,2541,"Information",False
+425,"UDisk","加密U盘","可用于存储资料。",3,Purple,1,1,2466,"Information",False
+426,"Key_HiddenWarehouse_Cellar","地窖钥匙","通往某处地窖。",2,White,1,1,220,"Key",False
+427,"Quest_Letter_HiddenWarehouse_Explorer","隐居者的信","我挖了条地道，直通对面的仓库后面。但是钥匙让我整丢了。",2,White,1,1,1,"Quest",False
+428,"Water","瓶装水","瓶装矿泉水，微微发绿。",2,White,1,1,375,"Food",False
+429,"PowerOfWishlist","愿望单之力","奖励给添加愿望单的勇士。你一定已经添加愿望单了对吧？对吧？",5,Purple,1,1,4580,"Luxury",False
+430,"Totem_ElecResist 2","图腾:抗电 Ⅱ","免疫触电。",4,Purple,1,1,3500,"Totem",False
+431,"Totem_ElecResist","图腾:抗电 Ⅰ","降低受到的电属性伤害。",3,Blue,1,1,2000,"Totem",False
+432,"Totem_Efficiency 2","图腾:效率 Ⅱ","医疗物品的效率提高。",2,Green,1,1,1000,"Totem",False
+433,"Totem_GunControl 3","图腾:控枪 Ⅲ","降低枪械的后坐力与散布。",3,Blue,1,1,2000,"Totem",False
+434,"Totem_Reload","图腾：战术换弹","巨幅提高换弹速度。",4,Purple,1,1,3500,"Totem",False
+435,"Totem_Ninja 2","图腾:忍者 Ⅱ","降低奔跑时的声音传播距离。",2,Green,1,1,1000,"Totem",False
+436,"Totem_Ninja","图腾:忍者 Ⅰ","小幅降低奔跑时的声音传播距离。",1,White,1,1,350,"Totem",False
+437,"Sniper_VPO_Deng","VPO-劳登改","经过劳登改造的VPO狙击步枪。",9,Orange,1,1,6046,"Weapon",False
+438,"Injection_HotBlood","热血针剂","变得易怒，受到伤害时移动速度与近战伤害会提高，持续60秒。",4,Purple,3,1,2868,"Injector",False
+439,"Formula_Injection_HotBlood","配方：热血针剂","在医疗站制作热血针剂的配方。",99,White,1,1,253,"Formula",False
+440,"Key_GasStation_Warehouse","废弃加油站钥匙","某处废弃加油站的钥匙。",1,White,1,1,220,"Key",False
+441,"Key_RedWareHosue_Warehouse","厂区办公室钥匙","打开位于工厂区的某处办公室。",1,White,1,1,220,"Key",False
+442,"Key_SmallRoom_HiddenWarehouse","小隔间钥匙","打开某个房子的小隔间。",1,White,1,1,220,"Key",False
+443,"Key_HiddenWarehouse_Cellar_Wire","地窖围栏钥匙","地窖中一处围栏的钥匙。",3,White,1,1,220,"Key",False
+444,"RedBag","红包","四次元红包，里面不一定装着什么好东西，拆开看看？",3,Blue,1,1,1817,"Luxury",False
+445,"LuckyNote_1","小纸条","恭喜发财。",9,White,10,1,10,"Special",False
+446,"NewYear_AncientCoins","铜钱串","好贵！",5,LightRed,1,1,13666,"Luxury",False
+447,"NewYear_ChineseKnot","中国结","好看！",4,Purple,1,1,3885,"Luxury",False
+448,"NewYear_Lantern","红灯笼","好热闹！",2,Blue,1,1,2373,"Luxury",False
+449,"Dumpling","饺子","好吃！",2,White,3,1,212,"Food",False
+450,"S_GLick_Low","烂格力克","残次品的格力克。",0,White,1,1,66,"Weapon",False
+451,"Cash","现金","纸质现金。",1,White,1000000,100,1,"Cash",False
+452,"Grip_ALL_ADS_1","快速握把A","提高瞄准速度的握把。",2,Green,1,1,500,"Accessory",False
+453,"Grip_ALL_ADS_2","快速握把B","大幅提高瞄准速度的握把。",3,Blue,1,1,1100,"Accessory",False
+454,"Grip_ALL_MOV_1","*Item_Grip_ALL_MOV_1*","*Item_Grip_ALL_MOV_1_Desc*",999,White,1,1,1,"Accessory",False
+455,"Grip_ALL_REC_1","垂直握把I","加强垂直后坐力控制的握把。",3,Blue,1,1,1100,"Accessory",False
+456,"Grip_ALL_REC_2","水平握把I","加强水平后坐力控制的握把。",3,Blue,1,1,1100,"Accessory",False
+457,"Grip_ALL_REC_3","平衡握把","加强后坐力控制的握把。",4,Purple,1,1,2400,"Accessory",False
+458,"Grip_ALL_REC_4","垂直握把II","极大幅加强垂直后坐力控制的握把。",4,Purple,1,1,2400,"Accessory",False
+459,"Grip_ALL_REC_5","水平握把II","极大幅加强水平后坐力控制的握把。",4,Purple,1,1,2400,"Accessory",False
+460,"Grip_ALL_SCA_1","腰射握把I","提高腰射控制与机动性的握把。",3,Blue,1,1,1100,"Accessory",False
+461,"Grip_ALL_SCA_2","*Item_Grip_ALL_SCA_2*","*Item_Grip_ALL_SCA_2_Desc*",999,White,1,1,1,"Accessory",False
+462,"Grip_ALL_SCA_3","腰射握把II","大幅提高腰射控制与机动性的握把。",4,Purple,1,1,2400,"Accessory",False
+463,"Muzzle_PST_REC_1","手枪制退器-均衡A","加强后坐力控制与射程的手枪枪口。",3,Blue,1,1,1100,"Accessory",False
+464,"Muzzle_PST_REC_2","手枪制退器-均衡B","大幅加强后坐力控制的手枪枪口。",3,Blue,1,1,1100,"Accessory",False
+465,"Muzzle_PST_SIL_1","手枪消音器","降低开枪时声响的手枪枪口，但会损失少量子弹速度与射程。",2,Green,1,1,500,"Accessory",False
+466,"Muzzle_PST_DIS_1","手枪延长枪口","提高射程的手枪枪口，但会损失移动速度。",3,Blue,1,1,1100,"Accessory",False
+467,"Muzzle_PST_SCA_1","手枪制退器-散布","提高瞄准时散布控制的手枪枪口。",2,Green,1,1,500,"Accessory",False
+468,"Muzzle_SMG_REC_1","冲锋枪制退器-均衡A","加强后坐力控制与射程的冲锋枪枪口。",3,Blue,1,1,1100,"Accessory",False
+469,"Muzzle_SMG_REC_2","冲锋枪制退器-均衡B","大幅加强后坐力控制的冲锋枪枪口。",3,Blue,1,1,1100,"Accessory",False
+470,"Muzzle_SMG_REC_3","冲锋枪垂直制退器","极大幅加强垂直后坐力控制的冲锋枪枪口。",4,Purple,1,1,2400,"Accessory",False
+471,"Muzzle_SMG_REC_4","冲锋枪水平制退器","极大幅加强水平后坐力控制的冲锋枪枪口。",4,Purple,1,1,2400,"Accessory",False
+472,"Muzzle_SMG_SCA_1","冲锋枪制退器-散布","提高瞄准时散布控制的冲锋枪枪口。",2,Green,1,1,500,"Accessory",False
+473,"Muzzle_SMG_SCA_2","冲锋枪螺旋制退器","大幅提高瞄准时散布控制的冲锋枪枪口。",3,Blue,1,1,1100,"Accessory",False
+474,"Muzzle_SMG_SIL_1","冲锋枪消音器","降低开枪时声响的冲锋枪枪口，但会损失少量子弹速度与射程。",2,Green,1,1,500,"Accessory",False
+475,"Muzzle_AR_DIS_1","步枪延长枪口","提高射程的步枪枪口，但会损失移动速度。",3,Blue,1,1,1100,"Accessory",False
+476,"Muzzle_AR_REC_1","步枪制退器-均衡A","加强后坐力控制与射程的步枪枪口。",3,Blue,1,1,1100,"Accessory",False
+477,"Muzzle_AR_REC_2","步枪制退器-均衡B","大幅加强后坐力控制的步枪枪口。",3,Blue,1,1,1100,"Accessory",False
+478,"Muzzle_AR_REC_3","步枪垂直制退器","极大幅加强垂直后坐力控制的步枪枪口。",4,Purple,1,1,2400,"Accessory",False
+479,"Muzzle_AR_REC_4","步枪水平制退器","极大幅加强水平后坐力控制的步枪枪口。",4,Purple,1,1,2400,"Accessory",False
+480,"Muzzle_AR_SCA_1","步枪制退器-散布","提高瞄准时散布控制的步枪枪口。",2,Green,1,1,500,"Accessory",False
+481,"Muzzle_AR_SCA_2","步枪螺旋制退器","大幅提高瞄准时散布控制的步枪枪口。",3,Blue,1,1,1100,"Accessory",False
+482,"Muzzle_AR_SIL_1","步枪消音器","降低开枪时声响的步枪枪口，但会损失少量子弹速度与射程。",2,Green,1,1,500,"Accessory",False
+483,"Muzzle_AR_SIL_2","*Item_Muzzle_AR_SIL_2*","*Item_Muzzle_AR_SIL_2_Desc*",999,White,1,1,1,"Accessory",False
+484,"Muzzle_SNP_DIS_1","狙击枪延长枪口","提高射程的狙击枪枪口，但会损失移动速度。",3,Blue,1,1,1100,"Accessory",False
+485,"Muzzle_SNP_REC_1","狙击枪制退器-均衡A","加强后坐力控制与射程的狙击枪枪口。",3,Blue,1,1,1100,"Accessory",False
+486,"Muzzle_SNP_REC_2","*Item_Muzzle_SNP_REC_2*","*Item_Muzzle_SNP_REC_2_Desc*",999,White,1,1,1,"Accessory",False
+487,"Muzzle_SNP_REC_3","狙击枪水平制退器","极大幅加强水平后坐力控制的狙击枪枪口。",4,Purple,1,1,2400,"Accessory",False
+488,"Muzzle_SNP_SCA_1","狙击枪制退器-散布","提高瞄准时散布控制的狙击枪枪口。",2,Green,1,1,500,"Accessory",False
+489,"Muzzle_SNP_SCA_2","狙击枪制退器-机动","提高腰射控制的狙击枪枪口。",3,Blue,1,1,1100,"Accessory",False
+490,"Muzzle_SNP_SIL_1","狙击枪消音器","降低开枪时声响的狙击枪枪口，但会损失少量子弹速度与射程。",2,Green,1,1,500,"Accessory",False
+491,"Muzzle_SNP_SIL_2","*Item_Muzzle_SNP_SIL_2*","*Item_Muzzle_SNP_SIL_2_Desc*",999,White,1,1,1,"Accessory",False
+492,"Muzzle_SNP_SIL_3","*Item_Muzzle_SNP_SIL_3*","*Item_Muzzle_SNP_SIL_3_Desc*",999,White,1,1,1,"Accessory",False
+493,"Muzzle_SHT_REC_1","霰弹枪制退器-均衡A","加强后坐力控制与射程的霰弹枪枪口。",3,Blue,1,1,1100,"Accessory",False
+494,"Muzzle_SHT_REC_2","*Item_Muzzle_SHT_REC_2*","*Item_Muzzle_SHT_REC_2_Desc*",999,White,1,1,1,"Accessory",False
+495,"Muzzle_SHT_REC_3","*Item_Muzzle_SHT_REC_3*","*Item_Muzzle_SHT_REC_3_Desc*",999,White,1,1,1,"Accessory",False
+496,"Muzzle_SHT_REC_4","*Item_Muzzle_SHT_REC_4*","*Item_Muzzle_SHT_REC_4_Desc*",999,White,1,1,1,"Accessory",False
+497,"Muzzle_SHT_SCA_1","*Item_Muzzle_SHT_SCA_1*","*Item_Muzzle_SHT_SCA_1_Desc*",999,White,1,1,1,"Accessory",False
+498,"Stock_PST_MOV_1","*Item_Stock_PST_MOV_1*","*Item_Stock_PST_MOV_1_Desc*",999,White,1,1,1,"Accessory",False
+499,"Stock_PST_REL_1","*Item_Stock_PST_REL_1*","*Item_Stock_PST_REL_1_Desc*",999,White,1,1,1,"Accessory",False
+500,"Stock_PST_SCA_1","*Item_Stock_PST_SCA_1*","*Item_Stock_PST_SCA_1_Desc*",999,White,1,1,1,"Accessory",False
+501,"Stock_PST_SCA_2","*Item_Stock_PST_SCA_2*","*Item_Stock_PST_SCA_2_Desc*",999,White,1,1,1,"Accessory",False
+502,"Stock_SMG_MOV_1","*Item_Stock_SMG_MOV_1*","*Item_Stock_SMG_MOV_1_Desc*",999,White,1,1,1,"Accessory",False
+503,"Stock_SMG_REC_1","*Item_Stock_SMG_REC_1*","*Item_Stock_SMG_REC_1_Desc*",999,White,1,1,1,"Accessory",False
+504,"Stock_SMG_REL_1","*Item_Stock_SMG_REL_1*","*Item_Stock_SMG_REL_1_Desc*",999,White,1,1,1,"Accessory",False
+505,"Stock_SMG_SCA_1","*Item_Stock_SMG_SCA_1*","*Item_Stock_SMG_SCA_1_Desc*",999,White,1,1,1,"Accessory",False
+506,"Stock_SMG_SCA_2","*Item_Stock_SMG_SCA_2*","*Item_Stock_SMG_SCA_2_Desc*",999,White,1,1,1,"Accessory",False
+507,"Stock_SMG_SCA_3","*Item_Stock_SMG_SCA_3*","*Item_Stock_SMG_SCA_3_Desc*",999,White,1,1,1,"Accessory",False
+508,"Stock_AR_MOV_1","快速枪托","大幅提高瞄准速度与机动性的枪托。",3,Blue,1,1,1100,"Accessory",False
+509,"Stock_AR_REC_1","平衡枪托I","加强后坐力控制的枪托。",2,Green,1,1,500,"Accessory",False
+510,"Stock_AR_REC_2","平衡枪托II","大幅加强后坐力控制的枪托。",3,Blue,1,1,1100,"Accessory",False
+511,"Stock_AR_REL_1","轻型枪托","极大幅提高机动性的枪托。",4,Purple,1,1,2400,"Accessory",False
+512,"Stock_AR_SCA_1","*Item_Stock_AR_SCA_1*","*Item_Stock_AR_SCA_1_Desc*",999,White,1,1,1,"Accessory",False
+513,"Stock_AR_SCA_2","*Item_Stock_AR_SCA_2*","*Item_Stock_AR_SCA_2_Desc*",999,White,1,1,1,"Accessory",False
+514,"Stock_AR_SCA_3","腰射枪托I","加强腰射散布控制的枪托。",2,Green,1,1,500,"Accessory",False
+515,"Stock_AR_SCA_4","控制枪托","加强瞄准散布控制的枪托。",2,Green,1,1,500,"Accessory",False
+516,"Stock_AR_SCA_5","腰射枪托II","极大幅加强腰射散布控制的枪托。",4,Purple,1,1,2400,"Accessory",False
+517,"Stock_AR_SCA_6","*Item_Stock_AR_SCA_6*","*Item_Stock_AR_SCA_6_Desc*",999,White,1,1,1,"Accessory",False
+518,"Stock_SNP_REC_1","*Item_Stock_SNP_REC_1*","*Item_Stock_SNP_REC_1_Desc*",999,White,1,1,1,"Accessory",False
+519,"Stock_SNP_REC_2","狙击枪平衡枪托II","大幅加强后坐力控制的狙击枪枪托。",999,White,1,1,1100,"Accessory",False
+520,"Stock_SNP_SCA_1","*Item_Stock_SNP_SCA_1*","*Item_Stock_SNP_SCA_1_Desc*",999,White,1,1,1,"Accessory",False
+521,"Stock_SNP_SCA_2","狙击枪控制枪托I","加强瞄准散布控制的狙击枪枪托。",999,White,1,1,500,"Accessory",False
+522,"Stock_SNP_SCA_3","*Item_Stock_SNP_SCA_3*","*Item_Stock_SNP_SCA_3_Desc*",999,White,1,1,1,"Accessory",False
+523,"Stock_SNP_SCA_4","狙击枪控制枪托II","极大幅加强瞄准散布控制的狙击枪枪托。",999,White,1,1,2400,"Accessory",False
+524,"Stock_SHT_MOV_1","*Item_Stock_SHT_MOV_1*","*Item_Stock_SHT_MOV_1_Desc*",999,White,1,1,1,"Accessory",False
+525,"Stock_SHT_REC_1","*Item_Stock_SHT_REC_1*","*Item_Stock_SHT_REC_1_Desc*",999,White,1,1,1,"Accessory",False
+526,"Stock_SHT_REL_1","*Item_Stock_SHT_REL_1*","*Item_Stock_SHT_REL_1_Desc*",999,White,1,1,1,"Accessory",False
+527,"Stock_SHT_SCA_1","*Item_Stock_SHT_SCA_1*","*Item_Stock_SHT_SCA_1_Desc*",999,White,1,1,1,"Accessory",False
+528,"Stock_SHT_SCA_2","*Item_Stock_SHT_SCA_2*","*Item_Stock_SHT_SCA_2_Desc*",999,White,1,1,1,"Accessory",False
+529,"Stock_SHT_SCA_3","*Item_Stock_SHT_SCA_3*","*Item_Stock_SHT_SCA_3_Desc*",999,White,1,1,1,"Accessory",False
+530,"Stock_SHT_SCA_4","*Item_Stock_SHT_SCA_4*","*Item_Stock_SHT_SCA_4_Desc*",999,White,1,1,1,"Accessory",False
+531,"Magazine_PST_ADS_1","手枪快速弹匣I","提高瞄准速度的手枪弹匣。",2,Green,1,1,500,"Accessory",False
+532,"Magazine_PST_ADS_2","手枪快速弹匣II","大幅提高瞄准速度的手枪弹匣。",3,Blue,1,1,1100,"Accessory",False
+533,"Magazine_PST_CAP_1","手枪扩容弹匣I","提高枪械载弹量的手枪弹匣。",2,Green,1,1,500,"Accessory",False
+534,"Magazine_PST_CAP_2","手枪扩容弹匣II","大幅提高枪械载弹量的手枪弹匣。",3,Blue,1,1,1100,"Accessory",False
+535,"Magazine_PST_REL_1","*Item_Magazine_PST_REL_1*","*Item_Magazine_PST_REL_1_Desc*",999,White,1,1,1,"Accessory",False
+536,"Magazine_SMG_ADS_1","冲锋枪快速弹匣","提高瞄准速度的冲锋枪弹匣。",2,Green,1,1,500,"Accessory",False
+537,"Magazine_SMG_CAP_1","冲锋枪扩容弹匣I","提高枪械载弹量的冲锋枪弹匣。",2,Green,1,1,500,"Accessory",False
+538,"Magazine_SMG_CAP_2","冲锋枪扩容弹匣II","大幅提高枪械载弹量的冲锋枪弹匣。",3,Blue,1,1,1100,"Accessory",False
+539,"Magazine_SMG_CAP_3","冲锋枪扩容弹匣III","极大幅提高枪械载弹量的冲锋枪弹匣。",4,Purple,1,1,2400,"Accessory",False
+540,"Magazine_SMG_REL_1","*Item_Magazine_SMG_REL_1*","*Item_Magazine_SMG_REL_1_Desc*",999,White,1,1,1,"Accessory",False
+541,"Magazine_SMG_REL_2","*Item_Magazine_SMG_REL_2*","*Item_Magazine_SMG_REL_2_Desc*",999,White,1,1,1,"Accessory",False
+542,"Magazine_SMG_REL_3","*Item_Magazine_SMG_REL_3*","*Item_Magazine_SMG_REL_3_Desc*",999,White,1,1,1,"Accessory",False
+543,"Magazine_AR_ADS_1","步枪快速弹匣I","提高瞄准速度的步枪弹匣。",2,Green,1,1,500,"Accessory",False
+544,"Magazine_AR_ADS_2","步枪快速弹匣II","大幅提高瞄准速度的步枪弹匣。",3,Blue,1,1,1100,"Accessory",False
+545,"Magazine_AR_ADS_3","*Item_Magazine_AR_ADS_3*","*Item_Magazine_AR_ADS_3_Desc*",999,White,1,1,1,"Accessory",False
+546,"Magazine_AR_CAP_1","步枪扩容弹匣I","提高枪械载弹量的步枪弹匣。",2,Green,1,1,500,"Accessory",False
+547,"Magazine_AR_CAP_2","步枪扩容弹匣II","大幅提高枪械载弹量的步枪弹匣。",3,Blue,1,1,1100,"Accessory",False
+548,"Magazine_AR_CAP_3","步枪扩容弹匣III","极大幅提高枪械载弹量的步枪弹匣。",4,Purple,1,1,2400,"Accessory",False
+549,"Magazine_AR_CAP_4","*Item_Magazine_AR_CAP_4*","*Item_Magazine_AR_CAP_4_Desc*",999,White,1,1,1,"Accessory",False
+550,"Magazine_AR_REL_1","*Item_Magazine_AR_REL_1*","*Item_Magazine_AR_REL_1_Desc*",999,White,1,1,1,"Accessory",False
+551,"Magazine_AR_REL_2","*Item_Magazine_AR_REL_2*","*Item_Magazine_AR_REL_2_Desc*",999,White,1,1,1,"Accessory",False
+552,"Magazine_AR_REL_3","*Item_Magazine_AR_REL_3*","*Item_Magazine_AR_REL_3_Desc*",999,White,1,1,1,"Accessory",False
+553,"Magazine_SNP_ADS_1","狙击枪快速弹匣I","提高瞄准速度的狙击枪弹匣。",2,Green,1,1,500,"Accessory",False
+554,"Magazine_SNP_ADS_2","狙击枪快速弹匣II","大幅提高瞄准速度的狙击枪弹匣。",3,Blue,1,1,1100,"Accessory",False
+555,"Magazine_SNP_ADS_3","*Item_Magazine_SNP_ADS_3*","*Item_Magazine_SNP_ADS_3_Desc*",999,White,1,1,1,"Accessory",False
+556,"Magazine_SNP_CAP_1","狙击枪扩容弹匣I","提高枪械载弹量的狙击枪弹匣。",2,Green,1,1,500,"Accessory",False
+557,"Magazine_SNP_CAP_2","狙击枪扩容弹匣II","大幅提高枪械载弹量的狙击枪弹匣。",3,Blue,1,1,1100,"Accessory",False
+558,"Magazine_SNP_CAP_3","*Item_Magazine_SNP_CAP_3*","*Item_Magazine_SNP_CAP_3_Desc*",999,White,1,1,1,"Accessory",False
+559,"Magazine_SNP_REL_1","*Item_Magazine_SNP_REL_1*","*Item_Magazine_SNP_REL_1_Desc*",999,White,1,1,1,"Accessory",False
+560,"Magazine_SNP_REL_2","*Item_Magazine_SNP_REL_2*","*Item_Magazine_SNP_REL_2_Desc*",999,White,1,1,1,"Accessory",False
+561,"Magazine_SHT_CAP_1","霰弹枪扩容弹匣I","提高枪械载弹量的霰弹枪弹匣。",999,White,1,1,500,"Accessory",False
+562,"Magazine_SHT_CAP_2","霰弹枪扩容弹匣II","大幅提高枪械载弹量的霰弹枪弹匣。",999,White,1,1,1100,"Accessory",False
+563,"Magazine_SHT_CAP_3","霰弹枪扩容弹匣III","极大幅提高枪械载弹量的霰弹枪弹匣。",999,White,1,1,2400,"Accessory",False
+564,"Magazine_SHT_CAP_4","*Item_Magazine_SHT_CAP_4*","*Item_Magazine_SHT_CAP_4_Desc*",999,White,1,1,1,"Accessory",False
+565,"Magazine_SHT_REL_1","*Item_Magazine_SHT_REL_1*","*Item_Magazine_SHT_REL_1_Desc*",999,White,1,1,1,"Accessory",False
+566,"Magazine_SHT_REL_2","*Item_Magazine_SHT_REL_2*","*Item_Magazine_SHT_REL_2_Desc*",999,White,1,1,1,"Accessory",False
+567,"Magazine_SHT_REL_3","*Item_Magazine_SHT_REL_3*","*Item_Magazine_SHT_REL_3_Desc*",999,White,1,1,1,"Accessory",False
+568,"Scope_AR_4X_1","步枪4倍镜","大幅提高瞄准距离的步枪瞄准镜，但会损失一定后坐力控制与瞄准速度。",3,Blue,1,1,1100,"Accessory",False
+569,"Scope_SNP_8X_1","狙击枪8倍镜","极大幅提高瞄准距离的狙击枪瞄准镜，但会损失大量后坐力控制与瞄准速度。",4,Purple,1,1,2400,"Accessory",False
+570,"Scope_All_Digit_1","数字瞄具","降低基础瞄准时间的单倍瞄准镜，同时会改变准星样式。",2,Green,1,1,500,"Accessory",False
+571,"Scope_All_Holo_1","全息瞄具","降低基础瞄准时间的单倍瞄准镜，同时会改变准星样式。",2,Green,1,1,500,"Accessory",False
+572,"Scope_All_Long_1","快速瞄具","降低基础瞄准时间的单倍瞄准镜，同时会改变准星样式。",2,Green,1,1,500,"Accessory",False
+573,"Scope_All_RedDot_1","红点瞄具","降低基础瞄准时间的单倍瞄准镜，同时会改变准星样式。",2,Green,1,1,500,"Accessory",False
+574,"Scope_All_2X_1","2倍镜","提高瞄准距离的瞄准镜，但会损失少量后坐力控制与瞄准速度。",3,Blue,1,1,1100,"Accessory",False
+575,"Tec_Laser_NON_1","*Item_Tec_Laser_NON_1*","*Item_Tec_Laser_NON_1_Desc*",999,White,1,1,1,"Accessory",False
+576,"Tec_Laser_ADS_1","激光-机动","提高瞄准速度与机动性的激光指示器。",3,Blue,1,1,1100,"Accessory",False
+577,"Tec_Laser_ADS_2","激光-快反","大幅提高瞄准速度的激光指示器。",3,Blue,1,1,1100,"Accessory",False
+578,"Tec_Laser_SCA_1","激光-基础","提高腰射散布控制的激光指示器。",2,Green,1,1,500,"Accessory",False
+579,"Tec_Laser_SCA_2","激光-校准","大幅提高腰射散布控制的激光指示器。",4,Purple,1,1,2400,"Accessory",False
+580,"Tec_Flashlight_NON_1","战术手电","大幅提高夜间的视野范围。",2,Green,1,1,500,"Accessory",False
+583,"Muzzle_SHT_SCA_2","*Item_Muzzle_SHT_SCA_2*","*Item_Muzzle_SHT_SCA_2_Desc*",999,White,1,1,1,"Accessory",False
+584,"Muzzle_SHT_SCA_3","霰弹枪制退器-机动","提高腰射控制的霰弹枪枪口。",3,Blue,1,1,1100,"Accessory",False
+594,"Bullet_SMG_Rusted","S-生锈弹","已经略微生锈的制式轻型弹，几乎没有穿甲能力，对于枪械的耐久消耗也较高。",1,White,240,30,1,"Bullet",False
+595,"Bullet_SMG_Normal","S-普通弹","标准的制式轻型弹。",2,Green,240,30,5,"Bullet",False
+596,"Bullet_SMG_Burn","S-燃烧弹","装填了可燃成分的轻型弹，造成火伤害。",999,White,240,30,13,"Bullet",False
+597,"Bullet_SMG_Piercing3","S-穿甲弹","能够穿透中级护甲的防护的轻型弹。",3,Blue,240,30,30,"Bullet",False
+598,"Bullet_SMG_Piercing5","S-高级穿甲弹","能够穿透高级护甲的防护的轻型弹。",4,Purple,240,30,84,"Bullet",False
+599,"Bullet_SMG_Poison","S-毒性弹","装填了毒性成分的轻型弹，造成毒伤害。",999,White,240,30,11,"Bullet",False
+600,"Bullet_SMG_Electric","S-感电弹","装填了金属粉末的轻型弹，造成电伤害。",999,Green,240,30,14,"Bullet",False
+601,"Bullet_SMG_Space","S-空间弹","用外星科技制造的轻型弹，造成空间伤害。",999,Green,240,30,25,"Bullet",False
+602,"Bullet_SMG_Dumdums","S-肉伤弹","对肉体能造成大量伤害的轻型弹，但没有穿透护甲的能力。",999,Green,240,30,15,"Bullet",False
+603,"Bullet_AR_Rusted","AR-生锈弹","已经略微生锈的制式步枪弹，几乎没有穿甲能力，对于枪械的耐久消耗也较高。",1,White,180,30,1,"Bullet",False
+604,"Bullet_AR_Normal","AR-普通弹","标准的制式步枪弹。",2,Green,180,30,7,"Bullet",False
+605,"Bullet_AR_Burn","AR-燃烧弹","装填了可燃成分的步枪弹，造成火伤害。",999,Green,180,30,18,"Bullet",False
+606,"Bullet_AR_Piercing3","AR-穿甲弹","能够穿透中级护甲的防护的步枪弹。",3,Blue,180,30,43,"Bullet",False
+607,"Bullet_AR_Piercing5","AR-高级穿甲弹","能够穿透高级护甲的防护的步枪弹。",4,Purple,180,30,120,"Bullet",False
+608,"Bullet_AR_Poison","AR-毒性弹","装填了毒性成分的步枪弹，造成毒伤害。",999,Green,180,30,15,"Bullet",False
+609,"Bullet_AR_Electric","AR-感电弹","装填了金属粉末的步枪弹，造成电伤害。",999,Green,180,30,20,"Bullet",False
+610,"Bullet_AR_Space","AR-空间弹","用外星科技制造的步枪弹，造成空间伤害。",999,Green,180,30,35,"Bullet",False
+611,"Bullet_AR_Dumdums","AR-肉伤弹","对肉体能造成大量伤害的步枪弹，但没有穿透护甲的能力。",999,Green,180,30,21,"Bullet",False
+612,"Bullet_BR_Rusted","L-生锈弹","已经略微生锈的制式重型弹，几乎没有穿甲能力，对于枪械的耐久消耗也较高。",1,White,180,30,2,"Bullet",False
+613,"Bullet_BR_Normal","L-普通弹","标准的制式重型弹。",2,Green,180,30,12,"Bullet",False
+614,"Bullet_BR_Burn","L-燃烧弹","装填了可燃成分的重型弹，造成火伤害。",999,Green,180,30,32,"Bullet",False
+615,"Bullet_BR_Piercing3","L-穿甲弹","能够穿透中级护甲的防护的重型弹。",3,Blue,180,30,75,"Bullet",False
+616,"Bullet_BR_Piercing5","L-高级穿甲弹","能够穿透高级护甲的防护的重型弹。",4,Purple,180,30,210,"Bullet",False
+617,"Bullet_BR_Poison","L-毒性弹","装填了毒性成分的重型弹，造成毒伤害。",999,Green,180,30,26,"Bullet",False
+618,"Bullet_BR_Electric","L-感电弹","装填了金属粉末的重型弹，造成电伤害。",999,Green,180,30,35,"Bullet",False
+619,"Bullet_BR_Space","L-空间弹","用外星科技制造的重型弹，造成空间伤害。",999,Blue,180,30,61,"Bullet",False
+620,"Bullet_BR_Dumdums","L-肉伤弹","对肉体能造成大量伤害的重型弹，但没有穿透护甲的能力。",999,Green,180,30,37,"Bullet",False
+621,"Bullet_SNP_Rusted","生锈狙击弹","已经略微生锈的制式狙击弹，几乎没有穿甲能力，对于枪械的耐久消耗也较高。",1,White,30,10,5,"Bullet",False
+622,"Bullet_SNP_Normal","普通狙击弹","标准的制式狙击弹。",2,Green,30,10,35,"Bullet",False
+623,"Bullet_SNP_Burn","燃烧狙击弹","装填了可燃成分的狙击弹，造成火伤害。",999,Purple,30,10,90,"Bullet",False
+624,"Bullet_SNP_Piercing3","中级穿甲狙击弹","能够穿透中级护甲的防护的狙击弹。",999,Purple,30,10,215,"Bullet",False
+625,"Bullet_SNP_Piercing5","高级穿甲狙击弹","能够穿透高级护甲的防护的狙击弹。",999,LightRed,30,10,600,"Bullet",False
+626,"Bullet_SNP_Poison","毒性狙击弹","装填了毒性成分的狙击弹，造成毒伤害。",999,Blue,30,10,75,"Bullet",False
+627,"Bullet_SNP_Electric","感电狙击弹","装填了金属粉末的狙击弹，造成电伤害。",999,Purple,30,10,100,"Bullet",False
+628,"Bullet_SNP_Space","空间狙击弹","用外星科技制造的狙击弹，造成空间伤害。",999,Orange,30,10,175,"Bullet",False
+629,"Bullet_SNP_Dumdums","肉伤狙击弹","对肉体能造成大量伤害的狙击弹，但没有穿透护甲的能力。",999,Purple,30,10,105,"Bullet",False
+630,"Bullet_SHT_Rusted","生锈霰弹","已经略微生锈的制式霰弹，几乎没有穿甲能力，对于枪械的耐久消耗也较高。",1,White,80,20,3,"Bullet",False
+631,"Bullet_SHT_Normal","普通霰弹","标准的制式霰弹。",2,Green,80,20,21,"Bullet",False
+632,"Bullet_SHT_Burn","燃烧霰弹","装填了可燃成分的霰弹，造成火伤害。",999,Blue,80,20,54,"Bullet",False
+633,"Bullet_SHT_Piercing3","穿甲霰弹","能够穿透中级护甲的防护的霰弹。",3,Blue,80,20,129,"Bullet",False
+634,"Bullet_SHT_Piercing5","高级穿甲霰弹","能够穿透高级护甲的防护的霰弹。",4,Purple,80,20,360,"Bullet",False
+635,"Bullet_SHT_Poison","毒性霰弹","装填了毒性成分的霰弹，造成毒伤害。",999,Blue,80,20,45,"Bullet",False
+636,"Bullet_SHT_Electric","感电霰弹","装填了金属粉末的霰弹，造成电伤害。",999,Blue,80,20,60,"Bullet",False
+637,"Bullet_SHT_Space","空间霰弹","用外星科技制造的霰弹，造成空间伤害。",999,Purple,80,20,105,"Bullet",False
+638,"Bullet_SHT_Dumdums","肉伤霰弹","对肉体能造成大量伤害的霰弹，但没有穿透护甲的能力。",999,Blue,80,20,63,"Bullet",False
+639,"Bullet_MAG_Rusted","MAG-生锈弹","已经略微生锈的制式马格南弹药，几乎没有穿甲能力，对于枪械的耐久消耗也较高。",999,White,24,8,8,"Bullet",False
+640,"Bullet_MAG_Normal","MAG-普通弹","标准的制式马格南弹药。",2,Green,24,8,56,"Bullet",False
+641,"Bullet_MAG_Burn","MAG-燃烧弹","装填了可燃成分的马格南弹药，造成火伤害。",999,Purple,24,8,144,"Bullet",False
+642,"Bullet_MAG_Piercing3","MAG-中级穿甲弹","能够穿透中级护甲的防护的马格南弹药。",999,Purple,24,8,344,"Bullet",False
+643,"Bullet_MAG_Piercing5","MAG-高级穿甲弹","能够穿透高级护甲的防护的马格南弹药。",999,LightRed,24,8,960,"Bullet",False
+644,"Bullet_MAG_Poison","MAG-毒性弹","装填了毒性成分的马格南弹药，造成毒伤害。",999,Purple,24,8,120,"Bullet",False
+645,"Bullet_MAG_Electric","MAG-感电弹","装填了金属粉末的马格南弹药，造成电伤害。",999,Purple,24,8,160,"Bullet",False
+646,"Bullet_MAG_Space","MAG-空间弹","用外星科技制造的马格南弹药，造成空间伤害。",999,Orange,24,8,280,"Bullet",False
+647,"Bullet_MAG_Dumdums","MAG-肉伤弹","对肉体能造成大量伤害的马格南弹药，但没有穿透护甲的能力。",999,Orange,24,8,168,"Bullet",False
+648,"Bullet_ARR_Normal","木矢","用树枝制作的箭矢。",1,White,20,10,1,"Bullet",False
+649,"Bullet_ARR_Explosion","爆炸矢","这玩意没有安全爆炸距离。",4,Orange,5,1,500,"Bullet",False
+650,"Bullet_PWS_S","小能量弹","为能量武器提供少量能量。",9,Green,240,30,25,"Bullet",False
+651,"Tec_Laser_CIT_1","激光-暴击","提高爆头伤害的激光指示器。",4,Purple,1,1,2400,"Accessory",False
+652,"AR_ADAR_Normal","ADAR 2-15","制式武器的民用版本，虽然威力较低，但有着优秀的稳定性和更好的配件支持。",2,Blue,1,1,1633,"Weapon",False
+653,"AR_AUGA1_Normal","StG 77","无托结构设计，短小紧凑后坐力较小，且自带光学瞄准镜。",3,Purple,1,1,3658,"Weapon",False
+654,"AR_AUGA3_Normal","StG 77A3","StG 77的改进型，去掉了光学瞄准镜并提高了配件的支持。",3,Purple,1,1,4539,"Weapon",False
+655,"SMG_MP5_Normal","MP5","高精度，低后座力的制式冲锋枪，相当适合腰射。",4,Orange,1,1,5794,"Weapon",False
+656,"BR_SKS_Normal","SKS-45","结构简单，精度良好的制式步枪。在鸭科夫，威力较大的步枪被称为战斗步枪，即使口径相同也要使用不同的弹药，没人知道理由。",2,Blue,1,1,2386,"Weapon",False
+657,"SHT_TOZ66_Normal","TOZ-66","手动装填的双管霰弹枪，一般用来自卫。",1,Green,1,1,435,"Weapon",False
+658,"SHT_TOZ106_Normal","TOZ-106","单管霰弹枪，可以弹匣换弹。",1,Green,1,1,547,"Weapon",False
+659,"AR_VPO136_Normal","VPO-136","基于AK-47设计的半自动民用步枪，可靠性很高。",1,Green,1,1,630,"Weapon",False
+660,"SmokeGrenade","烟雾弹","制造一团遮挡视野的烟雾。",3,Green,1,1,580,"Explosive",False
+662,"WeaponPartsLv2","中级武器零件","更高级的枪械零件，能制造更多枪械。",2,White,5,1,248,"Tool",False
+663,"WeaponPartsLv3","高级武器零件","顶级枪械零件，很多高端武器必不可少的材料。",4,Green,5,1,669,"Tool",False
+665,"BP_ADAR","蓝图：ADAR 2-15","用于在工作台研发武器：ADAR 2-15。",2,White,1,1,50,"Formula",False
+666,"BP_AUGA1","蓝图：StG 77","用于在工作台研发武器：StG-77。",3,White,1,1,50,"Formula",False
+667,"BP_AUGA3","蓝图：StG 77A3","用于在工作台研发武器：StG-77A3。",3,White,1,1,50,"Formula",False
+668,"BP_MP5","蓝图：MP5","用于在工作台研发武器：MP5。",3,White,1,1,50,"Formula",False
+669,"BP_SKS","蓝图：SKS","用于在工作台研发武器：SKS。",2,White,1,1,50,"Formula",False
+670,"BP_TOZ66","蓝图：TOZ-66","用于在工作台研发武器：TOZ-66。",1,White,1,1,50,"Formula",False
+671,"BP_TOZ106","蓝图：TOZ-106","用于在工作台研发武器：TOZ-106。",1,White,1,1,50,"Formula",False
+672,"BP_VPO136","蓝图：VPO-136","用于在工作台研发武器：VPO-136。",1,White,1,1,50,"Formula",False
+675,"BP_Bullet_BR_Normal","蓝图：普通重型弹","用于制造：L-普通弹。",2,White,1,1,50,"Formula",False
+676,"BP_Bullet_SNP_Normal","蓝图：普通狙击弹","用于制造：普通狙击弹。",9,White,1,1,50,"Formula",False
+677,"BP_Bullet_SHT_Normal","蓝图：普通霰弹","用于制造：普通霰弹。",9,White,1,1,50,"Formula",False
+678,"BP_Bullet_MAG_Normal","蓝图：MAG-普通弹","用于制造：普通反器材弹。",9,White,1,1,50,"Formula",False
+679,"HeadsetLV1","耳机","能够提高听觉灵敏度，可以听到声音来自于哪个方向。",2,Green,1,1,680,"Headset",False
+680,"BR_VSS_Normal","VSS","自带消声器和光学瞄准镜，适合用来偷袭老同志，缺点是射程相对有限。",5,LightRed,1,1,16741,"Weapon",False
+681,"AR_ASVAL_Normal","AS Val","自带消音器的特种步枪，射速快，精度高但载弹量有限。",5,LightRed,1,1,10648,"Weapon",False
+682,"AR_DTMDR556_Normal","DT MDR-556","还在测试阶段的制式步枪，模块化程度非常高，但不知什么原因，本来可以卸下的枪管和黄色的外壳绑定在了一起。",4,Orange,1,1,7354,"Weapon",False
+683,"BR_DTMDR762_Normal","DT MDR-762","还在测试阶段的制式战斗步枪，模块化程度非常高，但不知什么原因，本来可以卸下的枪管和黑色的外壳绑定在了一起。",5,LightRed,1,1,14099,"Weapon",False
+688,"Bullet_SMG_Piercing2","S-低级穿甲弹","能够穿透低级护甲的防护的轻型弹。",999,Blue,240,30,15,"Bullet",False
+689,"Bullet_SMG_Piercing4","S-中级穿甲弹","能够穿透中级护甲的防护的轻型弹。",999,Purple,240,30,49,"Bullet",False
+690,"Bullet_SMG_Piercing6","S-高级穿甲弹","能够穿透高级护甲的防护的轻型弹。",999,LightRed,240,30,140,"Bullet",False
+691,"Bullet_SMG_Break","S-特种弹","能够大幅消耗护甲耐久的轻型弹，虽然穿甲能力很低，但可以快速击碎敌人的护甲，使他失去护甲防护，并造成比普通子弹更高的伤害。",5,LightRed,240,30,140,"Bullet",False
+692,"Bullet_AR_Piercing2","AR-低级穿甲弹","能够穿透低级护甲的防护的步枪弹。",999,Blue,180,30,21,"Bullet",False
+693,"Bullet_AR_Piercing4","AR-中级穿甲弹","能够穿透中级护甲的防护的步枪弹。",999,Purple,180,30,70,"Bullet",False
+694,"Bullet_AR_Piercing6","AR-特种穿甲弹","能够穿透几乎所有护甲的防护的步枪弹，造成的伤害也更高。",5,LightRed,180,30,200,"Bullet",False
+695,"Bullet_AR_Break","AR-碎甲弹","能够大幅消耗护甲耐久的步枪弹，虽然穿甲和伤害能力都很低，但可以快速击碎敌人的护甲，使他失去护甲防护。",999,Green,180,30,33,"Bullet",False
+696,"Bullet_BR_Piercing2","L-低级穿甲弹","能够穿透低级护甲的防护的重型弹。",999,Blue,180,30,37,"Bullet",False
+697,"Bullet_BR_Piercing4","L-中级穿甲弹","能够穿透中级护甲的防护的重型弹。",999,Purple,180,30,123,"Bullet",False
+698,"Bullet_BR_Piercing6","L-特种穿甲弹","能够穿透几乎所有护甲的防护的重型弹，造成的伤害与爆头伤害也更高。",5,LightRed,180,30,350,"Bullet",False
+699,"Bullet_BR_Break","L-碎甲弹","能够大幅消耗护甲耐久的重型弹，虽然穿甲和伤害能力都很低，但可以快速击碎敌人的护甲，使他失去护甲防护。",999,Blue,180,30,58,"Bullet",False
+700,"Bullet_SNP_Piercing2","穿甲狙击弹","能够穿透低级护甲的防护的狙击弹。",3,Blue,30,10,105,"Bullet",False
+701,"Bullet_SNP_Piercing4","高级穿甲狙击弹","能够穿透中级护甲的防护的狙击弹。",4,Purple,30,10,350,"Bullet",False
+702,"Bullet_SNP_Piercing6","特种穿甲狙击弹","能够穿透几乎所有护甲的防护的狙击弹，造成的爆头伤害也更高。",5,LightRed,30,10,1000,"Bullet",False
+703,"Bullet_SNP_Break","碎甲狙击弹","能够大幅消耗护甲耐久的狙击弹，虽然穿甲和伤害能力都很低，但可以快速击碎敌人的护甲，使他失去护甲防护。",999,Purple,30,10,165,"Bullet",False
+704,"Bullet_SHT_Piercing2","低级穿甲霰弹","能够穿透低级护甲的防护的霰弹。",999,Blue,80,20,63,"Bullet",False
+705,"Bullet_SHT_Piercing4","中级穿甲霰弹","能够穿透中级护甲的防护的霰弹。",999,Purple,80,20,210,"Bullet",False
+706,"Bullet_SHT_Piercing6","高级穿甲霰弹","能够穿透高级护甲的防护的霰弹。",999,LightRed,80,20,600,"Bullet",False
+707,"Bullet_SHT_Break","特种霰弹","对肉体能造成大量伤害的霰弹，也非常容易使命中的敌人流血，但没有穿透护甲的能力。",5,LightRed,80,8,600,"Bullet",False
+708,"Bullet_MAG_Piercing2","MAG-穿甲弹","能够穿透低级护甲的防护的马格南弹药。",3,Blue,24,8,168,"Bullet",False
+709,"Bullet_MAG_Piercing4","MAG-高级穿甲弹","能够穿透中级护甲的防护的马格南弹药。",4,Purple,24,8,560,"Bullet",False
+710,"Bullet_MAG_Piercing6","MAG-特种穿甲弹","能够穿透几乎所有护甲的防护的马格南弹药，造成的伤害与爆头伤害也更高。",5,LightRed,24,8,1600,"Bullet",False
+711,"Bullet_MAG_Break","MAG-碎甲弹","能够大幅消耗护甲耐久的马格南弹药，虽然穿甲和伤害能力都很低，但可以快速击碎敌人的护甲，使他失去护甲防护。",999,Orange,24,8,264,"Bullet",False
+712,"Muzzle_PST_DAM_1","手枪增伤枪口","大幅提高枪械伤害的手枪枪口，但会损失少量后坐力控制。",3,Blue,1,1,1100,"Accessory",False
+713,"Muzzle_SMG_DAM_1","冲锋枪增伤枪口","大幅提高枪械伤害的冲锋枪枪口，但会损失少量后坐力控制。",3,Blue,1,1,1100,"Accessory",False
+714,"Muzzle_AR_DAM_1","步枪增伤枪口","大幅提高枪械伤害的步枪枪口，但会损失少量后坐力控制。",3,Blue,1,1,1100,"Accessory",False
+715,"Muzzle_SNP_DAM_1","狙击枪增伤枪口","大幅提高枪械伤害的狙击枪枪口，但会损失少量后坐力控制。",3,Blue,1,1,1100,"Accessory",False
+716,"Muzzle_SHT_DAM_1","霰弹枪增伤枪口","大幅提高枪械伤害的霰弹枪枪口，但会损失少量后坐力控制。",3,Blue,1,1,1100,"Accessory",False
+717,"Stock_SMG_SCA_4","冲锋枪腰射枪托II","极大幅加强腰射散布控制的冲锋枪枪托。",999,White,1,1,1,"Accessory",False
+718,"NightVisionGoggles","GPNVG-18夜视仪","视野很好的夜视仪。看起来像白天一样。",5,Orange,1,1,4725,"FaceMask",False
+719,"ThermalVisionGoggles","T-7热成像目镜","这玩意凭啥这么贵？",6,LightRed,1,1,38900,"FaceMask",False
+733,"SMG_MP7_Electric","带电MP7","缠了节电池的MP7，发射的子弹为电属性。真是震撼人心的鸭星科技啊！",9,Orange,1,1,6512,"Weapon",False
+734,"SMG_PP19Bizon_Normal","Bizon-2","使用螺旋弹匣，载弹量相当大，非常适合用于火力压制。",3,Purple,1,1,3353,"Weapon",False
+735,"SMG_PPSH_Normal","PPSh","非常均衡的制式冲锋枪。",2,Blue,1,1,2214,"Weapon",False
+736,"SMG_SR3M_Normal","SR-3M","换弹速度快，持续伤害能力相当不错的制式冲锋枪，但射程相对有限。常见的版本自带消音器，但这把好像卸了。",3,Purple,1,1,3851,"Weapon",False
+737,"SMG_Vector9_Normal","Vector","使用特殊设计，在保证射速和威力的同时，提高了后坐力控制与稳定性。",3,Purple,1,1,4174,"Weapon",False
+738,"Formula_FirstAidKit_M","配方：急救箱","在医疗站制造急救箱的配方。",99,White,1,1,200,"Formula",False
+740,"WhiteGown","白大褂","J-LAB研究人员穿的白大褂。",9,White,1,1,100,"Armor",False
+741,"Glass","黑色眼镜","看起来很有学问。",2,Green,1,1,130,"FaceMask",False
+742,"GlassShiny","闪光的眼镜","散发着反派的气质。",4,Purple,1,1,1200,"FaceMask",False
+743,"fiber","有机纤维","很结实的纤维线，可以用来制作很多东西。",2,White,10,1,194,"Tool",False
+744,"SunGlass","太阳镜","金边太阳镜，浮夸。",4,Purple,1,1,1200,"FaceMask",False
+745,"Quest_Letter_LifeSupportClue","维生系统线索","线人留下的维生系统线索，字迹有些潦草，感觉只有杰夫能看得懂。",2,White,1,1,1,"Quest",False
+746,"Marker","标记器","持续发射坐标的装置，采用蛋清及太阳能双重供电模式，据说续航能达到1万年。",2,White,1,1,292,"Electric",False
+747,"Quest_AirCirculationUnit","空气循环单元","飞船维生系统的重要组成部分。",6,White,1,1,1,"Quest",False
+748,"ComputingUnit","高性能计算单元","算力高达1EFLOPS。",6,Red,1,1,80000,"Special",False
+749,"BP_ComputingUnit","蓝图：高性能计算单元","用于研发高性能计算单元。",0,White,1,1,50,"Formula",False
+750,"Quest_HugeMotherBoard","大型主板","可以发挥高性能计算单元的全部性能。",6,White,1,1,285,"Quest",False
+751,"Quest_DogCollar","爱狗的项圈","上面好像还残留了一些血迹。",9999,White,1,1,50,"Quest",False
+753,"Quest_Blueprint_Thrusters_Encrypted","飞船推进器图纸（加密）","非常复杂，不是专业人士完全看不懂。",6,White,1,1,100,"Quest",False
+754,"Key_Card_JLabLv1","J-Lab一级凭证","J-Lab实验人员持有的一次性凭证，只能进入最外围的区域。",3,Blue,1,1,2000,"SpecialKey",False
+755,"Key_Card_JLabLv2","J-Lab二级凭证","可以进入实验室的核心区域的一次性凭证。",7,LightRed,1,1,15000,"SpecialKey",False
+756,"Key_Card_JLabLv3","J-Lab三级凭证","拥有实验室最高权限的一次性凭证，可以进入实验室的机密区域。",9,Red,1,1,50000,"SpecialKey",False
+757,"Quest_ResearchDocument_Thrusters","矢量推进器研究日志","记录了矢量推进器实验进程，其中并没有写明实验结果，也没有看到推进器的图纸，但其余内容写的非常详细，让人觉得这人的记性不太好。",2,White,1,1,1,"Quest",False
+758,"Key_Eyeball_Jlab","矿长的虹膜信息","因为头没有被打爆，所以完好的保存了下来。",3,White,1,1,300,"Special",False
+759,"Key_ThrusterResearcherHome","工棚钥匙","用来打开建筑工地工棚的钥匙。",3,White,1,1,101,"Key",False
+760,"Quest_Blueprint_NavigationSystem","导航系统图纸","飞船导航系统的图纸。",6,White,1,1,100,"Quest",False
+761,"Quest_StarMap1","星图","宇宙星图，但并不完整。",2,White,1,1,1,"Quest",False
+762,"Quest_StarMap2","星图碎片Part2","宇宙星图，但并不完整。",2,White,1,1,1,"Quest",False
+763,"Quest_StarMap3","星图碎片Part3","宇宙星图，但并不完整。",2,White,1,1,1,"Quest",False
+764,"Plastics","聚乙烯片","很难降解的塑料碎片。",1,White,10,1,21,"Tool",False
+765,"DuctTape","胶带","胶带，用途广泛。",1,White,1,1,84,"Daily",False
+766,"Quest_Blueprint_DefenceShield_BlackMarket","宇宙级防御力场蓝图（加密）","超绝防护力，星际旅行必备！",6,Green,1,1,500,"Quest",False
+767,"TransformDevice","能量重塑装置","能够重塑蛋清能量的特殊装置，原理不明，来源不明。",999,Orange,1,1,500,"Special",False
+768,"EnergyBall","能源球","重塑后更容易被利用的蛋清能源，能量巨大，性质稳定。",999,Purple,6,1,2500,"Special",False
+769,"EggWhiteEnergyPieces","蛋清能源碎片","从裂缝中溢出的物质，蕴含着巨大的能量，但很难直接利用。",2,Blue,10,1,120,"Special",False
+772,"PoliceStick","警棍","守卫用的警棍。",1,White,1,1,175,"Weapon",False
+774,"Quest_Blueprint_ComputingUnit_Encrypted","高性能计算单元蓝图（加密）","用以开发高性能计算单元的蓝图，但被算法加密了，看不太懂。",6,White,1,1,100,"Quest",False
+775,"Quest_Power_ComputingUnit","5000w电源","电源侧面印了一个大大的红星。",5,White,1,1,1,"Quest",False
+776,"Muzzle_SHT_SIL_1","霰弹枪重型消音器","降低开枪时声响并提高散布控制的霰弹枪枪口，但会损失移动速度。",4,Purple,1,1,2400,"Accessory",False
+777,"Stock_SNP_MOV_1","狙击枪快速枪托","大幅提高瞄准速度与机动性的狙击枪枪托。",999,White,1,1,1100,"Accessory",False
+778,"Quest_Cooling_ComputingUnit","大型散热器","拥有巨大的散热鳍片以及风扇，但好像只有两根热管。",5,White,1,1,1,"Quest",False
+779,"Key_Farm_JLabStaffHome","家门钥匙01","不知道是谁的家。",2,White,1,1,200,"Key",False
+780,"Sniper_M700_Normal","M700","被广泛运用的狙击步枪。",4,Orange,1,1,8767,"Weapon",False
+781,"Sniper_Mosin_Normal","Mosin-Nagant","经典耐用的狙击步枪，爆头伤害非常高。",4,Orange,1,1,7993,"Weapon",False
+782,"Sniper_SV98_Normal","SV98","各方面都非常优秀的狙击步枪，射程上更是相当突出。",5,LightRed,1,1,13909,"Weapon",False
+783,"PST_TT33_Normal","TT-33","各方面性能都非常一般的制式手枪，但由于结构相当简单，所以价格相当便宜。",0,White,1,1,80,"Weapon",False
+784,"PST_PM_Normal","PM","轻巧便携的制式手枪。",1,White,1,1,241,"Weapon",False
+785,"MAG_Desert_Normal","沙漠之鹰","虽然是手枪的尺寸用的也是手枪的配件，但使用大威力的马格南弹药。",4,Orange,1,1,8620,"Weapon",False
+786,"BR_M1A_Normal","M1A","M14的民用版本，射程远、精度高，但重量也较高。",4,Orange,1,1,8450,"Weapon",False
+787,"BR_M14_Normal","M14","制式精准战斗步枪，虽然是半自动，但有很高的射速上限。",5,LightRed,1,1,11854,"Weapon",False
+788,"AR_MCXSpear_Normal","MCX Spear","自带火控系统的战斗步枪，除了贵，很难找到缺点。",6,LightRed,1,1,19826,"Weapon",False
+790,"ArmorLV1Fire","一级防火服","强化了防火性能的护甲，虽然对于子弹的防护能力提升不多，但可以大幅降低受到的火伤害。",999,Green,1,1,575,"Armor",False
+791,"Jacket","皮夹克","用坚固的皮革制作，虽然是民用的衣服，但足够防护一些劣等子弹。",999,White,1,1,155,"Armor",False
+793,"Formula_Injection_A","配方：黄针","可以大幅提高移动速度的针剂的配方。",3,White,1,1,50,"Formula",False
+794,"Formula_Injection_Weight","配方：负重针","可以大幅提高负重的针剂的配方。",3,White,1,1,50,"Formula",False
+795,"Key_HiddenWarehouse_RBHouse","民房钥匙","仓库区某处民房的钥匙。",2,White,1,1,220,"Key",False
+796,"BP_ThermalVisionGoggles","蓝图：T-7热成像目镜","用于制造T-7热成像目镜的蓝图。",6,White,1,1,50,"Formula",False
+797,"Injection_StoneSkin","硬化针","使毛发与皮肤变硬，身体护甲提高0.25，持续120秒。",3,Green,3,1,648,"Injector",False
+798,"Injection_Stamina","持久针","提高耐力回复并降低耐力消耗，但会加快水分的消耗，持续120秒。",3,Green,3,1,648,"Injector",False
+799,"UVBulb2","紫外灯","可以发射紫外线的灯，一定程度上可以代替太阳光。",2,Green,3,1,761,"Tool",False
+800,"Injection_MeleeDamage","近战针","大幅提高近战伤害，但持续时间很短，效用过了还会萎靡一段时间。",3,Green,3,1,670,"Injector",False
+801,"Key_Card_Yellow","J-Lab门禁卡（黄）","可以进入J-Lab中的特殊区域。",7,Red,1,1,123000,"Key",False
+802,"Key_Card_Red","J-Lab门禁卡（红）","可以进入J-Lab中的特殊区域。",7,Red,1,1,202000,"Key",False
+803,"Key_Card_Green","J-Lab门禁卡（绿）","可以进入J-Lab中的特殊区域。",7,Red,1,1,161300,"Key",False
+804,"Key_Card_Blue","J-Lab门禁卡（蓝）","可以进入J-Lab中的特殊区域。",7,Red,1,1,135200,"Key",False
+805,"BP_VSS","蓝图：VSS","用于在工作台研发武器：VSS。",5,White,1,1,50,"Formula",False
+806,"BP_ASVAL","蓝图：AS Val","用于在工作台研发武器：AS Val。",5,White,1,1,50,"Formula",False
+807,"BP_DTMDR556","蓝图：DT MDR-556","用于在工作台研发武器：DT MDR-556。",4,White,1,1,50,"Formula",False
+808,"BP_DTMDR762","蓝图：DT MDR-762","用于在工作台研发武器：DT MDR-762。",5,White,1,1,50,"Formula",False
+809,"BP_MP7_Electric","蓝图：带电MP7","用于在工作台研发武器：带电MP7。",5,White,1,1,50,"Formula",False
+810,"BP_PP19Bizon","蓝图：Bizon-2","用于在工作台研发武器：Bizon-2。",3,White,1,1,50,"Formula",False
+811,"BP_PPSH","蓝图：PPSh","用于在工作台研发武器：PPSh。",2,White,1,1,50,"Formula",False
+812,"BP_SR3M","蓝图：SR-3M","用于在工作台研发武器：SR-3M。",3,White,1,1,50,"Formula",False
+813,"BP_Vector9","蓝图：Vector","用于在工作台研发武器：Vector。",3,White,1,1,50,"Formula",False
+814,"BP_M700","蓝图：M700","用于在工作台研发武器：M700。",4,White,1,1,50,"Formula",False
+815,"BP_Mosin","蓝图：Mosin-Nagant","用于在工作台研发武器：Mosin-Nagant。",4,White,1,1,50,"Formula",False
+816,"BP_SV98","蓝图：SV98","用于在工作台研发武器：SV98。",5,White,1,1,50,"Formula",False
+817,"BP_TT33","蓝图：TT-33","用于在工作台研发武器：TT-33。",0,White,1,1,50,"Formula",False
+818,"BP_PM","蓝图：PM","用于在工作台研发武器：PM。",1,White,1,1,50,"Formula",False
+819,"BP_Desert","蓝图：沙漠之鹰","用于在工作台研发武器：沙漠之鹰。",4,White,1,1,50,"Formula",False
+820,"BP_M1A","蓝图：M1A","用于在工作台研发武器：M1A。",4,White,1,1,50,"Formula",False
+821,"BP_M14","蓝图：M14","用于在工作台研发武器：M14。",5,White,1,1,50,"Formula",False
+822,"BP_MCXSpear","蓝图：MCX Spear","用于在工作台研发武器：MCX Spear。",6,White,1,1,50,"Formula",False
+823,"Quest_BlueprintPieces_MF_1","MF蓝图碎片1","用于研发步枪：MF的蓝图碎片。",4,White,1,1,50,"Quest",False
+824,"Quest_BlueprintPieces_MF_2","MF蓝图碎片2","用于研发步枪：MF的蓝图碎片。",4,White,1,1,50,"Quest",False
+825,"Quest_BlueprintPieces_MF_3","MF蓝图碎片3","用于研发步枪：MF的蓝图碎片。",4,White,1,1,50,"Quest",False
+826,"Key_Card_ SouthFactory","南厂区钥匙卡","南厂区员工的门禁卡。",4,Purple,1,1,3987,"Key",False
+827,"Key_MysteryX","神秘钥匙X","一把神秘的钥匙，上面刻着奇怪的符号，看上去像字母X。",6,Red,1,1,151675,"SpecialKey",False
+828,"Key_MysteryO","神秘钥匙O","一把神秘的钥匙，上面刻着奇怪的符号，看上去像字母O。",6,Red,1,1,253228,"SpecialKey",False
+829,"Key_MysteryZ","神秘Z钥匙","一把神秘的钥匙，上面刻着奇怪的符号，看上去像字母Z。",9,Green,1,1,500,"SpecialKey",False
+830,"BP_NightVisionGoggles","蓝图：夜视仪","用于制造夜视仪的蓝图。",5,White,1,1,50,"Formula",False
+831,"Key_Farm_SuperMarketSmallRoom","超市隔间钥匙","农场镇超市中小隔间的钥匙。",4,Blue,1,1,1688,"Key",False
+832,"Key_Farm_RestaurantSmallRoom","餐厅隔间钥匙","农场镇餐厅中小隔间的钥匙。",3,Green,1,1,801,"Key",False
+833,"UniversalGlueA","万能胶A","能够粘合一切的胶水，但需要与万能胶B配合使用才能发挥效用。",3,Green,1,1,844,"Daily",False
+834,"UniversalGlueB","万能胶B","能够粘合一切的胶水，但需要与万能胶A配合使用才能发挥效用。",3,Green,1,1,826,"Daily",False
+835,"Quest_DeliverBox_DestoryOnBase","快递","赶紧送到收货人那！可别带回基地了！",1,White,1,1,1,"Quest",False
+836,"KeyRing","钥匙包","可以放八把钥匙。",5,LightRed,1,1,13964,"Continer",False
+837,"Magazine_BR_ADS_1","BR快速弹匣I","提高瞄准速度的BR弹匣。",2,Green,1,1,500,"Accessory",False
+838,"Magazine_BR_ADS_2","BR快速弹匣II","大幅提高瞄准速度的BR弹匣。",3,Blue,1,1,1100,"Accessory",False
+839,"Magazine_BR_CAP_1","BR扩容弹匣I","提高枪械载弹量的BR弹匣。",2,Green,1,1,500,"Accessory",False
+840,"Magazine_BR_CAP_2","BR扩容弹鼓II","大幅提高枪械载弹量的BR弹匣。",3,Blue,1,1,1100,"Accessory",False
+841,"Xing","麻布头套","说是头套，其实是个麻袋，有人在上面写了个大大的“兴”字。",2,Green,1,1,600,"FaceMask",False
+842,"Formula_UVBulb2","配方：紫外灯","在工作台制作紫外灯的配方。",99,White,1,1,0,"Formula",False
+843,"Formula_Drum1","配方：红色大桶","在工作台制作红色大桶的配方。",99,White,1,1,0,"Formula",False
+844,"Formula_Drum2","配方：蓝色大桶","在工作台制作蓝色大桶的配方。",99,White,1,1,0,"Formula",False
+845,"Formula_Drum3","配方：黄色大桶","在工作台制作黄色大桶的配方。",99,White,1,1,0,"Formula",False
+846,"Formula_Drum4","配方：金属油桶","在工作台制作金属大桶的配方。",99,White,1,1,0,"Formula",False
+848,"Blindfold","遮眼布","以眼盲，换明心。",4,Purple,1,1,4399,"FaceMask",False
+849,"BoatTicket","船票","往返于零号区下水道与农场镇码头的船票。",4,Orange,1,1,5000,"SpecialKey",False
+850,"Bullet_Enemy_Piercing1","*Item_Bullet_Enemy_Piercing1*","*Item_Bullet_Enemy_Piercing1_Desc*",1,White,180,30,4,"Bullet",False
+851,"Bullet_Enemy_Piercing2","*Item_Bullet_Enemy_Piercing2*","*Item_Bullet_Enemy_Piercing2_Desc*",2,Green,180,30,4,"Bullet",False
+852,"Bullet_Enemy_Piercing3","*Item_Bullet_Enemy_Piercing3*","*Item_Bullet_Enemy_Piercing3_Desc*",3,White,180,30,4,"Bullet",False
+853,"Bullet_Enemy_Piercing4","*Item_Bullet_Enemy_Piercing4*","*Item_Bullet_Enemy_Piercing4_Desc*",4,White,180,30,4,"Bullet",False
+854,"Bullet_Enemy_Piercing5","*Item_Bullet_Enemy_Piercing5*","*Item_Bullet_Enemy_Piercing5_Desc*",5,White,180,30,4,"Bullet",False
+855,"Bullet_Enemy_Piercing6","*Item_Bullet_Enemy_Piercing6*","*Item_Bullet_Enemy_Piercing6_Desc*",6,White,180,30,4,"Bullet",False
+856,"Injection_StormProtection1","弱效空间风暴防护针","可以抵御风暴早期扰动的针剂，持续120秒，配合防护装备使用，则可以抵御风暴。",4,Blue,3,1,2359,"Injector",False
+857,"Injection_StormProtection2","测试用空间风暴防护针","测试用的强效空间针剂，可以抵抗扭曲，持续120秒。",999,Red,3,1,26555,"Injector",False
+858,"ArmorLV4StormProtection","空间防护服","经过J-Lab特殊改造的衣服，单独穿着就可以抵抗空间扰动，如果凑成一套，甚至可以抵抗空间扭曲。",5,Orange,1,1,6636,"Armor",False
+859,"HelmatLV3StormProtection","空间防护头盔","经过J-Lab特殊改造的头盔，单独穿着就可以抵抗空间扰动，如果凑成一套，甚至可以抵抗空间扭曲。",5,Orange,1,1,3248,"Helmat",False
+860,"SpaceCrystal","空间晶体","只有在空间风暴中才会出现的晶体，J-Lab曾对其做过长期研究，有传言他们的飞船技术就来源于此。",9,Blue,10,1,1200,"Special",False
+861,"WeaponPartsPolluted","被污染的武器零件","被空间风暴侵蚀的武器零件，但对于某些特殊的枪械来说是必不可少的材料。",9,Purple,5,1,1520,"Tool",False
+862,"AR_AK47_Fire","带火AK-47","被空间风暴侵蚀的AK，觉醒了特殊的属性。",9,Orange,1,1,3550,"Weapon",False
+863,"BP_AR_AK47_Fire","蓝图：带火AK47","用于在高级工作台研发武器：带火AK-47。",5,White,1,1,50,"Formula",False
+864,"GunPowder","火药","易燃危险！",1,White,300,30,2,"Special",False
+865,"Formula_Dynamite","配方：管状炸弹","在工作台制作管状炸弹的配方。",99,Green,1,1,1000,"Formula",False
+866,"Formula_DynamiteMultiple","配方：集束管状炸弹","在工作台制作集束管状炸弹的配方。",99,Red,1,1,200000,"Formula",False
+867,"BP_GLick","蓝图：Glick","用于在工作台研发武器：格力克。",0,White,1,1,0,"Formula",False
+868,"DemoChallengeTicket","挑战船票","九死一生，一旦倒在那，掉落的东西会被立马收走，一件不剩。",6,LightRed,1,1,10000,"SpecialKey",False
+869,"ARR_BurstBow_Normal","连珠弓","可以一次性射出三支箭的弓，咻咻咻！",7,Red,1,1,36630,"Weapon",False
+870,"Bullet_ARR_Piercing2","低级穿甲箭","能够穿透低级护甲的防护的箭矢。",4,Blue,20,10,95,"Bullet",False
+871,"Bullet_ARR_Piercing4","中级穿甲箭","能够穿透中级护甲的防护的箭矢。",6,Purple,20,10,315,"Bullet",False
+872,"Injection_RecoilControl","强翅针","短时间内强化翅膀力量，提高后坐力与散布控制能力，持续60秒。",5,Orange,3,1,6827,"Injector",False
+873,"Formula_WeaponPartsPolluted","配方：被污染的武器零件","在工作台制作被污染的武器零件的配方。",99,Green,1,1,1000,"Formula",False
+874,"Formula_ContinerL","配方：大扩容箱","在工作台制作大扩容箱的配方。",99,Green,1,1,768,"Formula",False
+875,"Injection_Healing","恢复针","每秒恢复血量，持续30秒。",2,Green,3,1,875,"Injector",False
+876,"SHT_MP155M_Normal","MP-155 ULTIMA","现代化版本的MP-155，几乎在所有方面都有提升。",7,Orange,1,1,6842,"Weapon",False
+877,"BP_MP155M","蓝图：MP-155 ULTIMA","用于在工作台研发武器：MP-155 ULTIMA。",7,Red,1,1,49998,"Formula",False
+878,"mushroom","蘑菇","红伞伞，白杆杆。",7,Green,3,1,444,"Food",False
+879,"EGun_Magic_Ring","???","???",9,White,1,1,284,"Weapon",False
+880,"PaperBoxArmor","*Item_PaperBoxArmor*","*Item_PaperBoxArmor_Desc*",999,Green,1,1,565,"Armor",False
+881,"PaperBox","纸箱子","足够大的纸箱子。",2,Green,1,1,565,"Continer",False
+882,"InjectionBag","注射器收纳包","可以装6种针，用的时候需要把针拿出来。",9,Red,1,1,29765,"Medic",False
+883,"ProteinPowder","蛋白粉","从鸭蛋中浓缩提取，是健身鸭们的好朋友。",3,Green,1,1,470,"Food",False
+884,"Formula_ProteinPowder","配方：蛋白粉","在工作台制作蛋白粉的配方。",99,Green,1,1,655,"Formula",False
+885,"ArmorLV6","六级防弹衣","能提供无与伦比的防护力，但十分沉重。",6,LightRed,1,1,10358,"Armor",False
+886,"Key_Card_Black","J-Lab门禁卡（黑）","可以进入J-Lab中的特殊区域。",7,Red,1,1,135800,"Key",False
+887,"Key_Card_Purple","J-Lab门禁卡（紫）","可以进入J-Lab中的特殊区域。",7,Red,1,1,191900,"Key",False
+888,"Apple","苹果","一天一苹果。",2,White,3,1,333,"Crop",False
+889,"Helmat_Vida","维达头盔","维达的头盔，里头有点闷，视野也不太好。",9,Red,1,1,4444,"Helmat",False
+890,"BlackDogTag","狗牌","雇佣兵身上带着的身份识别牌，但好像都是一样的。",2,Blue,10,1,1000,"Special",False
+891,"Helmat_Roadblock","路障头盔","不知道为什么，反正它就叫这个名字。",7,Red,1,1,16788,"Helmat",False
+892,"EnemyGun_RoadBlock_Rifle","???","???",9,White,1,1,218,"Weapon",False
+893,"AnimalWeapon_Invisable","空手","*Item_AnimalWeapon_Desc*",9,White,1,1,175,"Weapon",False
+894,"Armor_SBossPhysical_ResPoison","噗咙防弹衣","实验体噗咙噗咙穿着的防弹衣。噗咙噗咙的这套装备对物理和毒属性有很好的防御能力，但对其他属性的防护能力都非常堪忧。",7,LightRed,1,1,8295,"Armor",False
+895,"Helmat_SBossPhysical_ResPoison","噗咙头盔","实验体噗咙噗咙穿着的头盔。噗咙噗咙的这套装备对物理和毒属性有很好的防御能力，但对其他属性的防护能力都非常堪忧。",7,LightRed,1,1,4060,"Helmat",False
+896,"Armor_SBossPoison_LowDurResFire","咕噜防弹衣","实验体咕噜咕噜穿着的防弹衣。咕噜咕噜的这套装备防护能力很强且对火和毒属性有很好的防御能力，但耐久度相当堪忧且极易被电属性伤害。",7,LightRed,1,1,8295,"Armor",False
+897,"Helmat_SBossPoison_LowDurResFire","咕噜头盔","实验体咕噜咕噜穿着的头盔。啪啦啪啦的这套装备防护能力很强且对火和毒属性有很好的防御能力，但耐久度相当堪忧且极易被电属性伤害。",7,LightRed,1,1,4060,"Helmat",False
+898,"EGun_StormBoss_1_BreakArmor","???","???",9,White,1,1,284,"Weapon",False
+899,"EGun_StormBoss_2_Poison","*Item_EGun_StormBoss_2_Poison*","*Item_EGun_StormBoss_2_Poison_Desc*",9,White,1,1,284,"Weapon",False
+900,"EGun_StormBoss_3_Fire","*Item_EGun_StormBoss_3_Fire*","*Item_EGun_StormBoss_3_Fire_Desc*",9,White,1,1,284,"Weapon",False
+901,"EGun_StormBoss_4_Electric","*Item_EGun_StormBoss_4_Electric*","*Item_EGun_StormBoss_4_Electric_Desc*",9,White,1,1,284,"Weapon",False
+902,"EGun_StormBoss_5_Space","???","*Item_EGun_StormBoss_5_Space_Desc*",9,White,1,1,284,"Weapon",False
+908,"Armor_SBossFire_ResElec","啪啦防弹衣","实验体啪啦啪啦穿着的防弹衣。啪啦啪啦的这套装备对火和电属性有很好的防御能力，但极易被毒属性伤害。",7,LightRed,1,1,8295,"Armor",False
+909,"Armor_SBossElec_ResSpace","比利防弹衣","实验体比利比利穿着的防弹衣。比利比利的这套装备对电和空间属性有很好的防御能力，但极易被火属性伤害。",7,LightRed,1,1,8295,"Armor",False
+910,"Armor_SBossSpace","口口防弹衣","*Item_Armor_SBossSpace_Desc*",7,LightRed,1,1,8295,"Armor",False
+911,"Helmat_SBossFire_ResElec","啪啦头盔","实验体啪啦啪啦穿着的头盔。啪啦啪啦的这套装备对火和电属性有很好的防御能力，但极易被毒属性伤害。",7,LightRed,1,1,4060,"Helmat",False
+912,"Helmat_SBossElec_ResSpace","比利头盔","实验体比利比利穿着的头盔。比利比利的这套装备对电和空间属性有很好的防御能力，但极易被火属性伤害。",7,LightRed,1,1,4060,"Helmat",False
+913,"Helmat_SBossSpace","口口头盔","*Item_Helmat_SBossSpace_Desc*",7,LightRed,1,1,4060,"Helmat",False
+914,"PST_StormBoss_Poison","咕噜枪","伤害虽然不高，但非常容易让命中的目标中毒。",9,LightRed,1,1,12087,"Weapon",False
+915,"BR_Storm_Space","风暴枪","凝结了J-lab对于风暴的几乎所有研究。",9,Red,1,1,31406,"Weapon",False
+916,"MG_StormBoss_Fire","啪啦枪","载弹量相当巨大，有极强的火力压制能力。",9,LightRed,1,1,16364,"Weapon",False
+917,"SHT_StormBoss_Elec","比利枪","带着强力的电流，发出哔哩哔哩的声音。",9,LightRed,1,1,17618,"Weapon",False
+918,"Bullet_PWL_L","大型能量弹","为大型能量枪提供能量。",9,Blue,150,30,50,"Bullet",False
+919,"TestSeed","测试种子","能种出苹果、胡萝卜、土豆。",999,White,1,1,89,"Seed",False
+920,"ArmorLV5StormProtection","空间防护服终极版","J-lab空间防护服反复迭代后的最终产品。在保证原有抵抗风暴的性能同时，大幅提高了其防护性能与空间伤害的防护能力且每1秒会清除身上一层碎裂。",7,Red,1,1,8295,"Armor",False
+921,"HelmatLV5StormProtection","空间防护头盔最终版","J-lab空间防护头盔反复迭代后的最终产品。在保证原有抵抗风暴的性能同时，大幅提高了其防护性能与空间伤害的防护能力。",7,Red,1,1,4060,"Helmat",False
+922,"Cartridge_Snake","蛇形武装","游戏卡带：蛇形武装，听说这游戏在蒸发平台上有97%的好评！但总感觉这个“形”有点不太对劲。",4,Purple,1,1,4321,"MiniGame",False
+923,"FutureConsole","未来主机","未来主机Future Console，好像只能渲染2D游戏。",6,LightRed,1,1,10679,"MiniGame",False
+924,"GameTable","*Item_GameTable*","*Item_GameTable_Desc*",999,White,1,1,0,"MiniGame",False
+925,"MonochromeMonitor","黑白显示器","只能显示黑白内容的显示器。",3,Blue,1,1,1688,"MiniGame",False
+926,"AcceleratorCard","加速卡","可以让未来主机渲染3D画面。",0,White,1,1,0,"MiniGame",False
+927,"Cartridge_BubblePop","碳酸危鸭","游戏卡带：碳酸危鸭，游戏名字的灵感来源于J-lab的那些实验体。",4,Orange,1,1,6543,"MiniGame",False
+928,"Cartridge_FactoryPanicShock","*Item_Cartridge_FactoryPanicShock*","*Item_Cartridge_FactoryPanicShock_Desc*",999,Orange,1,1,7654,"MiniGame",False
+929,"Cartridge_GoldMiner","鸭鸭矿工","游戏卡带：鸭鸭矿工，这下挖矿不需要显卡了。",4,Orange,1,1,5432,"MiniGame",False
+930,"ColorMonitor","彩色显示器","可以显示彩色内容的显示器。",5,Orange,1,1,7688,"MiniGame",False
+931,"EGun_Magic_Ring_Mushroom","???","???",9,White,1,1,284,"Weapon",False
+932,"Stone","小石头","可以发出声响，吸引敌人。",1,White,12,4,10,"Tool",False
+933,"ToxGrenade","毒雾弹","可以放出毒烟，在烟雾中会中毒，受到持续伤害。",4,Green,1,1,680,"Explosive",False
+934,"Helmat_Soda_battery1","*Item_Helmat_Soda_battery1*","*Item_Helmat_Soda_battery1_Desc*",93,Green,1,1,1183,"Helmat",False
+935,"Helmat_Soda_battery2","*Item_Helmat_Soda_battery2*","*Item_Helmat_Soda_battery2_Desc*",94,Purple,1,1,2551,"Helmat",False
+936,"Helmat_Soda_Bucket","罐子头盔","非常硬的头盔，但是戴上就看不见了，也挡不了几颗子弹。",92,Green,1,1,685,"Helmat",False
+937,"Helmat_Soda_Displayer","*Item_Helmat_Soda_Displayer*","*Item_Helmat_Soda_Displayer_Desc*",94,Orange,1,1,5866,"Helmat",False
+938,"Shit","粑粑","臭臭的，但好像有东西喜欢这个。",1,White,5,1,10,"Shit",False
+939,"Shit_Fly","粑粑","臭臭的，但好像有东西喜欢这个。",99,Green,1,1,580,"Special",False
+940,"Shit_FlyBoss","粑粑","臭臭的，但好像有东西喜欢这个。",99,Green,1,1,580,"Special",False
+941,"FireGrenade","燃烧弹","内部装满了燃料，可以点燃地面。",4,Green,1,1,680,"Explosive",False
+942,"ElecGrenade","电击手雷","储存着电力的强力手雷，能造成无视护甲的电属性伤害，对机械类敌人特别有效。",4,Green,1,1,780,"Explosive",False
+943,"Poop_ShitGun_Poison","噗噗枪","蝇蝇队员携带的枪，使用的子弹有些特殊。",9,Purple,1,1,4125,"Weapon",False
+944,"Bullet_Poop_Normal","粑粑弹","将屎分成了小份，这样就能塞进枪里了。",9,White,150,30,1,"Bullet",False
+945,"Backpack_Fly_Wing","蝇蝇翅膀","蝇蝇队所用的背包，重量相当轻，还能大幅提高负重能力，就是空间相当小。",4,Blue,1,1,1236,"Backpack",False
+946,"Poop_ShotShitGun_Poison","噗噗喷","蝇蝇队长携带的枪，使用的子弹有些特殊。",9,Orange,1,1,6630,"Weapon",False
+947,"Totem_Armor 3","图腾:甲胄 Ⅲ","极大提高防护属性，但受到的属性伤害也会提高。",5,Orange,1,1,6000,"Totem",False
+948,"Totem_Attack 2","图腾:攻击 II","造成的基础伤害提高。",999,Blue,1,1,2000,"Totem",False
+949,"Totem_Attack 3","图腾:攻击 Ⅲ","造成的基础伤害大幅提高，但对枪械的后坐力控制下降。",999,Orange,1,1,6000,"Totem",False
+950,"Totem_Attack","图腾:攻击 I","造成的基础伤害小幅提高。",999,White,1,1,350,"Totem",False
+951,"Totem_ElecResist 3","图腾:抗电 Ⅲ","免疫触电并略微降低受到的电属性伤害。",5,Orange,1,1,6000,"Totem",False
+952,"Totem_FinalDash 2","图腾：马拉松 Ⅱ","减少耐力消耗。",3,Blue,1,1,2000,"Totem",False
+953,"Totem_FinalDash 3","图腾：马拉松 Ⅲ","大幅减少耐力消耗。",4,Purple,1,1,3500,"Totem",False
+954,"Totem_FireResist 2","图腾:抗火 Ⅱ","免疫点燃。",4,Purple,1,1,3500,"Totem",False
+955,"Totem_FireResist 3","图腾:抗火 Ⅲ","免疫点燃并略微降低受到的火属性伤害。",5,Orange,1,1,6000,"Totem",False
+956,"Totem_FireResist","图腾:抗火 Ⅰ","降低受到的火属性伤害。",3,Blue,1,1,2000,"Totem",False
+957,"Totem_GunDamage 3","图腾:进击 Ⅲ","巨幅提高枪械的伤害，但会降低枪械的射程。",5,Orange,1,1,6000,"Totem",False
+958,"Totem_Healing 2","图腾:恢复 Ⅱ","若10秒内未受到伤害，缓慢中幅回复生命值。",3,Blue,1,1,2000,"Totem",False
+959,"Totem_Healing 3","图腾:恢复 Ⅲ","若10秒内未受到伤害，缓慢大幅回复生命值，但水分和能量的消耗速度会提高。",4,Purple,1,1,3500,"Totem",False
+960,"Totem_Healing","图腾:恢复 Ⅰ","若10秒内未受到伤害，缓慢小幅回复生命值。",2,Green,1,1,1000,"Totem",False
+961,"Totem_MaxHealth 2","图腾:生命 Ⅱ","中幅提高最大生命值。",2,Green,1,1,1000,"Totem",False
+962,"Totem_MaxHealth 3","图腾:生命 Ⅲ","巨幅提高最大生命值，但移动速度会略微下降。",5,Orange,1,1,6000,"Totem",False
+963,"Totem_MaxHealth","图腾:生命 Ⅰ","小幅提高最大生命值。",1,White,1,1,350,"Totem",False
+964,"Totem_Ninja 3","图腾:忍者 Ⅲ","大幅降低奔跑时的声音传播距离。",3,Blue,1,1,2000,"Totem",False
+965,"Totem_PhysicResist 2","图腾:抗物 Ⅱ","降低受到的物理伤害。",4,Purple,1,1,3500,"Totem",False
+966,"Totem_PhysicResist 3","图腾:抗物 Ⅲ","免疫流血并小幅降低受到的物理伤害。",5,Orange,1,1,6000,"Totem",False
+967,"Totem_PoisonResist 2","图腾:抗毒 Ⅱ","免疫中毒。",4,Purple,1,1,3500,"Totem",False
+968,"Totem_PoisonResist 3","图腾:抗毒 Ⅲ","免疫中毒并小幅降低受到的毒属性伤害。",5,Orange,1,1,6000,"Totem",False
+969,"Totem_PoisonResist","图腾:抗毒 Ⅰ","降低受到的毒属性伤害。",3,Blue,1,1,2000,"Totem",False
+970,"Totem_SpaceResist 2","图腾:抗空间 Ⅱ","免疫因空间属性子弹而受到的碎裂效果，但无法免疫空间风暴，且最大生命值会降低。",4,Purple,1,1,3500,"Totem",False
+971,"Totem_SpaceResist 3","图腾:抗空间 Ⅲ","免疫因空间属性子弹而受到的碎裂效果，但无法免疫空间风暴。",5,Orange,1,1,6000,"Totem",False
+972,"Totem_SpaceResist","图腾:抗空间 Ⅰ","降低受到的空间伤害。",3,Blue,1,1,2000,"Totem",False
+973,"FaceMask_Fly_Eye","蝇蝇眼镜","蝇蝇队戴着的眼镜，特殊的构造可以让他们更轻易地发现他们的食物。",4,Blue,1,1,577,"FaceMask",False
+974,"Totem_Efficiency 3","图腾:效率 Ⅲ","食物和医疗物品的效果提高。",3,Blue,1,1,2000,"Totem",False
+975,"Totem_Efficiency","图腾:效率 Ⅰ","食物的效果提高。",1,White,1,1,350,"Totem",False
+976,"Totem_GunControl 2","图腾:控枪 Ⅱ","大幅降低枪械的散布。",2,Green,1,1,1000,"Totem",False
+977,"Totem_GunControl 3_N","图腾:控枪 Ⅲ","降低枪械的后坐力与散布。",999,Blue,1,1,2000,"Totem",False
+978,"Totem_GunControl","图腾:控枪 Ⅰ","大幅降低枪械的后坐力。",1,White,1,1,350,"Totem",False
+979,"Totem_GunCritDamage 2","图腾:爆头 Ⅱ","大幅提高枪械的爆头伤害。",3,Blue,1,1,100,"Totem",False
+980,"Totem_GunCritDamage 3","图腾:爆头 Ⅲ","巨幅提高枪械的爆头伤害，但枪械的散布会增加。",4,Purple,1,1,3500,"Totem",False
+981,"Totem_GunCritDamage","图腾:爆头 Ⅰ","提高枪械的爆头伤害。",1,White,1,1,350,"Totem",False
+982,"Totem_GunDistance 2","图腾:狙击 Ⅱ","大幅提高枪械射程。",2,Green,1,1,1000,"Totem",False
+983,"Totem_GunDistance 3","图腾:狙击 Ⅲ","大幅提高枪械的射程与视野距离，但移动速度会略微下降。",3,Blue,1,1,2000,"Totem",False
+984,"Totem_GunDistance","图腾:狙击 Ⅰ","大幅提高视野距离。",1,White,1,1,350,"Totem",False
+985,"Totem_MeleeAttack 3","图腾:战士 Ⅲ","大幅增加近战输出，但近战的暴击伤害会降低。",4,Purple,1,1,3500,"Totem",False
+986,"Totem_MeleeCritRate 2","图腾:狂战 Ⅱ","近战暴击概率大幅提高。",3,Blue,1,1,2000,"Totem",False
+987,"Totem_MeleeCritRate 3","图腾:狂战 Ⅲ","近战暴击概率极大幅提高，但近战伤害倍率降低。",4,Purple,1,1,3500,"Totem",False
+988,"Totem_MeleeCritRate","图腾:狂战 Ⅰ","近战暴击概率提高。",1,White,1,1,350,"Totem",False
+989,"Totem_SenseRange 2","图腾:感知 Ⅱ","提高感知能力。",2,Green,1,1,1000,"Totem",False
+990,"Totem_SenseRange 3","图腾:感知 Ⅲ","当前感知能力越强提升越多的感知能力。",3,Blue,1,1,2000,"Totem",False
+991,"Totem_SenseRange","图腾:感知 Ⅰ","小幅提高感知能力。",1,White,1,1,350,"Totem",False
+992,"Totem_Speed 3","图腾:轻盈Ⅲ","大幅提高移动速度，但会持续损失生命。",5,Orange,1,1,6000,"Totem",False
+993,"Totem_Speed","图腾:轻盈 Ⅰ","小幅增加移动能力。",2,Green,1,1,1000,"Totem",False
+994,"Totem_Strong 2","图腾:健壮 Ⅱ","大幅增加背包容量。",3,Blue,1,1,2000,"Totem",False
+995,"Totem_Strong","图腾:健壮 Ⅰ","大幅提高负重能力。",2,Green,1,1,1000,"Totem",False
+996,"Aritichoke","洋蓟","高端的食材，烹饪方法也不太普通。",995,Purple,3,1,3847,"Crop",False
+997,"Aubergine","茄子","请不要拿它做奇怪的事情。",992,White,3,1,362,"Crop",False
+998,"Banana","香蕉","可以快速补充能量。",992,White,3,1,355,"Crop",False
+999,"Cauliflower","花椰菜","热量很低，健身人士的最爱。",993,Green,3,1,1095,"Crop",False
+1000,"Cherry","樱桃","红红的，很甜。",995,Purple,3,1,3892,"Crop",False
+1001,"Chilli","辣椒","看起来就相当辣。",993,Green,3,1,701,"Crop",False
+1002,"Coconut","椰子","开个孔就能喝到清甜的椰子水。",995,Purple,3,1,4574,"Crop",False
+1003,"Corn","玉米","非常好的能量来源，很适合拿来当作主食。",992,Green,3,1,455,"Crop",False
+1004,"Cucumber","黄瓜","清醒爽脆，是相当著名的负卡食物。",992,White,3,1,335,"Crop",False
+1005,"Garlic","大蒜","跟肉是绝配。",991,White,3,1,150,"Crop",False
+1006,"Grape","葡萄","很好吃，还能用来酿酒。",993,Green,3,1,850,"Crop",False
+1007,"Leek","韭葱","长得很像大葱，但味道更柔和一些。",995,Purple,3,1,3471,"Crop",False
+1008,"Lemon","柠檬","很酸，但是没有它不能搭配的饮料。",994,Blue,3,1,1764,"Crop",False
+1009,"Mango","芒果","很甜，非常适合做成甜品。",994,Blue,3,1,1832,"Crop",False
+1010,"Onion","洋葱","一想到要切开它，眼泪就会不自主地流下来。",991,White,3,1,192,"Crop",False
+1011,"Orange","橙子","酸酸的，维生素含量很高。",993,Green,3,1,888,"Crop",False
+1012,"Pear","梨","水分充足，听说还能润肺止咳。",993,Green,3,1,780,"Crop",False
+1013,"Pineapple","菠萝","酸甜可口，但吃之前最好先用盐水浸泡一下。",994,Blue,3,1,1999,"Crop",False
+1015,"Starfruit","杨桃","切开之后是个漂亮的五角星。",995,Purple,3,1,3835,"Crop",False
+1016,"Strawberry","草莓","好看又好吃。",994,Blue,3,1,2004,"Crop",False
+1017,"Tomato","西红柿","非常万能的蔬菜，能做各种各样的料理，直接吃味道也相当不错。",991,White,3,1,194,"Crop",False
+1018,"Watermelon","西瓜","没有西瓜的夏天是不完整的。",994,Blue,3,1,1986,"Crop",False
+1019,"Seed_Apple","苹果的种子","能种出苹果。",992,White,5,1,159,"Seed",False
+1020,"Seed_Aritichoke","洋蓟的种子","能种出洋蓟。",995,Green,5,1,912,"Seed",False
+1021,"Seed_Aubergine","茄子的种子","能种出茄子。",992,White,5,1,168,"Seed",False
+1022,"Seed_Banana","香蕉的种子","能种出香蕉。",992,White,5,1,153,"Seed",False
+1023,"Seed_Carrot","胡萝卜的种子","能种出胡萝卜。",991,White,5,1,62,"Seed",False
+1024,"Seed_Cauliflower","花椰菜的种子","能种出花椰菜。",993,Green,5,1,402,"Seed",False
+1025,"Seed_Cherry","樱桃的种子","能种出樱桃。",995,Green,5,1,982,"Seed",False
+1026,"Seed_Chilli","辣椒的种子","能种出辣椒。",993,White,5,1,278,"Seed",False
+1027,"Seed_Coconut","椰子的种子","能种出椰子。",995,Green,5,1,1129,"Seed",False
+1028,"Seed_Corn","玉米的种子","能种出玉米。",992,White,5,1,194,"Seed",False
+1029,"Seed_Cucumber","黄瓜的种子","能种出黄瓜。",992,White,5,1,153,"Seed",False
+1030,"Seed_Garlic","大蒜的种子","能种出大蒜。",991,White,5,1,75,"Seed",False
+1031,"Seed_Grape","葡萄的种子","能种出葡萄。",993,White,5,1,343,"Seed",False
+1032,"Seed_Leek","韭葱的种子","能种出韭葱。",995,Green,5,1,858,"Seed",False
+1033,"Seed_Lemon","柠檬的种子","能种出柠檬。",994,Green,5,1,533,"Seed",False
+1034,"Seed_Mango","芒果的种子","能种出芒果。",994,Green,5,1,571,"Seed",False
+1035,"Seed_Onion","洋葱的种子","能种出洋葱。",991,White,5,1,103,"Seed",False
+1036,"Seed_Orange","橙子的种子","能种出橙子。",993,White,5,1,355,"Seed",False
+1037,"Seed_Pear","梨的种子","能种出梨。",993,White,5,1,303,"Seed",False
+1038,"Seed_Pineapple","菠萝的种子","能种出菠萝。",994,Green,5,1,629,"Seed",False
+1039,"Seed_Potato","土豆的种子","能种出土豆。",991,White,5,1,114,"Seed",False
+1040,"Seed_Pumpkin","南瓜的种子","能种出南瓜。",993,White,5,1,310,"Seed",False
+1041,"Seed_Starfruit","杨桃的种子","能种出杨桃。",995,Green,5,1,965,"Seed",False
+1042,"Seed_Strawberry","草莓的种子","能种出草莓。",994,Green,5,1,608,"Seed",False
+1043,"Seed_Tomato","西红柿的种子","能种出西红柿。",991,White,5,1,95,"Seed",False
+1044,"Seed_Watermelon","西瓜的种子","能种出西瓜。",994,Green,5,1,660,"Seed",False
+1045,"Key_GroundZero_NavigationBoss","保险箱钥匙","打开零号区某处保险箱的钥匙。",2,Green,1,1,768,"SpecialKey",False
+1046,"Quest_DefenceShield","防御力场发生器","能够产生高能防御力场，用于解决星际航行中的那些太空垃圾的威胁。",6,Orange,1,1,5000,"Quest",False
+1047,"Quest_DeliverBox_DestoryOnBase_881","快递","赶紧送到收货人那！可别带回基地了！",3,White,1,1,1,"Quest",False
+1048,"Quest_DeliverBox_DestoryOnBase_882","快递","赶紧送到收货人那！可别带回基地了！",3,White,1,1,1,"Quest",False
+1049,"Quest_DeliverBox_DestoryOnBase_883","快递","赶紧送到收货人那！可别带回基地了！",3,White,1,1,1,"Quest",False
+1050,"Quest_DeliverBox_DestoryOnBase_884","快递","赶紧送到收货人那！可别带回基地了！",3,White,1,1,1,"Quest",False
+1051,"Quest_DeliverBox_DestoryOnBase_885","快递","赶紧送到收货人那！可别带回基地了！",3,White,1,1,1,"Quest",False
+1052,"Quest_DeliverBox_DestoryOnBase_886","快递","赶紧送到收货人那！可别带回基地了！",3,White,1,1,1,"Quest",False
+1053,"Quest_DeliverBox_DestoryOnBase_885_2","快递","赶紧送到收货人那！可别带回基地了！",3,White,1,1,1,"Quest",False
+1054,"Quest_DeliverBox_DestoryOnBase_887","快递","赶紧送到收货人那！可别带回基地了！",3,White,1,1,1,"Quest",False
+1055,"AR_AK47_Quest","特制AK47","特制的AK47，无法带回基地。",999,White,1,1,1,"Weapon",False
+1056,"AR_AUGA3_Quest","特制StG 77A3","特制的StG 77A3，无法带回基地。",999,White,1,1,1,"Weapon",False
+1057,"BR_M14_Quest","特制M14","特制的M14，无法带回基地。",999,White,1,1,1,"Weapon",False
+1058,"PST_Glick_Quest","特制格力克","特制的格力克，无法带回基地。",999,White,1,1,1,"Weapon",False
+1059,"SHT_MP155_Quest","特制MP-155","特制的MP-155，无法带回基地。",999,White,1,1,1,"Weapon",False
+1060,"SMG_SR3M_Quest","特制SR-3M","特制的SR-3M，无法带回基地。",999,White,1,1,1,"Weapon",False
+1061,"Sniper_Mosin_Quest","特制Mosin-Nagant","特制的莫辛纳甘，无法带回基地。",999,White,1,1,1,"Weapon",False
+1062,"Quest_Letter_StudentList","毕业生名单","这所学校的毕业生名单。",2,White,1,1,1,"Quest",False
+1063,"Key_Farm_HeadMasterRoom","校长室钥匙","农场镇学校校长室的钥匙。",4,White,1,1,136,"Key",False
+1064,"Quest_NBDetergent","特种洁厕灵","使用了特殊配方，洗厕所特别干净。",1,White,1,1,1,"Quest",False
+1065,"Quest_Farm_SpecialDrugs_1","腿疼特效药","可以治疗腿疼的特效药，看成分好像就是钙片。",1,White,1,1,50,"Quest",False
+1066,"Quest_Farm_SpecialDrugs_2","手疼特效药","可以治疗手指尖疼的靶向药，但除了这个，标签上什么都没写。",1,White,1,1,50,"Quest",False
+1067,"Quest_Farm_SpecialDrugs_3","头疼特效药","对头疼特别有效的药，反正标签上是这么写的。",1,White,1,1,50,"Quest",False
+1068,"Quest_Farm_SpecialDrugs_4","特效止疼药","止疼的特效药，吃下去不只是疼，可以说所有感觉都会失去。",1,White,1,1,50,"Quest",False
+1069,"Quest_Farm_SpecialDrugs_5","强效蛋白粉","双倍吸收力的蛋白粉，说明书上这么写的。",1,White,1,1,50,"Quest",False
+1070,"Injection_FireResist","火抗性针","一段时间内受到的火属性伤害降低。",3,Green,3,1,648,"Injector",False
+1071,"Injection_PoisonResist","毒抗性针","一段时间内受到的毒属性伤害降低。",3,Green,3,1,648,"Injector",False
+1072,"Injection_SpaceResist","空间抗性针","一段时间内受到的空间属性伤害降低，但无法抵御空间风暴。",3,Green,3,1,648,"Injector",False
+1073,"Quest_HeavyWheel","沉重的轮胎","非常重，无法带回基地。",1,White,1,1,1,"Quest",False
+1074,"Bat","棒球棍","很常见的木制棒球棍。",3,Green,1,1,689,"Weapon",False
+1075,"NailBat","带钉棒球棍","改造了的棒球棍，看着打人就很疼。",5,Purple,1,1,3669,"Weapon",False
+1076,"BP_Bullet_Poop_Normal","蓝图：屎弹","用于制造屎弹的蓝图。",9,White,1,1,50,"Formula",False
+1077,"Armor_FireLandProtect","石棉工作服","用石棉制成的防火工作服，穿着一整套可以不受到地面上火焰的伤害。",3,Green,1,1,1575,"Armor",False
+1078,"Helmat_FireLandProtect","石棉工作头盔","用石棉制成的防火工作头盔，穿着一整套可以不受到地面上火焰的伤害。",3,Green,1,1,861,"Helmat",False
+1079,"Armor_ElecLandProtect","橡胶工作服","用橡胶制成的防电工作服，穿上后可以不受到地面上电流的伤害。",3,Green,1,1,1265,"Armor",False
+1080,"Backpack_SBossElec_ResSpace","比利背包","实验体比利比利穿着的背包，能提高对电和空间属性的防御能力。",7,LightRed,1,1,2235,"Backpack",False
+1081,"Backpack_SBossFire_ResElec","啪啦背包","实验体啪啦啪啦穿着的背包，能提高对火和电属性的防御能力。",7,LightRed,1,1,2235,"Backpack",False
+1082,"Backpack_SBossPoison_LowDurResFire","咕噜背包","实验体咕噜咕噜穿着的背包，能提高对火和毒属性的防御能力。",7,LightRed,1,1,2235,"Backpack",False
+1083,"Helmat_Egg","碎蛋壳","破碎的蛋壳，里面还残留了一些蛋清。相当大，可以戴在头上。",2,Green,1,1,15,"Helmat",False
+1084,"Key_Apartment102","员工公寓102钥匙","员工公寓的钥匙，应该可以打开102的门。",2,Green,1,1,655,"Key",False
+1085,"Key_Apartment105","员工公寓105钥匙","员工公寓的钥匙，应该可以打开105的门。",3,Green,1,1,655,"Key",False
+1086,"Key_Apartment101","员工公寓101钥匙","员工公寓的钥匙，应该可以打开101的门。",3,Green,1,1,655,"Key",False
+1087,"Key_Dormitory101","宿舍楼101钥匙","一把宿舍楼的钥匙。也许可以打开101的门。",3,White,1,1,350,"Key",False
+1088,"FutureConsoleController","未来控制器","未来主机的手柄，把它安上才能开始玩游戏。",6,Orange,1,1,5166,"MiniGame",False
+1089,"SHT_TOZ66_Fire","TOZ-66龙息","装备了龙息弹药的TOZ-66，能够发射灼烧敌人的子弹。",9,Purple,1,1,2435,"Weapon",False
+1090,"GPUSLI","显示卡SLI","将3张显卡用相当先进的方法结合在一起，虽然会损失一些总体性能，但可以把它们装进一个矿机插槽里。",7,Red,1,1,64308,"ComputerParts_GPU",False
+1091,"BP_GPUSLI","显示卡SLI","在工作台解锁显示卡SLI制作的蓝图，方法简单明了，即使没有电子工程知识也能看懂。",5,Orange,1,1,50,"Formula",False
+1092,"Quest_916_ElectricParts_Ming","一堆电子零件","一大堆电子原件。",3,White,1,1,10,"Quest",False
+1093,"Armor_FC","高手护甲","游戏高手的象征。",6,Orange,1,1,1265,"Armor",False
+1094,"BP_ColorMonitor","蓝图：彩色显示器","用于在工作台制造彩色显示器的蓝图。",6,White,1,1,50,"Formula",False
+1095,"FishingRod_LV2","好钓竿","还算不错的钓竿。",3,Blue,1,1,1287,"Tool",False
+1096,"FishingRod_LV3","厉害钓竿","非常厉害的钓竿。",4,Purple,1,1,4287,"Tool",False
+1097,"Fish_Black_Snapper","绿鲷鱼","体型很平常，但深绿色相当少见。",992,Green,1,1,1066,"Fish",False
+1098,"Fish_Blue_Damselfish","蓝雀鲷鱼","很活泼，爱东游西窜的。",992,Green,1,1,996,"Fish",False
+1099,"Fish_Blue_Jack_Mackerel","青南乳鱼","细细长长，一般成群活动。",3,Blue,1,1,1715,"Fish",False
+1100,"Fish_Blue_Mackerel","蓝鲭鱼","身体呈流线型，游得非常快。",991,Green,1,1,506,"Fish",False
+1101,"Fish_Blue_Marlin","蓝枪鱼","鱼嘴又长又粗，看起来很威风。",994,Purple,1,1,3762,"Fish",False
+1102,"Fish_Blue_Sailfish","蓝旗鱼","尖尖的嘴巴，背鳍像旗子。",994,Purple,1,1,4107,"Fish",False
+1103,"Fish_Blue_Tang","蓝吊鱼","通体是亮眼的蓝色，身体扁平，相当活泼。",992,Green,1,1,805,"Fish",False
+1104,"Fish_Brown_and_White_Grunt","棕白石鲈","身体呈棕白色的斑纹，常成群活动。",3,Blue,1,1,2063,"Fish",False
+1105,"Fish_Brown_Mullet","棕梭鱼","体型不大，但游起来很猛。",992,Green,1,1,1128,"Fish",False
+1106,"Fish_Brown_Sardine","棕沙丁鱼","在水里喜欢密密麻麻聚在一起，在水面上看着像一整条大鱼。",1,Green,1,1,497,"Fish",False
+1107,"Fish_Golden_Fish","黄金鱼","虽然只是黄色的金鱼，但是名字非常讨喜。",996,LightRed,1,1,12300,"Fish",False
+1108,"Fish_Green_Cod","绿胖头鱼","圆滚滚的，肉嫩嫩的，吃起来口感不错。",993,Blue,1,1,1640,"Fish",False
+1109,"Fish_Green_Triggerfish","绿背鳙鱼","鱼鳞硬硬的，嘴巴方方的，有点呆萌。",3,Blue,1,1,1578,"Fish",False
+1110,"Fish_Green_Yellow_Porcupinefish","绿黄鲀","身体上绿一块黄一块的。",993,Blue,1,1,2057,"Fish",False
+1111,"Fish_Grey_Catshark","蓝猫鲨鱼","体型不大，性子温和，看着不凶。",995,Orange,1,1,6084,"Fish",False
+1112,"Fish_Orange_Greenfin_Fish","橙青鳍鱼","鱼鳍带点青绿色，与橙色的身体形成了鲜明的对比。",994,Purple,1,1,4113,"Fish",False
+1113,"Fish_Orange_Squirrelfish","橙金鳞鱼","拥有亮晶晶的鳞片，很亮眼。",994,Purple,1,1,2979,"Fish",False
+1114,"Fish_Pink_Clownfish","粉金鱼","看着特别可爱，让人忍不住多看几眼。",1,Green,1,1,525,"Fish",False
+1115,"Fish_Purple_Damselfish","紫雀鲷鱼","体型很小，通体紫色，性情很活跃。",2,Green,1,1,814,"Fish",False
+1116,"Fish_Redfin_Flamefish","粉鳍火焰鱼","鱼鳍形似火焰，观赏性很强。",994,Purple,1,1,3798,"Fish",False
+1117,"Fish_Redfin_Snapper","红鳍鲷鱼","红色的鱼鳍相当显眼。",992,Green,1,1,785,"Fish",False
+1118,"Fish_Red_Banded_Fish","红九间鱼","身上带几道深色条纹，喜欢成群结队。",2,Green,1,1,983,"Fish",False
+1119,"Fish_Red_Goldfish","红金鱼","常见的观赏鱼，相当招人喜欢。",1,Green,1,1,515,"Fish",False
+1120,"Fish_Red_Grouper","大眼红鱼","肉吃起来特别鲜美，味道很棒。",3,Blue,1,1,1835,"Fish",False
+1121,"Fish_Red_Spotted_Grouper","红斑鱼","带点小斑点，是挺名贵的鱼。",995,Orange,1,1,6534,"Fish",False
+1122,"Fish_White_Angelfish","白燕鱼","鱼鳍较宽，像燕子的翅膀。",992,Green,1,1,1108,"Fish",False
+1123,"Fish_White_Cod","大头金鱼","白白胖胖，肉特别鲜美。",1,Green,1,1,492,"Fish",False
+1124,"Fish_White_Perch","白扁鱼","相当有名的食用鱼。",2,Green,1,1,1006,"Fish",False
+1125,"Fish_Yellow_Green_Snapper","黄绿鲷","黄绿相间，颜色相当特别。",994,Purple,1,1,3807,"Fish",False
+1126,"Fish_Yellow_Porcupinefish","绿刺豚","身上带刺，受惊吓了会鼓成个刺球。",2,Green,1,1,970,"Fish",False
+1127,"BP_SHT_TOZ66_Fire","蓝图：TOZ-66龙息","用于在工作台研发武器：TOZ-66龙息。",7,Blue,1,1,1500,"Formula",False
+1128,"PST_Glick_Space","空间格力克","小明用特殊的方法注入了空间能量的格力克，虽然其他方面没有提升，但可以使射出的子弹变为空间属性。",7,Orange,1,1,5150,"Weapon",False
+1130,"Backpack_FC","高手背包","游戏高手的象征。",6,Orange,1,1,2235,"Backpack",False
+1131,"ArtichokeFloret","洋蓟瓣","一小簇洋蓟，很多鱼都很喜欢。",95,White,3,1,212,"Bait",False
+1132,"CornKernel","玉米粒","*Item_CornKernel_Desc*",95,White,3,1,212,"Bait",False
+1133,"DicedMango","芒果丁","*Item_DicedMango_Desc*",95,White,3,1,212,"Bait",False
+1134,"Earthworm","蚯蚓","活的。",1,White,5,1,212,"Bait",False
+1135,"GrapeGrain","葡萄粒","*Item_GrapeGrain_Desc*",95,White,3,1,212,"Bait",False
+1136,"Helmat_PeakedCap","鸭舌帽","钓鱼佬的最爱。",5,Purple,1,1,965,"Helmat",False
+1137,"ArmorLV5_3","五级重型防弹衣","重且结实。",5,Orange,1,1,9323,"Armor",False
+1138,"ArmorLV4_3","四级重型防弹衣","耐久度很好，性价比很高的防弹衣，但在装载能力上做出了一定的妥协。",4,Purple,1,1,4808,"Armor",False
+1139,"ArmorLV3_2","三级重型防弹衣","更重，但也更持久。",3,Blue,1,1,2929,"Armor",False
+1140,"ArmorLV4_2","四级作战防弹衣","重量较轻，还拥有相当多的口袋。",4,Purple,1,1,3782,"Armor",False
+1141,"ArmorLV5_2","五级作战防弹衣","各项能力都相当均衡，就感觉有点小贵。",5,Orange,1,1,8158,"Armor",False
+1142,"ArmorLV3_3","三级作战防弹衣","在重量、耐久度方面表现相当平衡的防弹衣。",3,Blue,1,1,2485,"Armor",False
+1143,"HelmatLV1_2","坦克头盔","有一定的防护能力，但因为把耳朵也罩住了，会影响听力。",1,White,1,1,97,"Helmat",False
+1144,"HelmatLV2_2","二级轻型头盔","佩戴起来相当稳固。",2,Green,1,1,473,"Helmat",False
+1145,"HelmatLV3_2","三级轻型头盔","加厚了的制式装备，有更高的耐久度，但也会更重一些。",3,Blue,1,1,1479,"Helmat",False
+1146,"HelmatLV3_UN","维和头盔","特殊的轻量化设计，在保证了耐久度的同时，重量也更轻了。",3,Blue,1,1,1893,"Helmat",False
+1147,"HelmatLV4_2","四级防弹头盔","在防护性能和舒适度上表现都非常优秀。",4,Purple,1,1,3444,"Helmat",False
+1148,"HelmatLV5_1Hear","五级轻型头盔","在防护性能、轻量化、耐久性、成本方面表现都相当优秀，但特殊的造型使得佩戴耳机相当不便。",5,Orange,1,1,3787,"Helmat",False
+1149,"HelmatLV5_2","五级作战头盔","比较重，但防护性能相当出色的头盔。",5,Orange,1,1,6554,"Helmat",False
+1150,"Key_HiddenWarehouse_Cellar_Fork","地窖岔路钥匙","地窖中一处岔路的钥匙。",5,Blue,1,1,1952,"Key",False
+1151,"Key_Defense_System","防空系统密钥","用于激活防空系统的控制权限，防空系统就位于风暴区。",7,Orange,1,1,6000,"SpecialKey",False
+1152,"Grenade_SpaceBoss","*Item_Grenade_SpaceBoss*","*Item_Grenade_SpaceBoss_Desc*",9,Green,1,1,580,"Special",False
+1153,"Grenade_SpaceBoss_2","*Item_Grenade_SpaceBoss*","*Item_Grenade_SpaceBoss_Desc*",9,Green,1,1,580,"Special",False
+1154,"FishingBait","鱼饵","复合调配，各种鱼都很喜欢。",2,White,5,1,377,"Bait",False
+1155,"BP_ElecGrenade","蓝图：电击手雷","用于制造电击手雷的蓝图。",1,White,1,1,50,"Formula",False
+1156,"BP_FireGrenade","蓝图：燃烧弹","用于制造燃烧弹的蓝图。",1,White,1,1,50,"Formula",False
+1157,"BP_ToxGrenade","蓝图：毒雾弹","用于制造毒雾弹的蓝图。",1,White,1,1,50,"Formula",False
+1158,"Aquarium","水族箱","*Item_Aquarium_Desc*",2,Orange,1,1,500,"Special",False
+1159,"BP_BR_Storm_Space","蓝图：风暴枪","用于在工作台研发武器：风暴枪。",7,Blue,1,1,1500,"Formula",False
+1160,"Formula_FishingBait","配方：鱼饵","在工作台制作鱼饵的配方。",99,Green,1,1,655,"Formula",False
+1161,"BP_Bullet_PWL_L","蓝图：大型能量弹","用于制造大型能量弹的蓝图。",9,White,1,1,50,"Formula",False
+1162,"Bullet_PWS_H","强化小能量弹","强化了穿甲能力的小能量弹。",9,Blue,240,30,180,"Bullet",False
+1163,"ArmorLV1StormProtection","风暴工作服","使用特殊材质制造的工作服，虽然抵挡子弹的能力很差，但穿上一整套可以抵御空间风暴早期的扰动。",3,Blue,1,1,1288,"Armor",False
+1164,"Quest_Blueprint_ShipSpace","神秘飞船图纸","看不懂的图纸，好像是用来制造飞船的某个部件。",4,White,1,1,50,"Quest",False
+1165,"BlueCube","蓝色方块","神秘的蓝色方块，有种熟悉的感觉。",3,Blue,9999,1,10,"Special",False
+1166,"Backpack_Cubbe","方块收集装置","用来收集和储存蓝色方块的容器，使用说明书上写着可以存储灵魂能量。",7,LightRed,1,1,5288,"Backpack",False
+1167,"BP_FishingRod_LV2","蓝图：好钓竿","用于在工作台制造好钓竿的蓝图。",6,Green,1,1,500,"Formula",False
+1168,"BP_FishingRod_LV3","蓝图：厉害钓竿","用于在工作台制造厉害钓竿的蓝图。",6,Green,1,1,500,"Formula",False
+1169,"Key_JLab_MiniGameCartriage","J-Lab放映室钥匙","J-Lab实验室内某处放映室的钥匙，平时研究员会在里面放松放松。",5,Purple,1,1,2680,"Key",False
+1170,"fiber_Lv2","高级有机纤维","更结实的有机纤维，经常被用来制作轻型防弹衣。",3,Green,10,1,428,"Tool",False
+1171,"fiber_Lv3","顶级有机纤维","防护性能非常顶尖的有机纤维，常用来制造顶级的防弹衣与头盔。",4,Blue,10,1,1289,"Tool",False
+1172,"Knife_01_Blade","小直刀","使用轻量化材料制作，非常轻便。",2,Purple,1,1,3997,"Weapon",False
+1173,"Knife_02_Short","木柄短刀","普通的木柄短刀。",1,Blue,1,1,1367,"Weapon",False
+1174,"Knife_03_Knuckle","指虎刀","带有弹簧刀刃的指虎。",5,Red,1,1,41667,"Weapon",False
+1175,"Knife_04_Karambit","爪刀","刀刃全是蓝色，看上去就很贵。",6,Red,1,1,201680,"Weapon",False
+1176,"Knife_06_Gurkhakukri","廓尔喀弯刀","经典的刀型很容易砍出血来。",4,Red,1,1,25678,"Weapon",False
+1177,"Knife_07_Bayonet","战术刺刀","制式的军用刺刀。",1,Orange,1,1,8645,"Weapon",False
+1178,"KnifeBox","战术刀具箱","里面可能放着各种各样的刀具，请适度消费。",5,Orange,1,1,5000,"Luxury",False
+1179,"Formula_KnifeBox","配方：战术刀具箱","在工作台制作战术刀具箱的配方。",99,Green,1,1,429,"Formula",False
+1180,"CandyCan","自制糖果","甜食令人快乐。",3,Green,1,1,470,"Food",False
+1181,"Candy","棒棒糖","比赛前舔一舔，甜甜的，好吃。",1,White,3,1,101,"Food",False
+1182,"PeaceStar","和平星","愿世界和平！",5,LightRed,1,1,10127,"Gem",False
+1183,"FakePeaceStar","和平星","已经化作了粉末。",1,Green,1,1,970,"Luxury",False
+1184,"GunPowderLv5","高级火药","杂质更少，威力更高。",995,Purple,300,30,10,"Special",False
+1185,"BP_Bullet_AR_Piercing6","蓝图：AR-特种穿甲弹","用于在工作台制造AR-特种穿甲弹的蓝图。",0,White,1,1,50,"Formula",False
+1186,"BP_Bullet_BR_Piercing6","蓝图：L-特种穿甲弹","用于制造L-特种穿甲弹的蓝图。",0,White,1,1,50,"Formula",False
+1187,"BP_Bullet_MAG_Piercing6","蓝图：MAG-特种穿甲弹","用于制造MAG-特种穿甲弹的蓝图。",9,White,1,1,50,"Formula",False
+1188,"BP_Bullet_SHT_Break","蓝图：特种霰弹","用于制造特种霰弹的蓝图。",9,White,1,1,50,"Formula",False
+1189,"BP_Bullet_SMG_Break","蓝图：S-特种弹","用于制造S-特种弹的蓝图。",9,White,1,1,50,"Formula",False
+1190,"BP_Bullet_SNP_Piercing6","特种穿甲狙击弹","用于制造特种穿甲狙击弹的蓝图。",9,White,1,1,50,"Formula",False
+1191,"Key_Farm_NorthFactoryRoom","北厂区小屋钥匙","能打开农场镇北厂区内小屋的门。",3,White,1,1,101,"Key",False
+1192,"GunPowder_Blue","罐装火药","贴着蓝色标签的罐装火药。",3,Green,5,1,500,"Special",False
+1193,"GunPowder_Green","罐装火药","贴着绿色标签的罐装火药。",3,Green,5,1,500,"Special",False
+1194,"GunPowder_Red","罐装火药","贴着红色标签的罐装火药。",4,Green,5,1,800,"Special",False
+1195,"BP_Bullet_SNP_Piercing2","蓝图：穿甲狙击弹","用于制造穿甲狙击弹的蓝图。",9,White,1,1,50,"Formula",False
+1196,"BP_Bullet_AR_Piercing3","蓝图：AR-穿甲弹","用于制造AR-穿甲弹的蓝图。",9,White,1,1,50,"Formula",False
+1197,"BP_Bullet_AR_Piercing5","蓝图：AR-高级穿甲弹","用于制造AR-高级穿甲弹的蓝图。",9,White,1,1,50,"Formula",False
+1198,"BP_Bullet_BR_Piercing3","蓝图：L-穿甲弹","用于制造L-穿甲弹的蓝图。",9,White,1,1,50,"Formula",False
+1199,"BP_Bullet_BR_Piercing5","蓝图：L-高级穿甲弹","用于制造L-高级穿甲弹的蓝图。",9,White,1,1,50,"Formula",False
+1200,"BP_Bullet_MAG_Piercing2","蓝图：MAG-穿甲弹","用于制造MAG-穿甲弹的蓝图。",9,White,1,1,50,"Formula",False
+1201,"BP_Bullet_MAG_Piercing4","蓝图：MAG-高级穿甲弹","用于制造MAG-高级穿甲弹的蓝图。",9,White,1,1,50,"Formula",False
+1202,"BP_Bullet_SHT_Piercing3","蓝图：穿甲霰弹","用于制造穿甲霰弹的蓝图。",9,White,1,1,50,"Formula",False
+1203,"BP_Bullet_SHT_Piercing5","蓝图：高级穿甲霰弹","用于制造高级穿甲霰弹的蓝图。",9,White,1,1,50,"Formula",False
+1204,"BP_Bullet_SMG_Piercing3","蓝图：S-穿甲弹","用于制造S-穿甲弹的蓝图。",9,White,1,1,50,"Formula",False
+1205,"BP_Bullet_SMG_Piercing5","蓝图：S-高级穿甲弹","用于制造S-高级穿甲弹的蓝图。",9,White,1,1,50,"Formula",False
+1206,"BP_Bullet_SNP_Piercing4","蓝图：高级穿甲狙击弹","用于制造高级穿甲狙击弹的蓝图。",9,White,1,1,50,"Formula",False
+1207,"SaltedFish","战术咸鱼","一根腌的很透的咸鱼，梆硬。",6,Purple,1,1,2677,"MeleeWeapon",False
+1208,"ButcherKnife","猪肉刀","看上去很普通，但材质好像一点都不普通，甚至可以挡住子弹。",5,Purple,1,1,3769,"Weapon",False
+1209,"SMG_ArcadeGun_Normal","玩具枪","威力非常小。",7,Blue,1,1,1555,"Weapon",False
+1210,"Formula_Cola","配方：可乐","制造可乐的配方。",9,Green,1,1,1000,"Formula",False
+1213,"HelmatLV1StormProtection","风暴工作头盔","使用特殊材质制造的工作头盔，虽然抵挡子弹的能力很差，但穿上一整套可以抵御空间风暴早期的扰动。",3,Blue,1,1,768,"Helmat",False
+1214,"Quest_DefenceShield_Text","防御力场操作说明","手写的防御力场操作说明，字迹有些潦草，但看着有些熟悉。",4,White,1,1,350,"Quest",False
+1215,"BP_ArmorLV5","蓝图：五级防弹衣","用于在工作台制作五级防弹衣的蓝图。",7,Blue,1,1,1500,"Formula",False
+1216,"BP_ArmorLV5StormProtection","蓝图：空间防护服终极版","用于在工作台制作空间防护服终极版的蓝图。",7,Orange,1,1,9798,"Formula",False
+1217,"BP_ArmorLV5_2","蓝图：五级作战防弹衣","用于在工作台制作五级作战防弹衣的蓝图。",7,Blue,1,1,1500,"Formula",False
+1218,"BP_ArmorLV5_3","蓝图：五级重型防弹衣","用于在工作台制作五级重型防弹衣的蓝图。",7,Blue,1,1,1500,"Formula",False
+1219,"BP_ArmorLV6","蓝图：六级防弹衣","用于在工作台制作六级防弹衣的蓝图。",7,Blue,1,1,1500,"Formula",False
+1220,"BP_BackpackLV5","蓝图：行军背包MAX","用于在工作台制作行军背包MAX的蓝图。",7,Blue,1,1,1500,"Formula",False
+1221,"BP_HelmatLV5","蓝图：SCIFI面罩","用于在工作台制作SCIFI面罩的蓝图。",7,Blue,1,1,1500,"Formula",False
+1222,"BP_HelmatLV5StormProtection","蓝图：空间防护头盔最终版","用于在工作台制作空间防护头盔最终版的蓝图。",7,Orange,1,1,7898,"Formula",False
+1223,"BP_HelmatLV5_1Hear","蓝图：五级轻型头盔","用于在工作台制作五级轻型头盔的蓝图。",7,Blue,1,1,1500,"Formula",False
+1224,"BP_HelmatLV5_2","蓝图：五级作战头盔","用于在工作台制作五级作战头盔的蓝图。",7,Blue,1,1,1500,"Formula",False
+1225,"BP_HelmatLV6","蓝图：神之电焊头","用于在工作台制作神之电焊头的蓝图。",7,Blue,1,1,1500,"Formula",False
+1226,"Key_Farm_Nursing_Computer","疗养院机房钥匙","能打开疗养院内机房的门。",2,White,1,1,224,"Key",False
+1227,"Key_Farm_Nursing_Restaurant","疗养院餐厅钥匙","能打开疗养院内餐厅的门。",3,Green,1,1,439,"Key",False
+1228,"Key_Farm_Nursing_Room_1","疗养院房间钥匙-1","能打开疗养院内某个房间的门。",2,White,1,1,214,"Key",False
+1229,"Key_Farm_Nursing_Room_2","疗养院房间钥匙-2","能打开疗养院内某个房间的门。",3,White,1,1,377,"Key",False
+1230,"Accelerator","加速器","似乎是用来处理某种特殊晶体的机器。",3,Green,1,1,871,"JLab",False
+1231,"ConcentratedSlurry","浓缩浆质","忍不住想尝一口。",9,Green,1,1,500,"Special",False
+1232,"CrystalBattery","晶体电池","储存着巨大的电力。",999,Green,1,1,500,"Special",False
+1233,"CrystalFiltrationUnit","晶体过滤单元","似乎是用来处理某种特殊晶体的机器。",2,Green,1,1,518,"JLab",False
+1234,"CrystalBooster","晶体增压器","似乎是用来处理某种特殊晶体的机器。",2,Green,1,1,622,"JLab",False
+1235,"BulkSpaceCrystal","大块空间晶体","空间晶体的聚合体，小心一点可以将它拆开。",9,Purple,5,1,3600,"Special",False
+1236,"SpaceEye","风暴眼","风暴虫的眼睛。",9,White,10,1,300,"Special",False
+1237,"Formula_ConcentratedSlurry","配方：浓缩浆质","制造浓缩浆质的配方。",9,Orange,1,1,8888,"Formula",False
+1238,"AR_MF_Poison","MF-毒液","让射出的子弹裹上浓缩浆质，会让命中的目标中毒。",9,Orange,1,1,3956,"Weapon",False
+1239,"EGun_Magic_Red","???","???",9,White,1,1,284,"Weapon",False
+1240,"BP_AR_MF_Poison","蓝图：MF-毒液","用于在工作台研发武器：MF-毒液。",9,Green,1,1,1000,"Formula",False
+1241,"CarBattery","汽车电池","汽车用的高容量电池。",5,Orange,1,1,7515,"Tool",False
+1242,"RedEye","???","看起来不太稳定，不知道吃下去会怎么样？",2,Purple,1,1,3974,"Special",False
+1243,"Splint","骨夹板","用于快速治疗骨折。",1,White,1,1,105,"Medic",False
+1244,"SplintAdvanced","高级骨夹板","用于快速治疗骨折，可用多次。",3,Green,1,1,468,"Medic",False
+1245,"SurgicalKit","手术包","用于治疗创伤。",3,Green,1,1,488,"Medic",False
+1246,"SurgicalKitL","增强手术包","用于治疗创伤。",4,Blue,1,1,1678,"Medic",False
+1247,"Injection_BleedResist","止血针","移除流血状态，且一段时间内免疫流血。",2,Green,3,1,448,"Injector",False
+1248,"SmallAxe","斧子","平平无奇的斧子。",1,White,1,1,377,"Weapon",False
+1249,"Armor_Football_1","休闲套装","条纹Polo衫配红短裤。",9,White,1,1,230,"Armor",False
+1250,"Armor_Football_2","运动背心","破了几个洞。",9,White,1,1,160,"Armor",False
+1251,"FackMask_Football_Glass","金丝眼镜","没有镜片。",9,White,1,1,80,"FaceMask",False
+1252,"HeadsetLV2","橘子耳机","能够大幅提高听觉灵敏度，可以听到声音来自于哪个方向。",4,Purple,1,1,1850,"Headset",False
+1253,"GoldBadge","纯金徽章","纯金打造。",6,Red,1,1,55898,"Luxury",False
+1254,"Crown","皇冠","欲戴王冠，必承其重。",7,Red,1,1,21593218,"Luxury",False
+1255,"ToteBag","手提袋","顶级奢侈品牌推出的手提袋。",4,Orange,1,1,6666,"Luxury",False
+1256,"MoonShine","灵魂私酒","使用秘密配方酿造的私酒，传闻加入了可乐。",6,LightRed,1,1,12490,"Food",False
+1257,"ShitBall","粪球","可以扔出去。",1,White,5,1,10,"Shit",False
+1258,"EGun_AR_Storm_Virus","???","*Item_EGun_AR_Storm_Virus_Desc*",9,White,1,1,284,"Weapon",False
+1259,"Kazoo","卡祖笛","老吴的音乐梦想！",3,Purple,1,1,2688,"Luxury",False
+77550,"CustomItem_77550","浮力补偿设备SCUBA","用于蛙人特种部队的潜泳设备，作战队员佩戴设备时可自由在水面/水下状态时灵活调整浮力大小。",6,Red,1,1,39800,"Luxury",True
+77551,"CustomItem_77551","ECMO","ECMO(体外膜肺氧合)，使用人造体外循环系统替代心肺功能，为重症患者提供持续的氧合和血液循环支持，是挽救心肺衰竭患者生命的关键医疗设备。",6,Red,1,1,37800,"Luxury",True
+77552,"CustomItem_77552","近卫阿米娅手办","以阿米娅的近卫形象打造的两头身精致手办，只是看着就感觉惹人怜爱，想要收入囊中，好好滴珍藏！这可是隐藏款！！",6,Red,1,1,39000,"Luxury",True
+77553,"CustomItem_77553","阿米娅手办","以阿米娅的术士形象打造的两头身精致手办，只是看着就感觉惹人怜爱，想要收入囊中。",5,Orange,1,1,9000,"Gem",True
+77555,"CustomItem_77555","阿米娅手办?","阿米娅！我滴兔兔！！你滴耳朵呢？？？！！！",7,Red,1,1,50000,"Gem",True
+77560,"CustomItem_77560","机密实验数据A","一份从J-Lab实验室流出的机密数据，可以卖一个不错的价格",5,LightRed,1,1,10000,"Electric",True
+77561,"CustomItem_77561","机密实验数据B","一份从J-Lab实验室流出的机密数据，可以卖一个不错的价格",5,LightRed,1,1,10000,"Electric",True
+77562,"CustomItem_77562","机密实验文件C","一份从J-Lab实验室流出的机密数据，可以卖一个不错的价格",5,LightRed,1,1,10000,"Luxury",True
+77563,"CustomItem_77563","数码相机","一台功能完好的数码相机",4,Purple,1,1,3000,"Electric",True
+77565,"CustomItem_77565","钻戒","一枚钻戒，钻石闪闪发光，熠熠生辉",5,Orange,1,1,7900,"Luxury",True
+77566,"CustomItem_77566","金怀表","一块华丽的纯金怀表",4,Orange,1,1,5300,"Luxury",True
+77567,"CustomItem_77567","鸭科夫金杯","在鸭星十里八乡出名的金质手工艺品",4,Purple,1,1,3900,"Luxury",True
+77568,"CustomItem_77568","纯金打火机","一款以纯金打造的打火机，外壳采用24K或以上黄金铸造，表面细致打磨至镜面光泽，折射出温润而华贵的金色光芒。整机结构比普通打火机更为厚实、手感沉稳，有着明显的重量感，每次开启都伴随着“啪嗒”一声清脆的金属闭合音——那是金属与工匠精湛技艺的交响。",4,Orange,1,1,5500,"Luxury",True
+77569,"CustomItem_77569","鸭科夫金戒指","一枚巨大的金戒指，几乎可当作一枚沉重的扳指佩戴。整体由纯黄金铸造，表面抛光至镜面光泽，金色温润如同饱满的晨光。环体厚重，宽度、质感皆显精工，每一次转动戒指，都能听到黄金摩挲空气的低语。",5,Orange,1,1,7700,"Luxury",True
+77570,"CustomItem_77570","主战坦克模型","一台主战坦克模型，严格按照真实尺寸缩比制作，细节精致。炮塔与车身可电动旋转，让您全方位欣赏这台钢铁巨兽",6,Red,1,1,39500,"Gem",True
+77571,"CustomItem_77571","生化培养箱","便携式生物培养箱，机身采用轻量化铝合金与高强度ABS复合材料，配备精准温控与湿度调节系统，可在野外、移动实验室或紧急救援现场稳定维持细胞、微生物或组织培养所需环境。内置可拆卸多孔托盘与UV紫外消毒模块，确保无菌条件；触控式LCD操作界面加之无线联网功能，实时监测温湿度曲线与培养进度；高性能锂电池支持连续工作8小时以上，并具备防震减震与密封抗压设计，保障珍贵样本安全。",3,Purple,1,1,2880,"Electric",True
+77572,"CustomItem_77572","试管离心机","医用液体离心机，机身采用医用级ABS与航空铝合金一体成型，表面哑光处理，易于消毒与清洁。内置无刷直流电机与高精度涡轮转子，转速可调范围0–15,000 rpm，对应最大离心力可达20,000 × g，兼容0.2–15 ml多规格试管。配备一体化触控OLED显示屏，实时反馈转速、定时与RCF值；安全锁盖与不平衡自动检测系统，瞬间停止运转，确保实验过程绝对安全。机底置静音减振脚垫，噪音≤45 dB；USB-C数据接口可导出实验记录或升级固件。适用于临床血液分离、细胞沉淀、蛋白纯化与核酸提取等多种科研与医疗场景。",4,Purple,1,1,2900,"Electric",True
+77573,"CustomItem_77573","超声波皿器清洗仪","一台超声波皿器清洗仪，通过超声波产生的高频振动清洗试管皿器，实验必备",3,Blue,1,1,1600,"Electric",True
+77575,"CustomItem_77575","大珍珠","整体浑然天成，珠圆玉润的巨大天然珍珠，通体散发着明亮光泽，令人目眩神迷。",6,Red,1,1,30000,"Luxury",True
+77577,"CustomItem_77577","飞船燃料","尚未开封的20升装高性能航空燃料，专为飞船发动机设计，经过燃烧后可以为发动机提供澎湃动力。",6,LightRed,1,1,19900,"Luxury",True
+77578,"CustomItem_77578","小珍珠","颗粒状，闪烁着光泽的小型珍珠。聚集起来，抓起一小把，那是一种绝佳体验。是收藏的佳品。",4,Blue,1,1,2200,"Luxury",True
+77579,"CustomItem_77579","万金泪冠","万金泪冠，一件仿佛来自帝国梦境的奢华珠宝。整体以象牙白珐琅为基底，镶嵌璀璨蓝宝石与翡翠、红宝石等多色珍宝，细节处尽显宫廷工艺的极致繁复与精致。珠宝盒开启之间，一顶王冠缓缓升起，似在讲述一段失落王朝的荣耀与哀愁。金玉交织，冠下泪痕仿佛映照着命运的跌宕与不舍。",6,LightRed,1,1,17560,"Gem",True
+77580,"CustomItem_77580","名贵机械表","这枚名贵金质机械表外壳由纯金锻造，整体金光灿灿，却不张扬。表盘中的机械齿轮与摆轮清晰可见，微妙震动如同生命节拍般跳动。金质链带厚重而有质感，每一环都打磨光洁且略显磨损，暗示它被人经手、佩戴、见证过多个战局与承诺。",6,Red,1,1,20000,"Luxury",True
+77581,"CustomItem_77581","心脏支架","这是一整套专为冠状动脉植入设计的微型金属网管装置，包含多种规格的支架、导管与递送系统。支架由超薄合金材料编织成蜂巢状网框，外覆药物涂层以防止血管重新狭窄。",3,Blue,1,1,2200,"JLab",True
+77582,"CustomItem_77582","卫星电话","采用抗冲击外壳，整体尺寸略大于传统智能手机，手握有一定厚度与重量，却显露明确的使命感。它的天线可折叠或拔出，在开启状态下略微突起，暗示它连接的并非地面通信站，而是环绕鸭科夫星球轨道运行的卫星。",4,Orange,1,1,5300,"Electric",True
+77583,"CustomItem_77583","源石","一块来自别的世界的，散发着能量的石头。感觉可以当煤烧，但是无敌的直觉告诉你这是某种硬盘。",3,Purple,1,1,3000,"Luxury",True
+77585,"CustomItem_77585","非洲之心","世界上最大的钻石，璀璨夺目，象征着永恒的爱。价值无可估量。",6,Red,1,1,70000,"Gem",True
+77586,"CustomItem_77586","高性能笔记本电脑","一台无声中蕴含狂猛动力的“战场便携指挥中心”。整机黑色金属材质外壳如战车装甲，带有微微磨砂质地与冷冽光泽，散发着机械精密感。开盖瞬间，17 英寸或16 英寸高刷新率屏幕亮起，宛如战场广角侦察视窗；RGB背光键盘灯光逐字跳动，像是通讯频道翩然闪烁。",6,Red,1,1,25000,"Luxury",True
+77587,"CustomItem_77587","海洋之泪","世界上价格最高昂的珍珠之一，整体浑然天成，珠圆玉润的巨大天然珍珠，通体散发着镭射般的明亮光泽，令人目眩神迷。",6,Red,1,1,70000,"Gem",True
+77588,"CustomItem_77588","别尔哥罗德号潜艇模型","一件无比精致的，按比例还原的Belgorod号核潜艇模型，高度还原了其特征外形和冷峻气质：长约184米、宽约18米的巨大舰体缩成数十厘米模型，深灰色与海蓝色喷涂交错，甲板与船艏处细致刻画出潜望镜舱、舷窗、声呐阵列与尾部螺旋桨。模型材质为沉重金属与高强度树脂混合，触感冰冷坚实，似乎储存了深海压力与核动力的沉默能量。",6,Red,1,1,60000,"Gem",True
+77589,"CustomItem_77589","步战车模型","一辆比例缩放的步兵作战载具模型，车体虽缩小但细节丰富——金属＋树脂混合材料铸造，车轮、舱门、炮塔与侧装甲板皆清晰可见。模型车身喷涂迷彩图案，轮廓硬朗，仿佛实战版缩影。履带略有灰尘痕迹，履带齿与齿轮间隙真实，末端微微泛起金属光，揭示出曾被频繁操纵、搬移与展示的痕迹。",6,Red,1,1,27800,"Luxury",True
+77590,"CustomItem_77590","黑匣子","一套完整的飞行记录装置，由两个高度耐损模块组成：一个是飞行数据记录器 (FDR)，另一个是驾驶舱语音记录器 (CVR)。外壳采用高强度钢合金和钛材加固，涂装为醒目的国际红，以便在灾难残骸中快速识别。",6,Red,1,1,29800,"Luxury",True
+77591,"CustomItem_77591","机密实验数据EX","来自J-Lab的极其机密的实验数据，记录了J-Lab不为人知的各项黑色实验",5,LightRed,1,1,15660,"Electric",True
+77592,"CustomItem_77592","金香槟","鸭星上最豪华的香槟，能喝一口的话就是变成烤鸭也值得鸭",5,Red,1,1,27800,"Drink",True
+77593,"CustomItem_77593","纯金瞪羚","这件雕塑以瞪羚为造型，整件由纯黄金打造，外观沉稳中带有活力。雕塑中的瞪羚身体挺拔、角长而优雅，仿佛正准备跳跃跃起，其肌肉线条与身体曲线被工匠细致刻画。",5,LightRed,1,1,19000,"Luxury",True
+77595,"CustomItem_77595","金钢笔","这支钢笔几近艺术品，其笔身由纯金铸造，表面打磨至镜面光泽，光线投射下散出温润的金色光芒。笔帽与笔杆之间的接缝极细，仅有一条暗纹勾勒出工匠签名和限量编号。笔尖亦为黄金材质，镌刻着细密的花纹，轻触纸面时，如同羽毛拂过而流畅滑动。",4,Orange,1,1,9000,"Luxury",True
+77596,"CustomItem_77596","奢华古典留声机","这台古典奢华留声机以复古机械美学为灵魂，结合华丽装饰与精致工艺。机身采用深色实木与铜质喇叭，喇叭口呈漆金或铜金色，外缘轻微磨损，仿佛承载着岁月的回声。整体造型高挑优雅，木纹温润，金属部件在灯光下散射出淡淡光芒。",5,Red,1,1,23660,"Luxury",True
+77597,"CustomItem_77597","神秘牛角","神秘的牛角，当你凝视牛角时，牛角也在凝视你",4,Orange,1,1,8760,"Luxury",True
+77598,"CustomItem_77598","纪念勋章","一块用来表彰鸭星杰出鸭鸭的勋章",5,Orange,1,1,7700,"Luxury",True
+77599,"CustomItem_77599","医疗机器人","——非常擅长烤鸭？机体主体由铂金灰金属合金构成，表面带有细微的碳纤维纹理与哑光银质饰条，显露高科技与严谨感。机械臂至少具备六到九个自由度，关节连接处采用滚珠轴承滑轨，动作平滑、静默。末端装配模块化工具盘：包括微型镊、激光切割器、超声探头与自动缝合器，均能快速交换。",6,Red,1,1,47000,"Gem",True
+77600,"CustomItem_77600","军用信息终端","这是一款专为前线作战与战术部署打造的便携信息终端。其外壳采用耐冲击合金与密封结构，经过军规认证以适应高温、低温、灰尘、震动、湿润等极端环境。",5,LightRed,1,1,18990,"Electric",True
+77601,"CustomItem_77601","便携军用暖气片","一台便携军用大功率暖气片，温暖你一冬天————？",6,Red,1,1,100800,"Electric",True
+77602,"CustomItem_77602","蓝宝石龙舌兰","葡萄美酒夜光杯，你和掩体一起飞",5,LightRed,1,1,16800,"Drink",True
+77603,"CustomItem_77603","复苏呼吸机","宛如移动的生命守护塔，其机身被设计为坚固的金属外壳，搭配消音风扇与冷却散热网，给人一种“即便暴风骤雨也能维持呼吸节拍”的印象。面板上布满背光按钮、旋钮与彩色液晶屏幕，屏幕中显示着温度、呼气压、氧浓度、潮气量等参数——这些数字闪烁便是生命在挣扎中的彰显。",6,Red,1,1,59990,"Gem",True
+77605,"CustomItem_77605","天圆地方","这件浑天仪由数条金属圆环交错组成，环中悬挂一个细致的黄金球体。其结构仿佛凝聚了天空、星辰与时间的形态。将其置于光影交错的环境中，光线从金属环的边缘反射出来，投射出淡淡的网格影子在桌面上。你能仿佛听到岁月在其齿轮间低语——每一次旋转、每一条刻度，都带有对宇宙法则的敬畏与求索。",6,Red,1,1,47000,"Gem",True
+77606,"CustomItem_77606","荷美尔陶俑","一件精致的陶俑，是鸭星比较出名的手工艺品",4,Orange,1,1,7300,"Luxury",True
+77607,"CustomItem_77607","座钟","丧钟为谁而鸣？",5,LightRed,1,1,17500,"Luxury",True
+77608,"CustomItem_77608","全家福","一张危机之前的全家福",3,Purple,1,1,3000,"Backpack",True
+77609,"CustomItem_77609","源石碎片","源石的碎片，也蕴含这部分能量，要不要试试烧一下？",3,Purple,1,1,2700,"Luxury",True
+77610,"CustomItem_77610","瓶装咖啡","一瓶精致的瓶装咖啡，上面写着“香稠J-Lab出品特制香浓咖啡”",4,Orange,1,1,5000,"Food",True
+77611,"CustomItem_77611","方粥","方形的粥，所以是方粥（确信",5,Orange,3,1,8600,"Food",True
+77612,"CustomItem_77612","三角粥","三角形的粥，所以是三角粥（确信",5,Orange,3,1,8300,"Food",True
+77613,"CustomItem_77613","邪恶猫耳女印象派画作","'我说来人了别吃了！！！尼尔多隆吗！！'——————你仿佛听见她在说",7,Red,1,1,2380000,"Misc",True
+77615,"CustomItem_77615","万足金条","沉甸甸，精美的金砖，上面刻着“9999”",6,Red,1,1,32000,"Luxury",True
+77616,"CustomItem_77616","黄金鸟窝","以黄金打造的鸟窝工艺品：鸟窝外壳由纯金铸造，细密的鸟巢纹理仿佛真实羽羽交绕，金丝细线编织般绕成蜿蜒的环带，纹理之间流光溢彩，仿佛晨光映照在羽毛与枝条交错的缝隙中。窝内卧着数枚黄金鸟蛋，每枚金蛋表面都熠熠生辉。",6,Red,1,1,31300,"Luxury",True
+77617,"CustomItem_77617","棘龙角化石","化石形态极具震撼，呈沉灰-褐色，骨质结构清晰可见：粗壮的椎骨沿着背部延伸，其上方残留长长的神经棘痕迹，宛如曾撑起一面巨大帆状结构。骨骼表面布满细小裂纹与矿化沉积，岁月的痕迹在化石纤维与岩石交界处显现。",6,Red,1,1,35300,"Luxury",True
+77618,"CustomItem_77618","军用远距离通信终端","一台军用远距离通信终端。和远距离卫星通讯天线组合成一套。在荒野撤退、山谷伏击、远程前哨情况下，这台通讯仪成为唯一连接指挥中心、无人侦察机回传、战术支援与救援包投的“生命线”。其机体虽便携，却承载着数据流、命令链、情报与反馈的重任。",6,Red,1,1,37300,"Electric",True
+77619,"CustomItem_77619","远距离卫星通讯天线","便携军用卫星通讯天线，其外壳以钛合金与高强度塑料混合构造，整体设计坚固且轻量化，适合在野外、突袭或移动车辆中携带使用。设备正面为一块抗反射触控显示屏和数据输入盘，配有折叠式卫星天线（可快速展开连接至轨道卫星），背部还设有手提把手与背包固定挂钩，便于一人迅速部署或转移位置。",6,Red,1,1,32300,"JLab",True
+77620,"CustomItem_77620","金质发条八音盒","一只圆形的奢华发条八音盒，整体采用金色金属材质打造，表面镜面打磨光亮，宛如一枚静置在古典音乐厅中央的工艺杰作。轻旋底部的小钥匙，优雅的齿轮开始转动，伴随金属弹簧的微响，音簧缓缓起振，旋律缓缓响起——每一个音符都像金色光点在空气中跳跃。",5,LightRed,1,1,12500,"JLab",True
+77621,"CustomItem_77621","军用高能炸药","专为战场破坏与突袭任务设计的军用高能炸药箱，外壳由铆钉加固的厚钢板构成，涂以军用橄榄绿或迷彩棕，边缘和折角处已有擦痕与弹壳残留的碳灰，暗示其多次转运、部署与临战使用。箱体四角设有重型提手与固定脚座，可在战地迅速固定、搬运或安置。",5,LightRed,1,1,11520,"JLab",True
+77622,"CustomItem_77622","高能燃料电池","用于战术或远征环境的高性能燃料电池，整体设计低调而功能至上。机体采用厚重的黑色合金与复合塑料外壳，表面带有轻微磨砂质感，四角装有防滑橡胶垫。顶部短条LCD显示当前输出功率与剩余燃料容量，旁边刻着型号标签与安全警示“Caution: High Voltage / Refuel Only Specified Fuel”。",5,LightRed,1,1,11720,"JLab",True
+77623,"CustomItem_77623","高级咖啡豆","一袋高级咖啡豆，内置了一包应急饮用水，加热袋，和手持小型电动研磨器，可以直接冲泡出香浓的咖啡，提神醒脑，喝完继续生龙活虎。",5,LightRed,1,1,17720,"JLab",True
+77625,"CustomItem_77625","高级鱼子酱","这罐鱼子酱被视为鸭星的极致奢侈品珍馐，其蛋粒源自名贵鲟鱼。其不仅是味觉的享受，更象征身份、仪式与极致奢华。它可被摆放于宴会正中央、贵宾席上，亦可以作为极具价值的馈赠或交换物。",6,Red,1,1,28620,"JLab",True

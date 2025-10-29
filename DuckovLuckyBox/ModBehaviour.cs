@@ -63,7 +63,7 @@ namespace DuckovLuckyBox
             if (SettingManager.Instance.EnableDebug.GetAsBool())
             {
                 Log.Warning("Debug mode is enabled.");
-                DebugUtils.DumpAllItemMetadataCSV();
+                DebugUtils.DumpItemsToCSV();
             }
         }
 

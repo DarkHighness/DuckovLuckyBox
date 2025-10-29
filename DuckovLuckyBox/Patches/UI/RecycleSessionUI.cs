@@ -22,24 +22,6 @@ namespace DuckovLuckyBox.Core
   {
     private const int ContractSize = 5;
     private const float ContractVerticalOffset = -120f;
-    public static readonly string[] RecyclableCategories =
-    {
-        "Gem",
-        "Food",
-        "Weapon",
-        "MeleeWeapon",
-        "Helmat",
-        "Medic",
-        "FaceMask",
-        "Armor",
-        "Luxury",
-        "Injector",
-        "Electric",
-        "Totem",
-        "Tool",
-        "Bullet"
-      };
-
     private static RecycleSessionUI? _instance;
     public static RecycleSessionUI Instance => _instance ??= new RecycleSessionUI();
 
@@ -1129,7 +1111,7 @@ namespace DuckovLuckyBox.Core
       bool isFirstItem = currentCount == 0;
       ItemValueLevel? rewardLevel = null;
 
-      if (string.IsNullOrEmpty(category) || !RecyclableCategories.Contains(category))
+      if (string.IsNullOrEmpty(category) || !ItemUtils.RecyclableCategories.Contains(category))
       {
         return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.ItemNotValidForContractKey.ToPlainText());
       }
@@ -1183,7 +1165,7 @@ namespace DuckovLuckyBox.Core
 
         rewardLevel = (ItemValueLevel)nextLevelValue;
 
-        if (!RecycleService.HasCategoryItemAtLevel(RecyclableCategories, rewardLevel.Value))
+        if (!RecycleService.HasCategoryItemAtLevel(ItemUtils.RecyclableCategories, rewardLevel.Value))
         {
           return ContractValidationResult.Invalid(category, quality, true, Localizations.I18n.RecycleNoTargetUpgradeKey.ToPlainText());
         }
@@ -1646,7 +1628,7 @@ namespace DuckovLuckyBox.Core
           if (rewardLevel.HasValue)
           {
             Log.Debug($"[Recycle:CompleteContract] Picking item at level {rewardLevel.Value}");
-            reward = await RecycleService.PickRandomItemByCategoriesAndQualityAsync(RecyclableCategories, rewardLevel.Value);
+            reward = await RecycleService.PickRandomItemByCategoriesAndQualityAsync(ItemUtils.RecyclableCategories, rewardLevel.Value);
           }
 
           if (reward == null)

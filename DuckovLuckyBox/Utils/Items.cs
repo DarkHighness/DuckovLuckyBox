@@ -8,7 +8,9 @@ using UnityEngine;
 
 namespace DuckovLuckyBox
 {
+
   using ItemPredicate = Func<Entry, bool>;
+
   public class Entry
   {
     public Item Item;
@@ -25,6 +27,33 @@ namespace DuckovLuckyBox
 
   public static class ItemUtils
   {
+
+    public static readonly string[] RecyclableCategories =
+    {
+        "Drink", // Addon
+        "Special",
+        "JLab",
+        "Key",
+        "Daily",
+        "Gem",
+        "Food",
+        "Headset",
+        "Accessory",
+        "Backpack",
+        "Weapon",
+        "MeleeWeapon",
+        "Helmat",
+        "Medic",
+        "FaceMask",
+        "Armor",
+        "Luxury",
+        "Injector",
+        "Electric",
+        "Totem",
+        "Tool",
+        "Bullet"
+      };
+
     public static List<Entry> QueryGameItems(ItemPredicate predicate, bool includeDynamicItems = true)
     {
       var result = new List<Entry>();
@@ -61,12 +90,11 @@ namespace DuckovLuckyBox
               if (dynamicEntry != null)
               {
                 var dynamicItem = dynamicEntry.prefab;
-                var metaDataField = AccessTools.Field(typeof(ItemAssetsCollection.DynamicEntry), "metaData");
-                var dynamicMetaData = metaDataField?.GetValue(dynamicEntry) as ItemMetaData?;
+                var dynamicMetaData = dynamicEntry.MetaData;
 
-                if (dynamicItem != null && dynamicMetaData != null)
+                if (dynamicItem != null)
                 {
-                  var entry = new Entry(dynamicItem, (ItemMetaData)dynamicMetaData);
+                  var entry = new Entry(dynamicItem, dynamicMetaData);
                   if (predicate(entry))
                   {
                     result.Add(entry);
@@ -74,10 +102,7 @@ namespace DuckovLuckyBox
                 }
                 else
                 {
-                  if (dynamicItem == null)
-                    Log.Warning($"[ItemUtils.QueryGameItems] Dynamic item is null for entry {kvp.Key}");
-                  if (dynamicMetaData == null)
-                    Log.Warning($"[ItemUtils.QueryGameItems] Dynamic metadata is null for entry {kvp.Key}");
+                  Log.Warning($"[ItemUtils.QueryGameItems] Dynamic item is null for entry {kvp.Key}");
                 }
               }
               else
