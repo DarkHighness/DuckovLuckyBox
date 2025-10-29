@@ -20,13 +20,13 @@ namespace DuckovLuckyBox.UI
         private static LotteryAnimation? _instance;
         public static LotteryAnimation Instance => _instance ??= new LotteryAnimation();
 
-        private LotteryAnimation() {}
+        private LotteryAnimation() { }
 
-        private bool _isInitialized;
+        private bool _isInitialized = false;
         private RectTransform? _overlayRoot;
         private static RectTransform? _viewport;
         private static RectTransform? _itemsContainer;
-    private static Graphic? _centerPointer;
+        private static Graphic? _centerPointer;
         private static TextMeshProUGUI? _resultText;
         private static CanvasGroup? _canvasGroup;
         private static Sprite? _fallbackSprite;
@@ -984,28 +984,29 @@ namespace DuckovLuckyBox.UI
         /// </summary>
         public void Destroy()
         {
-          if (_overlayRoot != null)
-          {
-            UnityEngine.Object.Destroy(_overlayRoot.gameObject);
-            _overlayRoot = null;
-          }
+            if (_overlayRoot != null)
+            {
+                UnityEngine.Object.Destroy(_overlayRoot.gameObject);
+                _overlayRoot = null;
+            }
 
-          if (_canvas != null)
-          {
-            UnityEngine.Object.Destroy(_canvas.gameObject);
-            _canvas = null;
-          }
+            if (_canvas != null)
+            {
+                UnityEngine.Object.Destroy(_canvas.gameObject);
+                _canvas = null;
+            }
 
-          _viewport = null;
-          _itemsContainer = null;
-          _centerPointer = null;
-          _resultText = null;
-          _canvasGroup = null;
-          _fallbackSprite = null;
-          _isAnimating = false;
-          _skipRequested = false;
-          _velocityCurve = null;
-          _isInitialized = false;
+            _viewport = null;
+            _itemsContainer = null;
+            _centerPointer = null;
+            _resultText = null;
+            _canvasGroup = null;
+            _fallbackSprite = null;
+            _isAnimating = false;
+            _skipRequested = false;
+            _velocityCurve = null;
+            _isInitialized = false;
+            _instance = null;
         }
 
         private readonly struct Slot

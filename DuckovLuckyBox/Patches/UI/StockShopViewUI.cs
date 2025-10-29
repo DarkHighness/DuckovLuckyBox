@@ -96,6 +96,7 @@ namespace DuckovLuckyBox.Core
       isOpen = true;
       // Show UI elements
       UpdateUIElementsVisibility();
+      UpdateButtonTexts();
     }
 
     public void Close()

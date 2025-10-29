@@ -234,6 +234,8 @@ namespace DuckovLuckyBox.Core
 
       // Clear all references
       _itemOrigins.Clear();
+      _monitoredDisplays.Clear();
+      _suppressedDoubleClickHandlers.Clear();
       CleanupTooltip();
 
       // Destroy contract inventory object
@@ -269,6 +271,20 @@ namespace DuckovLuckyBox.Core
       _confirmButtonLabel = null;
       _clearButton = null;
       _clearButtonLabel = null;
+
+      // Reset other references
+      _view = null;
+      _textTemplate = null;
+      _detailsFadeGroup = null;
+      _savedSelectedDisplay = null;
+      _targetQuality = null;
+      _rewardQuality = null;
+
+      // Reset state flags
+      _visible = false;
+      _busy = false;
+      _transferring = false;
+      isOpen = false;
 
       _instance = null;
       isInitialized = false;
@@ -1568,14 +1584,20 @@ namespace DuckovLuckyBox.Core
 
     private async UniTask CompleteContractAsync()
     {
+      Log.Debug("[Recycle:CompleteContract] Starting contract completion");
+
       if (_busy || _contractInventory == null)
       {
+        Log.Debug($"[Recycle:CompleteContract] Aborting - busy: {_busy}, contractInventory null: {_contractInventory == null}");
         return;
       }
 
       var items = _contractInventory.Content.Where(i => i != null).ToList();
+      Log.Debug($"[Recycle:CompleteContract] Found {items.Count} items in contract (required: {ContractSize})");
+
       if (items.Count < ContractSize)
       {
+        Log.Debug("[Recycle:CompleteContract] Not enough items, aborting");
         return;
       }
 
@@ -1585,7 +1607,9 @@ namespace DuckovLuckyBox.Core
       try
       {
         var rewardLevel = _rewardQuality;
+        Log.Debug($"[Recycle:CompleteContract] Target reward level: {rewardLevel}");
 
+        Log.Debug("[Recycle:CompleteContract] Destroying submitted items");
         foreach (var item in items)
         {
           _contractInventory.RemoveItem(item);
@@ -1598,17 +1622,20 @@ namespace DuckovLuckyBox.Core
 
         // If all submitted items are bullets, use bullet-only logic and return a full stack bullet
         bool allBullets = items.All(i => RecycleService.GetItemCategory(i.TypeID) == "Bullet");
+        Log.Debug($"[Recycle:CompleteContract] All items are bullets: {allBullets}");
 
         if (allBullets)
         {
           if (rewardLevel.HasValue)
           {
+            Log.Debug($"[Recycle:CompleteContract] Picking bullet stack at level {rewardLevel.Value}");
             reward = await RecycleService.PickRandomBulletStackByQualityAsync(rewardLevel.Value);
           }
 
           if (reward == null)
           {
             var fallbackLevel = DetermineTargetValueLevel(items);
+            Log.Debug($"[Recycle:CompleteContract] Bullet reward failed, using fallback level {fallbackLevel}");
             reward = await RecycleService.PickRandomBulletStackByQualityAsync(fallbackLevel);
           }
         }
@@ -1616,12 +1643,14 @@ namespace DuckovLuckyBox.Core
         {
           if (rewardLevel.HasValue)
           {
+            Log.Debug($"[Recycle:CompleteContract] Picking item at level {rewardLevel.Value}");
             reward = await RecycleService.PickRandomItemByCategoriesAndQualityAsync(RewardCategories, rewardLevel.Value);
           }
 
           if (reward == null)
           {
             var fallbackLevel = DetermineTargetValueLevel(items);
+            Log.Debug($"[Recycle:CompleteContract] Item reward failed, trying fallback level {fallbackLevel}");
             reward = await TryCreateRewardItem(fallbackLevel);
           }
         }
@@ -1630,13 +1659,18 @@ namespace DuckovLuckyBox.Core
 
         if (reward == null)
         {
+          Log.Debug("[Recycle:CompleteContract] No reward generated, showing failure notification");
           NotificationText.Push(Localizations.I18n.RecyclingFailedKey.ToPlainText());
           return;
         }
 
+        Log.Debug($"[Recycle:CompleteContract] Generated reward: {reward.DisplayName} (quality: {QualityUtils.GetCachedItemValueLevel(reward)})");
+
         // Play reward animation
+        Log.Debug("[Recycle:CompleteContract] Playing reward animation");
         await RecycleAnimation.Instance.PlayAsync(reward);
 
+        Log.Debug("[Recycle:CompleteContract] Adding reward to player inventory");
         if (!ItemUtilities.SendToPlayerCharacterInventory(reward))
         {
           ItemUtilities.SendToPlayerStorage(reward);
@@ -1646,6 +1680,8 @@ namespace DuckovLuckyBox.Core
             .Replace("{itemDisplayName}", reward.DisplayName);
         NotificationText.Push(message);
         AudioManager.Post("UI/buy");
+
+        Log.Debug("[Recycle:CompleteContract] Contract completed successfully");
       }
       catch (Exception ex)
       {
@@ -1655,6 +1691,7 @@ namespace DuckovLuckyBox.Core
       {
         _busy = false;
         UpdateActionButtonsState();
+        Log.Debug("[Recycle:CompleteContract] Contract completion finished");
       }
     }
 

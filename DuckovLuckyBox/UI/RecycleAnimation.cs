@@ -19,9 +19,9 @@ namespace DuckovLuckyBox.UI
     private static RecycleAnimation? _instance;
     public static RecycleAnimation Instance => _instance ??= new RecycleAnimation();
 
-    private RecycleAnimation() {}
+    private RecycleAnimation() { }
 
-    private bool _isInitialized;
+    private bool _isInitialized = false;
     private RectTransform? _overlayRoot;
     private CanvasGroup? _canvasGroup;
     private Image? _itemIcon;
@@ -42,11 +42,18 @@ namespace DuckovLuckyBox.UI
     /// </summary>
     public void Initialize()
     {
-      if (_isInitialized) return;
+      Log.Debug("[RecycleAnimation] Initializing animation UI");
+
+      if (_isInitialized)
+      {
+        Log.Debug("[RecycleAnimation] Already initialized, skipping");
+        return;
+      }
 
       // Create full-screen canvas if it doesn't exist
       if (_canvas == null)
       {
+        Log.Debug("[RecycleAnimation] Creating animation canvas");
         var canvasObj = new GameObject("RecycleAnimationCanvas", typeof(Canvas), typeof(GraphicRaycaster), typeof(CanvasScaler));
         _canvas = canvasObj.GetComponent<Canvas>();
         _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -58,6 +65,7 @@ namespace DuckovLuckyBox.UI
       }
 
       // Create full-screen overlay
+      Log.Debug("[RecycleAnimation] Creating overlay root");
       _overlayRoot = new GameObject("RecycleAnimationOverlay", typeof(RectTransform), typeof(CanvasGroup), typeof(Image)).GetComponent<RectTransform>();
       _overlayRoot.SetParent(_canvas.transform, false);
       _overlayRoot.anchorMin = Vector2.zero;
@@ -76,6 +84,7 @@ namespace DuckovLuckyBox.UI
       overlayImage.raycastTarget = true;
 
       // Create item icon in center
+      Log.Debug("[RecycleAnimation] Creating item icon");
       var iconObj = new GameObject("RecycleItemIcon", typeof(RectTransform), typeof(Image));
       _itemIcon = iconObj.GetComponent<Image>();
       _itemIcon.rectTransform.SetParent(_overlayRoot, false);
@@ -86,6 +95,7 @@ namespace DuckovLuckyBox.UI
       _itemIcon.raycastTarget = false;
 
       // Create item text below icon
+      Log.Debug("[RecycleAnimation] Creating item text");
       _itemText = new GameObject("RecycleItemText", typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
       _itemText.rectTransform.SetParent(_overlayRoot, false);
       _itemText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
@@ -97,6 +107,7 @@ namespace DuckovLuckyBox.UI
       _itemText.raycastTarget = false;
 
       _isInitialized = true;
+      Log.Debug("[RecycleAnimation] Initialization completed");
     }
 
     /// <summary>
@@ -104,6 +115,8 @@ namespace DuckovLuckyBox.UI
     /// </summary>
     public async UniTask PlayAsync(Item item)
     {
+      Log.Debug($"[RecycleAnimation] Starting animation for item: {item?.DisplayName ?? "null"}");
+
       if (item == null)
       {
         Log.Warning("RecycleAnimation: Item is null.");
@@ -111,18 +124,25 @@ namespace DuckovLuckyBox.UI
       }
 
       // Auto-initialize if not already initialized
-      if (_overlayRoot == null || _itemIcon == null || _itemText == null || _canvasGroup == null)
+      if (!_isInitialized)
       {
+        Log.Debug("[RecycleAnimation] Auto-initializing");
         Initialize();
       }
 
-      if (_isAnimating) return;
+      if (_isAnimating)
+      {
+        Log.Debug("[RecycleAnimation] Animation already in progress, skipping");
+        return;
+      }
 
       _isAnimating = true;
+      Log.Debug("[RecycleAnimation] Animation started");
 
       try
       {
         // Set item icon and text
+        Log.Debug("[RecycleAnimation] Setting item icon and text");
         var itemIcon = RecycleService.GetItemIcon(item.TypeID) ?? EnsureFallbackSprite();
         if (_itemIcon != null)
         {
@@ -138,6 +158,8 @@ namespace DuckovLuckyBox.UI
 
         // Set background color based on item quality
         Color backgroundColor = RecycleService.GetItemQualityColor(item.TypeID);
+        Log.Debug($"[RecycleAnimation] Setting background color: {backgroundColor}");
+
         var overlayImage = _overlayRoot?.GetComponent<Image>();
         if (overlayImage != null)
         {
@@ -145,29 +167,44 @@ namespace DuckovLuckyBox.UI
         }
 
         // Show overlay
+        Log.Debug("[RecycleAnimation] Showing overlay");
         _overlayRoot?.gameObject.SetActive(true);
 
         // Fade in
+        Log.Debug($"[RecycleAnimation] Fading in (duration: {FadeInDuration}s)");
         await FadeCanvasGroup(_canvasGroup, 0f, 1f, FadeInDuration);
 
         // Play sound effect
+        Log.Debug("[RecycleAnimation] Playing sound effect");
         await PlayRewardSoundEffect(item);
 
         // Bounce animation
+        Log.Debug($"[RecycleAnimation] Performing bounce animation (duration: {BounceDuration}s)");
         await PerformBounceAnimation();
 
         // Hold for a moment
+        Log.Debug($"[RecycleAnimation] Holding for {HoldDuration}s");
         await UniTask.Delay(TimeSpan.FromSeconds(HoldDuration));
 
         // Fade out
+        Log.Debug($"[RecycleAnimation] Fading out (duration: {FadeOutDuration}s)");
         await FadeCanvasGroup(_canvasGroup, 1f, 0f, FadeOutDuration);
 
         // Hide overlay
+        Log.Debug("[RecycleAnimation] Hiding overlay");
         _overlayRoot?.gameObject.SetActive(false);
+
+        Log.Debug("[RecycleAnimation] Animation completed successfully");
+      }
+      catch (Exception ex)
+      {
+        Log.Error($"[RecycleAnimation] Animation failed: {ex.Message}");
+        throw;
       }
       finally
       {
         _isAnimating = false;
+        Log.Debug("[RecycleAnimation] Animation finished");
       }
     }
 
@@ -176,17 +213,19 @@ namespace DuckovLuckyBox.UI
       if (item == null) return;
 
       var itemQuality = QualityUtils.GetCachedItemValueLevel(item);
+      Log.Debug($"[RecycleAnimation] Playing sound for item quality: {itemQuality}");
 
-      ChannelGroup sfxGroup = default;
-      RuntimeManager.CoreSystem.createChannelGroup("RecycleSFX", out sfxGroup);
+      RuntimeManager.CoreSystem.createChannelGroup("RecycleSFX", out var sfxGroup);
 
       if (itemQuality.IsHighQuality())
       {
+        Log.Debug("[RecycleAnimation] Playing high-quality sound");
         // Play high-quality sound for high-value items
         SoundUtils.PlayHighQualitySound(sfxGroup, Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND);
       }
       else
       {
+        Log.Debug("[RecycleAnimation] Playing normal sound");
         // Play normal reward sound for regular items
         SoundUtils.PlaySound(Constants.Sound.LOTTERY_SOUND, sfxGroup);
       }
@@ -299,14 +338,18 @@ namespace DuckovLuckyBox.UI
     /// </summary>
     public void Destroy()
     {
+      Log.Debug("[RecycleAnimation] Destroying animation UI");
+
       if (_overlayRoot != null)
       {
+        Log.Debug("[RecycleAnimation] Destroying overlay root");
         UnityEngine.Object.Destroy(_overlayRoot.gameObject);
         _overlayRoot = null;
       }
 
       if (_canvas != null)
       {
+        Log.Debug("[RecycleAnimation] Destroying canvas");
         UnityEngine.Object.Destroy(_canvas.gameObject);
         _canvas = null;
       }
@@ -316,6 +359,9 @@ namespace DuckovLuckyBox.UI
       _itemText = null;
       _isAnimating = false;
       _isInitialized = false;
+      _instance = null;
+
+      Log.Debug("[RecycleAnimation] Destroy completed");
     }
   }
 }
