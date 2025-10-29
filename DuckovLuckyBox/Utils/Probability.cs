@@ -63,13 +63,13 @@ namespace DuckovLuckyBox
       // ===========================================
       // | 品质   | 升级概率 | 降级概率 | 保持概率 | 损毁概率 |
       // |--------|----------|----------|----------|----------|
-      // | 白色   | 300(30%) | 200(20%) | 400(40%) | 100(10%) |
-      // | 绿色   | 250(25%) | 250(25%) | 400(40%) | 100(10%) |
-      // | 蓝色   | 200(20%) | 300(30%) | 400(40%) | 100(10%) |
-      // | 紫色   | 150(15%) | 350(35%) | 400(40%) | 100(10%) |
-      // | 橙色   | 100(10%) | 400(40%) | 350(35%) | 150(15%) |
-      // | 浅红色 | 50(5%)   | 450(45%) | 300(30%) | 200(20%) |
-      // | 红色   | 0(0%)    | 500(50%) | 300(30%) | 200(20%) |
+      // | 白色   | 800(80%) | 0(0%)    | 150(15%) | 50(5%)   |
+      // | 绿色   | 600(60%) | 50(5%)   | 300(30%) | 50(5%)   |
+      // | 蓝色   | 550(55%) | 50(5%)   | 350(35%) | 50(5%)   |
+      // | 紫色   | 400(40%) | 200(20%) | 350(35%) | 50(5%)   |
+      // | 橙色   | 350(35%) | 250(25%) | 300(30%) | 100(10%) |
+      // | 浅红色 | 300(30%) | 300(30%) | 250(25%) | 150(15%) |
+      // | 红色   | 0(0%)    | 350(35%) | 400(40%) | 250(25%) |
       // ===========================================
 
       // Get melt probabilities for a given ItemValueLevel
@@ -78,13 +78,13 @@ namespace DuckovLuckyBox
         // The higher the level, the higher the chance to go down, the lower the chance to go up, etc.
         return level switch
         {
-          ItemValueLevel.White => new MeltProbability(level, 300, 200, 400, 100),
-          ItemValueLevel.Green => new MeltProbability(level, 250, 250, 400, 100),
-          ItemValueLevel.Blue => new MeltProbability(level, 200, 300, 400, 100),
-          ItemValueLevel.Purple => new MeltProbability(level, 150, 350, 400, 100),
-          ItemValueLevel.Orange => new MeltProbability(level, 100, 400, 350, 150),
-          ItemValueLevel.LightRed => new MeltProbability(level, 50, 450, 300, 200),
-          ItemValueLevel.Red => new MeltProbability(level, 0, 500, 300, 200),
+          ItemValueLevel.White => new MeltProbability(level, 800, 0, 150, 50),
+          ItemValueLevel.Green => new MeltProbability(level, 600, 50, 300, 50),
+          ItemValueLevel.Blue => new MeltProbability(level, 550, 50, 350, 50),
+          ItemValueLevel.Purple => new MeltProbability(level, 400, 200, 350, 50),
+          ItemValueLevel.Orange => new MeltProbability(level, 350, 250, 300, 100),
+          ItemValueLevel.LightRed => new MeltProbability(level, 300, 300, 250, 150),
+          ItemValueLevel.Red => new MeltProbability(level, 0, 350, 400, 250),
           _ => new MeltProbability(level, 0, 0, 1000, 0)
         };
       }
