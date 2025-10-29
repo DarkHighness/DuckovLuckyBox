@@ -24,6 +24,7 @@ namespace DuckovLuckyBox.Core
     private const float ContractVerticalOffset = -120f;
     public static readonly string[] RecyclableCategories =
     {
+        "Gem",
         "Food",
         "Weapon",
         "MeleeWeapon",
