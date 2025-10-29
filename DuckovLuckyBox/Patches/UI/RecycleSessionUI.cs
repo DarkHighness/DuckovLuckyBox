@@ -22,8 +22,9 @@ namespace DuckovLuckyBox.Core
   {
     private const int ContractSize = 5;
     private const float ContractVerticalOffset = -120f;
-    private static readonly string[] RewardCategories =
+    public static readonly string[] RecyclableCategories =
     {
+        "Food",
         "Weapon",
         "MeleeWeapon",
         "Helmat",
@@ -1127,7 +1128,7 @@ namespace DuckovLuckyBox.Core
       bool isFirstItem = currentCount == 0;
       ItemValueLevel? rewardLevel = null;
 
-      if (string.IsNullOrEmpty(category) || !RewardCategories.Contains(category))
+      if (string.IsNullOrEmpty(category) || !RecyclableCategories.Contains(category))
       {
         return ContractValidationResult.Invalid(category, quality, isFirstItem, Localizations.I18n.ItemNotValidForContractKey.ToPlainText());
       }
@@ -1181,7 +1182,7 @@ namespace DuckovLuckyBox.Core
 
         rewardLevel = (ItemValueLevel)nextLevelValue;
 
-        if (!RecycleService.HasCategoryItemAtLevel(RewardCategories, rewardLevel.Value))
+        if (!RecycleService.HasCategoryItemAtLevel(RecyclableCategories, rewardLevel.Value))
         {
           return ContractValidationResult.Invalid(category, quality, true, Localizations.I18n.RecycleNoTargetUpgradeKey.ToPlainText());
         }
@@ -1644,7 +1645,7 @@ namespace DuckovLuckyBox.Core
           if (rewardLevel.HasValue)
           {
             Log.Debug($"[Recycle:CompleteContract] Picking item at level {rewardLevel.Value}");
-            reward = await RecycleService.PickRandomItemByCategoriesAndQualityAsync(RewardCategories, rewardLevel.Value);
+            reward = await RecycleService.PickRandomItemByCategoriesAndQualityAsync(RecyclableCategories, rewardLevel.Value);
           }
 
           if (reward == null)

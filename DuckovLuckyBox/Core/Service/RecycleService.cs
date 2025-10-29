@@ -217,44 +217,6 @@ namespace DuckovLuckyBox.Core
         }
 
         /// <summary>
-        /// Check whether an item can be recycled given a set of supported reward categories.
-        /// Conditions:
-        /// 1. Item's category must be one of supportedCategories.
-        /// 2. There exists at least one item at item level + 1 in supportedCategories.
-        /// 3. If item is Bullet, it must be a full stack (submit whole stack) and the next-level bullet must exist.
-        /// </summary>
-        public static bool CanRecycleItem(Item? item, IEnumerable<string> supportedCategories)
-        {
-            if (item == null) return false;
-            if (supportedCategories == null) return false;
-
-            var category = GetItemCategory(item.TypeID);
-            var supportedSet = new HashSet<string>(supportedCategories.Where(c => !string.IsNullOrWhiteSpace(c)), StringComparer.OrdinalIgnoreCase);
-            if (!supportedSet.Contains(category)) return false;
-
-            ItemValueLevel currentLevel = QualityUtils.GetCachedItemValueLevel(item);
-            int nextLevelValue = (int)currentLevel + 1;
-            if (!Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue)) return false;
-            var targetLevel = (ItemValueLevel)nextLevelValue;
-
-            // For bullets, require submission of a full logical bullet group.
-            // Some bullet types may have MaxStackCount < BulletGroupSize, so use the smaller of the two.
-            if (string.Equals(category, "Bullet", StringComparison.OrdinalIgnoreCase))
-            {
-                // If bullet, require stackable and at least one full group
-                if (!item.Stackable) return false;
-                int requiredGroupSize = Math.Min(BulletGroupSize, item.MaxStackCount);
-                if (item.StackCount < requiredGroupSize) return false;
-
-                // Ensure there is a bullet at next level in supported categories
-                return HasCategoryItemAtLevel(new[] { category }, targetLevel);
-            }
-
-            // Generic case: ensure at least one item at next level exists among supported categories
-            return HasCategoryItemAtLevel(supportedSet, targetLevel);
-        }
-
-        /// <summary>
         /// Gets a random item from the lottery pool
         /// </summary>
         public static async UniTask<Item?> PickRandomLotteryItemAsync()
