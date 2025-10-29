@@ -31,6 +31,7 @@ namespace DuckovLuckyBox
       var itemDatabase = ItemAssetsCollection.Instance.entries;
       if (itemDatabase != null)
       {
+        Log.Info($"[ItemUtils.QueryGameItems] Found item database with {itemDatabase.Count} entries");
         foreach (var item in itemDatabase)
         {
           var entry = new Entry(item.prefab, item.metaData);
@@ -40,31 +41,63 @@ namespace DuckovLuckyBox
           }
         }
       }
+      else
+      {
+        Log.Warning("[ItemUtils.QueryGameItems] Item database is null!");
+      }
 
       if (includeDynamicItems)
       {
-        if (AccessTools.Field(typeof(ItemAssetsCollection), "dynamicDic").GetValue(ItemAssetsCollection.Instance) is Dictionary<int, ItemAssetsCollection.DynamicEntry> dynamicItems)
+        var dynamicDicField = AccessTools.Field(typeof(ItemAssetsCollection), "dynamicDic");
+        if (dynamicDicField != null)
         {
-          foreach (var kvp in dynamicItems)
+          var dynamicDicValue = dynamicDicField.GetValue(ItemAssetsCollection.Instance);
+          if (dynamicDicValue is Dictionary<int, ItemAssetsCollection.DynamicEntry> dynamicItems)
           {
-            var dynamicEntry = kvp.Value;
-            if (dynamicEntry != null)
+            Log.Info($"[ItemUtils.QueryGameItems] Found dynamic items dictionary with {dynamicItems.Count} entries");
+            foreach (var kvp in dynamicItems)
             {
-              var dynamicItem = dynamicEntry.prefab;
-              var dynamicMetaData = AccessTools.Field(typeof(ItemAssetsCollection.DynamicEntry), "metaData").GetValue(dynamicEntry) as ItemMetaData?;
-              if (dynamicItem != null && dynamicMetaData != null)
+              var dynamicEntry = kvp.Value;
+              if (dynamicEntry != null)
               {
-                var entry = new Entry(dynamicItem, (ItemMetaData)dynamicMetaData);
-                if (predicate(entry))
+                var dynamicItem = dynamicEntry.prefab;
+                var metaDataField = AccessTools.Field(typeof(ItemAssetsCollection.DynamicEntry), "metaData");
+                var dynamicMetaData = metaDataField?.GetValue(dynamicEntry) as ItemMetaData?;
+
+                if (dynamicItem != null && dynamicMetaData != null)
                 {
-                  result.Add(entry);
+                  var entry = new Entry(dynamicItem, (ItemMetaData)dynamicMetaData);
+                  if (predicate(entry))
+                  {
+                    result.Add(entry);
+                  }
                 }
+                else
+                {
+                  if (dynamicItem == null)
+                    Log.Warning($"[ItemUtils.QueryGameItems] Dynamic item is null for entry {kvp.Key}");
+                  if (dynamicMetaData == null)
+                    Log.Warning($"[ItemUtils.QueryGameItems] Dynamic metadata is null for entry {kvp.Key}");
+                }
+              }
+              else
+              {
+                Log.Warning($"[ItemUtils.QueryGameItems] Dynamic entry is null for key {kvp.Key}");
               }
             }
           }
+          else
+          {
+            Log.Warning("[ItemUtils.QueryGameItems] Dynamic items dictionary is not of expected type or null");
+          }
+        }
+        else
+        {
+          Log.Warning("[ItemUtils.QueryGameItems] dynamicDic field not found via reflection");
         }
       }
 
+      Log.Info($"[ItemUtils.QueryGameItems] Query completed. Total entries: {result.Count}");
       return result;
     }
 
