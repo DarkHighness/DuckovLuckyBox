@@ -313,7 +313,7 @@ namespace DuckovLuckyBox.Core
         /// </summary>
         public static string GetItemCategory(int typeId)
         {
-            return ItemUtils.RecycleItemCache.GetItemCategory(typeId);
+            return ItemUtils.GameItemCache.GetItemCategory(typeId);
         }
 
         /// <summary>
@@ -321,7 +321,7 @@ namespace DuckovLuckyBox.Core
         /// </summary>
         public static Item? GetItem(int typeId)
         {
-            return ItemUtils.RecycleItemCache.GetItem(typeId);
+            return ItemUtils.GameItemCache.GetItem(typeId);
         }
 
         /// <summary>
@@ -329,7 +329,7 @@ namespace DuckovLuckyBox.Core
         /// </summary>
         public static string GetDisplayName(int typeId)
         {
-            return ItemUtils.RecycleItemCache.GetDisplayName(typeId);
+            return ItemUtils.GameItemCache.GetDisplayName(typeId);
         }
 
         /// <summary>
@@ -337,7 +337,7 @@ namespace DuckovLuckyBox.Core
         /// </summary>
         public static ItemValueLevel GetItemQuality(int typeId)
         {
-            return ItemUtils.RecycleItemCache.GetItemQuality(typeId);
+            return ItemUtils.GameItemCache.GetItemQuality(typeId);
         }
 
         /// <summary>
@@ -345,7 +345,7 @@ namespace DuckovLuckyBox.Core
         /// </summary>
         public static Sprite? GetItemIcon(int typeId)
         {
-            return ItemUtils.RecycleItemCache.GetItemIcon(typeId);
+            return ItemUtils.GameItemCache.GetItemIcon(typeId);
         }
 
         /// <summary>
@@ -353,7 +353,7 @@ namespace DuckovLuckyBox.Core
         /// </summary>
         public static Color GetItemQualityColor(int typeId)
         {
-            return ItemUtils.RecycleItemCache.GetItemQualityColor(typeId);
+            return ItemUtils.GameItemCache.GetItemQualityColor(typeId);
         }
     }
 }
