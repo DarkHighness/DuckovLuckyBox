@@ -8,6 +8,8 @@ using DuckovLuckyBox.Core.Settings;
 using FMODUnity;
 using FMOD;
 using Duckov;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace DuckovLuckyBox.Core
 {
@@ -31,12 +33,13 @@ namespace DuckovLuckyBox.Core
       public int LevelDownCount { get; set; } // Number of times item was downgraded
       public int SameLevelCount { get; set; } // Number of times item level stayed the same
       public int DestroyCount { get; set; } // Number of times item was completely destroyed
+      public int MutatedCount { get; set; } // Number of times item was mutated (if applicable)
 
       public override string ToString() =>
-          $"Success={Success}, MeltCount={MeltCount}, LevelUp={LevelUpCount}, LevelDown={LevelDownCount}, SameLevel={SameLevelCount}, Destroy={DestroyCount}";
+          $"Success={Success}, MeltCount={MeltCount}, LevelUp={LevelUpCount}, LevelDown={LevelDownCount}, SameLevel={SameLevelCount}, Destroy={DestroyCount}, Mutated={MutatedCount}";
     }
 
-    enum MeltOutcome
+    enum MeltLevelOut
     {
       LevelUp,
       LevelDown,
@@ -44,10 +47,18 @@ namespace DuckovLuckyBox.Core
       Destroyed
     }
 
+    private static bool DetermineMutation(ItemValueLevel currentLevel)
+    {
+      int randomValue = UnityEngine.Random.Range(0, 1000); // 0-999 (thousandths)
+      var probability = ProbabilityUtils.MeltProbability.GetMeltProbabilityForLevel(currentLevel);
+
+      return randomValue < probability.ProbabilityMutation;
+    }
+
     /// <summary>
     /// Determines the quality level change for a melt operation
     /// </summary>
-    private static MeltOutcome DetermineLevelChange(ItemValueLevel currentLevel)
+    private static MeltLevelOut DetermineLevelChange(ItemValueLevel currentLevel)
     {
       var meltProb = ProbabilityUtils.MeltProbability.GetMeltProbabilityForLevel(currentLevel);
 
@@ -56,33 +67,33 @@ namespace DuckovLuckyBox.Core
       // Check level up
       if (randomValue < meltProb.ProbabilityLevelUp)
       {
-        return MeltOutcome.LevelUp;
+        return MeltLevelOut.LevelUp;
       }
 
       // Check level down
       if (randomValue < meltProb.ProbabilityLevelUp + meltProb.ProbabilityLevelDown)
       {
-        return MeltOutcome.LevelDown;
+        return MeltLevelOut.LevelDown;
       }
 
       // Check level to remain the same
       if (randomValue < meltProb.ProbabilityLevelUp + meltProb.ProbabilityLevelDown + meltProb.ProbabilitySameLevel)
       {
-        return MeltOutcome.SameLevel;
+        return MeltLevelOut.SameLevel;
       }
 
       // Destroyed
-      return MeltOutcome.Destroyed;
+      return MeltLevelOut.Destroyed;
     }
 
     /// <summary>
     /// Attempts to get an item at a specific level in the same category
     /// Returns null if no such item exists
     /// </summary>
-    private static async UniTask<Item?> GetItemAtLevelInCategoryAsync(string category, ItemValueLevel targetLevel)
+    private static async UniTask<Item?> GetItemAtLevelInCategoryAsync(IEnumerable<string> categories, ItemValueLevel targetLevel)
     {
       var item = await RecycleService.PickRandomItemByCategoriesAndQualityAsync(
-          new[] { category },
+          categories,
           targetLevel
       );
       return item;
@@ -92,35 +103,38 @@ namespace DuckovLuckyBox.Core
     /// Performs a single melt operation on an item
     /// Returns a tuple of (result item, level change direction: 1=up, -1=down, 0=same)
     /// </summary>
-    private static async UniTask<(Item?, MeltOutcome)> MeltSingleItemAsync(Item item)
+    private static async UniTask<(Item?, MeltLevelOut, bool)> MeltSingleItemAsync(Item item)
     {
       if (item == null)
       {
-        return (null, MeltOutcome.SameLevel);
+        return (null, MeltLevelOut.SameLevel, false);
       }
 
       ItemValueLevel currentLevel = QualityUtils.GetCachedItemValueLevel(item);
       string category = RecycleService.GetItemCategory(item.TypeID);
 
-      MeltOutcome meltOutcome = DetermineLevelChange(currentLevel);
+      bool isMutated = DetermineMutation(currentLevel);
+      var mutatedCategories = ItemUtils.RecyclableCategories.Where(cat => cat != category).ToList();
+      var targetCategories = isMutated ? mutatedCategories : new List<string> { category };
 
-      if (meltOutcome == MeltOutcome.SameLevel)
+      MeltLevelOut meltOutcome = DetermineLevelChange(currentLevel);
+
+      if (meltOutcome == MeltLevelOut.SameLevel)
       {
         // Same level - return a random item from the same level
         Log.Debug($"Melt: {item.DisplayName} ({currentLevel}) -> Same level");
-        var sameItem = await GetItemAtLevelInCategoryAsync(category, currentLevel);
-        return (sameItem, MeltOutcome.SameLevel);
+        var sameItem = await GetItemAtLevelInCategoryAsync(targetCategories, currentLevel);
+        return (sameItem, MeltLevelOut.SameLevel, isMutated);
       }
 
-      if (meltOutcome == MeltOutcome.Destroyed)
+      if (meltOutcome == MeltLevelOut.Destroyed)
       {
         // Item destroyed
         Log.Debug($"Melt: {item.DisplayName} ({currentLevel}) -> Destroyed");
-        return (null, MeltOutcome.Destroyed);
+        return (null, MeltLevelOut.Destroyed, false);
       }
 
-
-      int levelChange = meltOutcome == MeltOutcome.LevelUp ? 1 : -1;
+      int levelChange = meltOutcome == MeltLevelOut.LevelUp ? 1 : -1;
       int nextLevelValue = (int)currentLevel + levelChange;
 
       // Check if target level is valid
@@ -129,15 +143,15 @@ namespace DuckovLuckyBox.Core
       if (nextLevelValue < 0)
       {
         Log.Debug($"Melt: {item.DisplayName} ({currentLevel}) -> Out of range (below 0), destroyed");
-        return (null, MeltOutcome.Destroyed);
+        return (null, MeltLevelOut.Destroyed, false);
       }
 
       if (nextLevelValue > 6)
       {
         // Level is out of range - return same level
         Log.Debug($"Melt: {item.DisplayName} ({currentLevel}) -> Out of range, keep same level");
-        var sameItem = await GetItemAtLevelInCategoryAsync(category, currentLevel);
-        return (sameItem, MeltOutcome.SameLevel);
+        var sameItem = await GetItemAtLevelInCategoryAsync(targetCategories, currentLevel);
+        return (sameItem, MeltLevelOut.SameLevel, isMutated);
       }
 
       ItemValueLevel targetLevel = (ItemValueLevel)nextLevelValue;
@@ -147,16 +161,16 @@ namespace DuckovLuckyBox.Core
       {
         // Target item doesn't exist - return same level
         Log.Debug($"Melt: {item.DisplayName} ({currentLevel}) -> No item at level {targetLevel}, keep same level");
-        var sameItem = await GetItemAtLevelInCategoryAsync(category, currentLevel);
-        return (sameItem, MeltOutcome.SameLevel);
+        var sameItem = await GetItemAtLevelInCategoryAsync(targetCategories, currentLevel);
+        return (sameItem, MeltLevelOut.SameLevel, isMutated);
       }
 
       // Get random item at target level
-      var resultItem = await GetItemAtLevelInCategoryAsync(category, targetLevel);
+      var resultItem = await GetItemAtLevelInCategoryAsync(targetCategories, targetLevel);
       string direction = meltOutcome > 0 ? "Up" : "Down";
       Log.Debug($"Melt: {item.DisplayName} ({currentLevel}) -> {direction} to {targetLevel}");
 
-      return (resultItem, meltOutcome);
+      return (resultItem, meltOutcome, isMutated);
     }
 
     /// <summary>
@@ -260,7 +274,7 @@ namespace DuckovLuckyBox.Core
 
       for (int i = 0; i < stackCount; i++)
       {
-        var (meltedItem, meltOutcome) = await MeltSingleItemAsync(item);
+        var (meltedItem, meltOutcome, isMutated) = await MeltSingleItemAsync(item);
 
         // Decrement the original item's stack count
         if (item.Stackable)
@@ -268,12 +282,13 @@ namespace DuckovLuckyBox.Core
           item.StackCount--;
         }
 
+        string message = string.Empty;
         // Check if item was destroyed
-        if (meltOutcome == MeltOutcome.Destroyed)
+        if (meltOutcome == MeltLevelOut.Destroyed)
         {
           result.DestroyCount++;
           stopAndPlay(Constants.Sound.MELT_DESTROY_SOUND);
-          var message = Localizations.I18n.MeltDestroyedNotificationKey.ToPlainText()
+          message = Localizations.I18n.MeltDestroyedNotificationKey.ToPlainText()
             .Replace("{originalItem}", item.DisplayName.ToPlainText());
           NotificationText.Push(message);
           Log.Debug($"Melt: Item destroyed (iteration {i + 1}/{stackCount})");
@@ -293,27 +308,25 @@ namespace DuckovLuckyBox.Core
         }
 
         // Record level change statistics and play sounds
-        if (meltOutcome == MeltOutcome.LevelUp)
+        if (meltOutcome == MeltLevelOut.LevelUp)
         {
           result.LevelUpCount++;
           stopAndPlay(Constants.Sound.MELT_LEVEL_UP_SOUND);
           // Show notification for level up
-          string message = Localizations.I18n.MeltLevelUpNotificationKey.ToPlainText()
-            .Replace("{originalItem}", item.DisplayName.ToPlainText())
-            .Replace("{newItem}", meltedItemDisplayName);
-          NotificationText.Push(message);
+          message = Localizations.I18n.MeltLevelUpNotificationKey.ToPlainText()
+           .Replace("{originalItem}", item.DisplayName.ToPlainText())
+           .Replace("{newItem}", meltedItemDisplayName);
         }
-        else if (meltOutcome == MeltOutcome.LevelDown)
+        else if (meltOutcome == MeltLevelOut.LevelDown)
         {
           result.LevelDownCount++;
           stopAndPlay(Constants.Sound.MELT_LEVEL_DOWN_SOUND);
           // Show notification for level down
-          string message = Localizations.I18n.MeltLevelDownNotificationKey.ToPlainText()
-            .Replace("{originalItem}", item.DisplayName.ToPlainText())
-            .Replace("{newItem}", meltedItemDisplayName);
-          NotificationText.Push(message);
+          message = Localizations.I18n.MeltLevelDownNotificationKey.ToPlainText()
+             .Replace("{originalItem}", item.DisplayName.ToPlainText())
+             .Replace("{newItem}", meltedItemDisplayName);
         }
-        else if (meltOutcome == MeltOutcome.SameLevel)
+        else if (meltOutcome == MeltLevelOut.SameLevel)
         {
           result.SameLevelCount++;
           stopAndPlay(Constants.Sound.MELT_LEVEL_SAME_SOUND);
@@ -321,19 +334,27 @@ namespace DuckovLuckyBox.Core
           if (meltedItem.TypeID == item.TypeID)
           {
             // Same item - use special notification
-            string message = Localizations.I18n.MeltSameItemNotificationKey.ToPlainText()
+            message = Localizations.I18n.MeltSameItemNotificationKey.ToPlainText()
               .Replace("{originalItem}", item.DisplayName.ToPlainText());
-            NotificationText.Push(message);
+
           }
           else
           {
             // Different item at same level
-            string message = Localizations.I18n.MeltLevelSameNotificationKey.ToPlainText()
-              .Replace("{originalItem}", item.DisplayName.ToPlainText())
-              .Replace("{newItem}", meltedItemDisplayName);
-            NotificationText.Push(message);
+            message = Localizations.I18n.MeltLevelSameNotificationKey.ToPlainText()
+             .Replace("{originalItem}", item.DisplayName.ToPlainText())
+             .Replace("{newItem}", meltedItemDisplayName);
           }
         }
+
+        if (isMutated)
+        {
+          result.MutatedCount++;
+          message += " " + Localizations.I18n.MeltMutatedNotificationKey.ToPlainText()
+            .Replace("{newItem}", meltedItemDisplayName);
+        }
+
+        NotificationText.Push(message);
 
         // Send melted item to player inventory immediately
         var sentToStorage =

@@ -72,6 +72,7 @@ namespace DuckovLuckyBox.Core
             public static readonly string MeltSameItemNotificationKey = "Notification_MeltSameItem";
             public static readonly string MeltDestroyedNotificationKey = "Notification_MeltDestroyed";
             public static readonly string MeltCostFormatKey = "Notification_MeltCostFormat";
+            public static readonly string MeltMutatedNotificationKey = "Notification_MeltMutated";
         }
 
         private readonly Dictionary<SystemLanguage, Dictionary<string, string>> _localizedStrings = new Dictionary<SystemLanguage, Dictionary<string, string>> {
@@ -132,7 +133,8 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltLevelSameNotificationKey, "{originalItem} stayed as {newItem}." },
             { I18n.MeltSameItemNotificationKey, "{originalItem} stayed the same!" },
             { I18n.MeltDestroyedNotificationKey, "{originalItem} was destroyed!" },
-            { I18n.MeltCostFormatKey, "Melt cost: {basePrice} (Base Price) × {level} (Level Fee) × {count} (Quantity) = {totalCost}" }
+            { I18n.MeltCostFormatKey, "Melt cost: {basePrice} (Base Price) × {level} (Level Fee) × {count} (Quantity) = {totalCost}" },
+            { I18n.MeltMutatedNotificationKey, "Wait! Something seems to have changed subtly." }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
             { I18n.RefreshStockKey, "刷新" },
@@ -191,7 +193,8 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltLevelSameNotificationKey, "{originalItem} 平级转换为 {newItem}。" },
             { I18n.MeltSameItemNotificationKey, "{originalItem} 未起一丝波澜！" },
             { I18n.MeltDestroyedNotificationKey, "{originalItem} 被损毁了！" },
-            { I18n.MeltCostFormatKey, "熔炼费用: {basePrice} (基础价格) × {level} (等级付费) × {count} (数量) = {totalCost}" }
+            { I18n.MeltCostFormatKey, "熔炼费用: {basePrice} (基础价格) × {level} (等级付费) × {count} (数量) = {totalCost}" },
+            { I18n.MeltMutatedNotificationKey, "但转换过程中似乎出现了些微妙的变化。" }
         } },
     };
 
