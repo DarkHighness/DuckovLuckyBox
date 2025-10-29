@@ -166,37 +166,37 @@ namespace DuckovLuckyBox.Core
         /// If a quality level has fewer items than needed, allows duplicate sampling
         /// </summary>
         /// <param name="count">Number of items to sample</param>
-        /// <param name="useWeightedSampling">If true, uses quality-based probability weights; if false, uses uniform distribution</param>
+        /// <param name="useWeightedSampling">If true, uses quality-based probability weights; if false, uses uniform distribution across all items</param>
         /// <returns>List of selected item type IDs</returns>
         private static List<int> ReservoirSampleByQuality(IEnumerable<int> itemTypeIds, int count, bool useWeightedSampling)
         {
             var result = new List<int>();
-            // Get all lottery items grouped by quality level
-            var itemsByQuality = new Dictionary<ItemValueLevel, List<int>>();
-            foreach (ItemValueLevel level in Enum.GetValues(typeof(ItemValueLevel)))
-            {
-                itemsByQuality[level] = new List<int>();
-            }
-
-            foreach (var id in itemTypeIds)
-            {
-                var quality = ItemUtils.GameItemCache.GetItemQuality(id);
-                itemsByQuality[quality].Add(id);
-            }
-
-            if (itemsByQuality.Count == 0)
-            {
-                Log.Error("No items available for lottery");
-                return result;
-            }
-
-            // Remove empty quality levels
-            var nonEmptyItemsByQuality = itemsByQuality
-                .Where(kvp => kvp.Value.Count > 0)
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
             if (useWeightedSampling)
             {
+                // Get all lottery items grouped by quality level
+                var itemsByQuality = new Dictionary<ItemValueLevel, List<int>>();
+                foreach (ItemValueLevel level in Enum.GetValues(typeof(ItemValueLevel)))
+                {
+                    itemsByQuality[level] = new List<int>();
+                }
+
+                foreach (var id in itemTypeIds)
+                {
+                    var quality = ItemUtils.GameItemCache.GetItemQuality(id);
+                    itemsByQuality[quality].Add(id);
+                }
+
+                if (itemsByQuality.Count == 0)
+                {
+                    Log.Error("No items available for lottery");
+                    return result;
+                }
+
+                // Remove empty quality levels
+                var nonEmptyItemsByQuality = itemsByQuality
+                    .Where(kvp => kvp.Value.Count > 0)
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
                 // Use quality-based probability weights
                 for (int i = 0; i < count; i++)
                 {
@@ -223,26 +223,17 @@ namespace DuckovLuckyBox.Core
             }
             else
             {
-                // Uniform distribution: select equal count from each quality level using reservoir sampling
-                int itemsPerQuality = count / itemsByQuality.Count;
-                int remainder = count % itemsByQuality.Count;
-                int addedCount = 0;
-
-                foreach (var kvp in itemsByQuality)
+                // Uniform distribution: direct uniform sampling from all item IDs
+                var allItems = itemTypeIds.ToList();
+                if (allItems.Count == 0)
                 {
-                    int countForThisLevel = itemsPerQuality + (remainder > 0 ? 1 : 0);
-                    if (remainder > 0) remainder--;
-
-                    var sampledItems = ProbabilityUtils.ReservoirSample(kvp.Value, countForThisLevel, allowDuplicates: true);
-                    result.AddRange(sampledItems);
-                    addedCount += sampledItems.Count;
-
-                    if (addedCount >= count)
-                        break;
+                    Log.Error("No items available for lottery");
+                    return result;
                 }
+                result = ProbabilityUtils.ReservoirSample(allItems, count, allowDuplicates: true);
             }
 
-            return result.Take(count).ToList();
+            return result;
         }
 
         /// <summary>
