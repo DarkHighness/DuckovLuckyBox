@@ -145,8 +145,8 @@ namespace DuckovLuckyBox.Core.Settings
 
         // Pricing Settings
         public const long RefreshStockPrice = 100L;
-        public const long StorePickPrice = 3000L;
-        public const long StreetPickPrice = 3000L;
+        public const long StorePickPrice = 1000L;
+        public const long StreetPickPrice = 1000L;
         public const long MeltBasePrice = 100L;
 
         // Price Range Settings

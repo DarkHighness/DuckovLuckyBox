@@ -11,13 +11,13 @@ namespace DuckovLuckyBox
         // ===========================================
         // | 品质   | 概率 | 百分比 |
         // |--------|------|--------|
-        // | 白色   | 200  | 20.0%  |
-        // | 绿色   | 268  | 26.8%  |
-        // | 蓝色   | 252  | 25.2%  |
-        // | 紫色   | 120  | 12.0%  |
-        // | 橙色   | 80   | 8.0%   |
-        // | 红色   | 50   | 5.0%   |
-        // | 浅红色 | 30   | 3.0%   |
+        // | 白色   | 160  | 16.0%  |
+        // | 绿色   | 230  | 23.0%  |
+        // | 蓝色   | 220  | 22.0%  |
+        // | 紫色   | 110  | 11.0%  |
+        // | 橙色   | 120  | 12.0%  |
+        // | 红色   | 90   | 9.0%   |
+        // | 浅红色 | 70   | 7.0%   |
         // ===========================================
 
         // Return the probability (thousandth) of getting an item of the specified ItemValueLevel
@@ -25,13 +25,13 @@ namespace DuckovLuckyBox
         {
             return level switch
             {
-                ItemValueLevel.White => 200,
-                ItemValueLevel.Green => 268,
-                ItemValueLevel.Blue => 252,
-                ItemValueLevel.Purple => 120,
-                ItemValueLevel.Orange => 80,
-                ItemValueLevel.Red => 50,
-                ItemValueLevel.LightRed => 30,
+                ItemValueLevel.White => 160,
+                ItemValueLevel.Green => 230,
+                ItemValueLevel.Blue => 220,
+                ItemValueLevel.Purple => 110,
+                ItemValueLevel.Orange => 120,
+                ItemValueLevel.Red => 90,
+                ItemValueLevel.LightRed => 70,
                 _ => 0
             };
         }
