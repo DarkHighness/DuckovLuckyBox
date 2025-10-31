@@ -36,14 +36,14 @@ namespace DuckovLuckyBox
             SettingManager.InitializeConfig(this);
             Log.Debug("Settings config initialized.");
 
+            harmony = new Harmony(Constants.ModId);
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            Log.Debug("Harmony patches applied.");
+
             SettingsUI = gameObject.AddComponent<SettingsUI>();
             Log.Debug("Settings UI component created.");
 
             Constants.Sound.LoadSounds();
-
-            harmony = new Harmony(Constants.ModId);
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-            Log.Debug("Harmony patches applied.");
 
             Localizations.Instance.Initialize();
             Log.Debug("Localizations initialized.");
@@ -59,8 +59,6 @@ namespace DuckovLuckyBox
             {
                 await UniTask.Yield(); // Wait until settings are initialized
             }
-
-            GameSettingUI.Initialize();
 
             if (SettingManager.Instance.EnableDebug.GetAsBool())
             {
@@ -83,13 +81,6 @@ namespace DuckovLuckyBox
 
         void Update()
         {
-            var hotkey = SettingManager.Instance.SettingsHotkey.Value as Hotkey ?? DefaultSettings.SettingsHotkey;
-
-            if (hotkey.IsPressed())
-            {
-                SettingsUI!.Toggle();
-            }
-
             if (SettingManager.Instance.EnableDebug.GetAsBool())
             {
                 if (Input.GetKeyDown(KeyCode.F9) || Input.GetKeyDown(KeyCode.F8))

@@ -191,7 +191,6 @@ namespace DuckovLuckyBox.UI
             CreateCategoryLabel(Localizations.I18n.SettingsCategoryGeneralKey);
 
             CreateToggleSetting(settings.EnableAnimation);
-            CreateHotkeySetting(settings.SettingsHotkey);
             CreateToggleSetting(settings.EnableDestroyButton);
             CreateToggleSetting(settings.EnableMeltButton);
             CreateToggleSetting(settings.EnableDebug);
@@ -618,130 +617,9 @@ namespace DuckovLuckyBox.UI
             entryLayout.preferredHeight = 48f;
         }
 
-        private void CreateHotkeySetting(SettingItem setting)
-        {
-            GameObject entryObj = new GameObject($"DuckovLuckyBox.UI.Entry.{setting.Key}");
-            entryObj.transform.SetParent(settingsPanel!.transform, false);
 
-            // Background
-            Image entryBg = entryObj.AddComponent<Image>();
-            entryBg.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
 
-            var horizontalLayout = entryObj.AddComponent<HorizontalLayoutGroup>();
-            horizontalLayout.childAlignment = TextAnchor.MiddleLeft;
-            horizontalLayout.childForceExpandHeight = false;
-            horizontalLayout.childForceExpandWidth = false;
-            horizontalLayout.padding = new RectOffset(16, 16, 8, 8);
-            horizontalLayout.spacing = 16f;
 
-            // Label
-            GameObject labelObj = new GameObject("Label");
-            labelObj.transform.SetParent(entryObj.transform, false);
-            TextMeshProUGUI labelText = labelObj.AddComponent<TextMeshProUGUI>();
-            labelText.text = setting.Label.ToPlainText();
-            labelText.fontSize = 18;
-            labelText.color = Color.white;
-            labelText.alignment = TextAlignmentOptions.Left;
-
-            var labelLayout = labelObj.AddComponent<LayoutElement>();
-            labelLayout.minWidth = 400f;
-            labelLayout.flexibleWidth = 1f;
-
-            // Button
-            GameObject buttonObj = new GameObject("Button");
-            buttonObj.transform.SetParent(entryObj.transform, false);
-
-            RectTransform buttonRect = buttonObj.AddComponent<RectTransform>();
-            buttonRect.sizeDelta = new Vector2(150f, 32f);
-
-            Button button = buttonObj.AddComponent<Button>();
-            Image buttonImage = buttonObj.AddComponent<Image>();
-            buttonImage.color = new Color(0.3f, 0.5f, 0.7f, 1f);
-
-            // Button text
-            GameObject buttonTextObj = new GameObject("Text");
-            buttonTextObj.transform.SetParent(buttonObj.transform, false);
-            TextMeshProUGUI buttonText = buttonTextObj.AddComponent<TextMeshProUGUI>();
-            buttonText.fontSize = 16;
-            buttonText.color = Color.white;
-            buttonText.alignment = TextAlignmentOptions.Center;
-
-            RectTransform buttonTextRect = buttonTextObj.GetComponent<RectTransform>();
-            buttonTextRect.anchorMin = Vector2.zero;
-            buttonTextRect.anchorMax = Vector2.one;
-            buttonTextRect.offsetMin = new Vector2(4, 0);
-            buttonTextRect.offsetMax = new Vector2(-4, 0);
-
-            button.targetGraphic = buttonImage;
-
-            // Set initial value
-            var currentHotkey = setting.Value as Hotkey ?? DefaultSettings.SettingsHotkey;
-            buttonText.text = currentHotkey.ToString();
-
-            bool isWaitingForKey = false;
-
-            button.onClick.AddListener(() =>
-            {
-                if (!isWaitingForKey)
-                {
-                    isWaitingForKey = true;
-                    buttonText.text = Localizations.I18n.SettingsPressAnyKeyKey.ToPlainText();
-                    StartCoroutine(WaitForKeyPress(buttonText, setting, () => isWaitingForKey = false));
-                }
-            });
-
-            var buttonLayout = buttonObj.AddComponent<LayoutElement>();
-            buttonLayout.preferredWidth = 150f;
-            buttonLayout.preferredHeight = 32f;
-
-            var entryLayout = entryObj.AddComponent<LayoutElement>();
-            entryLayout.preferredHeight = 48f;
-        }
-
-        private IEnumerator WaitForKeyPress(TextMeshProUGUI textComponent, SettingItem setting, Action onComplete)
-        {
-            // Wait for any key press
-            while (!Input.anyKeyDown)
-            {
-                yield return null;
-            }
-
-            // Capture modifier keys state
-            bool ctrlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-            bool shiftPressed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            bool altPressed = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
-
-            // Find which key was pressed
-            foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
-            {
-                if (Input.GetKeyDown(keyCode))
-                {
-                    // Filter out mouse buttons
-                    if (keyCode >= KeyCode.Mouse0 && keyCode <= KeyCode.Mouse6)
-                    {
-                        continue;
-                    }
-
-                    // Skip modifier keys themselves as the main key
-                    if (keyCode == KeyCode.LeftControl || keyCode == KeyCode.RightControl ||
-                        keyCode == KeyCode.LeftShift || keyCode == KeyCode.RightShift ||
-                        keyCode == KeyCode.LeftAlt || keyCode == KeyCode.RightAlt)
-                    {
-                        continue;
-                    }
-
-                    var hotkey = new Hotkey(keyCode, ctrlPressed, shiftPressed, altPressed);
-
-                    Log.Debug($"HotkeyInput changed - Setting: {setting.Key}, New hotkey: {hotkey}");
-                    setting.Value = hotkey;
-                    textComponent.text = hotkey.ToString();
-                    Log.Debug($"Setting updated - Setting: {setting.Key}, Stored value: {setting.Value}");
-                    break;
-                }
-            }
-
-            onComplete?.Invoke();
-        }
 
         private void CreateResetButton()
         {

@@ -1,350 +1,403 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using TMPro;
-using UnityEngine;
 using Duckov.Options.UI;
+using Duckov.Utilities;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
-using SodaCraft.Localizations;
+using DuckovLuckyBox.UI.Component;
 using HarmonyLib;
+using SodaCraft.Localizations;
+using TMPro;
+using UnityEngine;
 
 namespace DuckovLuckyBox.UI
 {
   public class GameSettingUI
   {
-    private static GameSettingUI? _instance;
+    private static GameSettingUI? instance = null;
     public static GameSettingUI Instance
     {
       get
       {
-        if (_instance == null)
+        instance ??= new GameSettingUI();
+        return instance;
+      }
+    }
+
+    private bool isInitialized = false;
+    private bool isInitializing = false;
+    private OptionsPanel? target = null;
+    private OptionsPanel_TabButton? tabButton = null;
+    private GameObject? tabContent = null;
+    private OptionsUIEntry_Dropdown? dropdownPrefab = null;
+    private OptionsUIEntry_Slider? sliderPrefab = null;
+    // toggle has never been used in the game, so we comment it out for now
+    // private OptionsUIEntry_Toggle? togglePrefab = null;
+
+    public bool Initialize(OptionsPanel optionsPanel)
+    {
+      if (isInitializing)
+      {
+        return false; // Prevent re-entrance
+      }
+
+      isInitializing = true;
+
+      if (isInitialized && target == optionsPanel)
+      {
+        isInitializing = false;
+        return false; // Already initialized for this panel
+      }
+
+      try
+      {
+        isInitialized = InitializeInternal(optionsPanel);
+      }
+      finally
+      {
+        isInitializing = false;
+        if (!isInitialized)
         {
-          _instance = new GameSettingUI();
+          Cleanup();
         }
-        return _instance;
-      }
-    }
-
-    private const string ModName = "DuckovLuckyBox";
-
-    private bool modTabCreated = false;
-    private OptionsPanel_TabButton? modTabButton = null;
-    private GameObject? modContent = null;
-    private GameObject? dropdownListPrefab;
-    private GameObject? inputWithSliderPrefab;
-    private Queue<Action> pendingConfigActions = new Queue<Action>();
-
-    private GameSettingUI() { }
-
-    public static void Initialize()
-    {
-      Instance.InitializeInstance();
-    }
-
-    private void InitializeInstance()
-    {
-      AddSettings();
-      TryCreatingModSettingTab();
-    }
-
-    private void AddSettings()
-    {
-      var settings = SettingManager.Instance;
-
-      // General Settings
-      AddBoolSetting(settings.EnableAnimation, Localizations.I18n.SettingsEnableAnimationKey.ToPlainText());
-      AddBoolSetting(settings.EnableDestroyButton, Localizations.I18n.SettingsEnableDestroyButtonKey.ToPlainText());
-      AddBoolSetting(settings.EnableMeltButton, Localizations.I18n.SettingsEnableMeltButtonKey.ToPlainText());
-      AddBoolSetting(settings.EnableDebug, Localizations.I18n.SettingsEnableDebugKey.ToPlainText());
-      AddBoolSetting(settings.EnableUseToCreateItemPatch, Localizations.I18n.SettingsEnableUseToCreateItemPatchKey.ToPlainText());
-      AddBoolSetting(settings.EnableWeightedLottery, Localizations.I18n.SettingsEnableWeightedLotteryKey.ToPlainText());
-      AddBoolSetting(settings.EnableHighQualitySound, Localizations.I18n.SettingsEnableHighQualitySoundKey.ToPlainText());
-      AddBoolSetting(settings.EnableStockShopActions, Localizations.I18n.SettingsEnableStockShopActionsKey.ToPlainText());
-
-      AddSliderSetting(settings.SettingsHotkey, Localizations.I18n.SettingsHotkeyKey.ToPlainText());
-      AddSliderSetting(settings.HighQualitySoundFilePath, Localizations.I18n.SettingsHighQualitySoundFilePathKey.ToPlainText());
-
-      // Pricing Settings
-      AddSliderSetting(settings.RefreshStockPrice, Localizations.I18n.SettingsRefreshStockPriceKey.ToPlainText(), new Vector2(settings.RefreshStockPrice.MinValue, settings.RefreshStockPrice.MaxValue));
-      AddSliderSetting(settings.StorePickPrice, Localizations.I18n.SettingsStorePickPriceKey.ToPlainText(), new Vector2(settings.StorePickPrice.MinValue, settings.StorePickPrice.MaxValue));
-      AddSliderSetting(settings.StreetPickPrice, Localizations.I18n.SettingsStreetPickPriceKey.ToPlainText(), new Vector2(settings.StreetPickPrice.MinValue, settings.StreetPickPrice.MaxValue));
-      AddSliderSetting(settings.MeltBasePrice, Localizations.I18n.SettingsMeltBasePriceKey.ToPlainText(), new Vector2(settings.MeltBasePrice.MinValue, settings.MeltBasePrice.MaxValue));
-    }
-
-    /// <summary>
-    /// Generic method for adding config items (supports delayed initialization)
-    /// </summary>
-    private void AddConfig(Action configAction)
-    {
-      if (modTabCreated)
-      {
-        configAction();
-      }
-      else
-      {
-        pendingConfigActions.Enqueue(configAction);
-      }
-    }
-
-    /// <summary>
-    /// Process all pending config items
-    /// </summary>
-    private void ProcessPendingConfigs()
-    {
-      while (pendingConfigActions.Count > 0)
-      {
-        var action = pendingConfigActions.Dequeue();
-        action();
-      }
-    }
-
-    /// <summary>
-    /// Add a boolean dropdown setting
-    /// </summary>
-    private void AddBoolSetting(SettingItem settingItem, string description)
-    {
-      var options = new SortedDictionary<string, object>
-            {
-                { "Off", false },
-                { "On", true }
-            };
-
-      AddDropdownSetting(settingItem, description, options);
-    }
-
-    /// <summary>
-    /// Add a dropdown setting
-    /// </summary>
-    private void AddDropdownSetting(SettingItem settingItem, string description, SortedDictionary<string, object> options)
-    {
-      AddConfig(() =>
-      {
-        if (dropdownListPrefab == null || modContent == null)
-          return;
-
-        // Create title
-        GameObject modNameTitleClone = CreateModTitle(ModName);
-
-        // Clone dropdown list prefab
-        GameObject inputWithSliderPrefabClone = UnityEngine.Object.Instantiate(dropdownListPrefab, modContent.transform);
-        inputWithSliderPrefabClone.transform.SetSiblingIndex(modNameTitleClone.transform.GetSiblingIndex() + 1);
-        inputWithSliderPrefabClone.name = "UI_" + ModName + "_" + settingItem.Key;
-
-        // Setup dropdown list
-        var dropdownMod = inputWithSliderPrefabClone.AddComponent<Dropdown>();
-        dropdownMod.Init(settingItem, description, options);
-
-        Log.Info($"Successfully added dropdown setting: {description}");
-      });
-    }
-
-    /// <summary>
-    /// Add an input field with optional slider
-    /// </summary>
-    private void AddSliderSetting(SettingItem settingItem, string description, Vector2? sliderRange = null)
-    {
-      AddConfig(() =>
-      {
-        if (inputWithSliderPrefab == null || modContent == null)
-          return;
-
-        // Create title
-        GameObject modNameTitleClone = CreateModTitle(ModName);
-
-        // Clone input slider prefab
-        GameObject inputWithSliderPrefabClone = UnityEngine.Object.Instantiate(inputWithSliderPrefab, modContent.transform);
-        inputWithSliderPrefabClone.transform.SetSiblingIndex(modNameTitleClone.transform.GetSiblingIndex() + 1);
-        inputWithSliderPrefabClone.name = "UI_" + ModName + "_" + settingItem.Key;
-
-        // Setup input slider
-        var sliderMod = inputWithSliderPrefabClone.AddComponent<Slider>();
-        sliderMod.Init(settingItem, description, sliderRange);
-
-        Log.Info($"Successfully added slider setting: {description}");
-      });
-    }
-
-    private GameObject CreateModTitle(string modName)
-    {
-      if (modContent == null)
-        throw new System.InvalidOperationException("modContent is null");
-
-      // 检查是否已经存在该mod的标题
-      Transform existingTitle = modContent.transform.Find("Title_" + modName);
-      if (existingTitle != null)
-      {
-        return existingTitle.gameObject;
       }
 
-      // 创建新的标题
-      GameObject titleObj = new GameObject("Title_" + modName);
-      titleObj.transform.SetParent(modContent.transform);
-
-      TextMeshProUGUI titleText = titleObj.AddComponent<TextMeshProUGUI>();
-      titleText.SetText(modName);
-      titleText.margin = new Vector4(10, 10, 10, 10);
-
-      return titleObj;
+      return isInitialized;
     }
 
-    /// <summary>
-    /// Add ModSetting tab to the settings menu
-    /// </summary>
-    private void CreateModSettingTab()
+    private bool InitializeInternal(OptionsPanel optionsPanel)
     {
-      Log.Info("Starting to create Mod settings tab");
+      Log.Debug("Initializing GameSettingUI...");
 
-      // 获取MainMenu场景中的OptionsPanel
-      OptionsPanel optionsPanel = UnityEngine.Object.FindObjectsOfType<OptionsPanel>(true)
-          .FirstOrDefault(panel => panel.gameObject.scene.name == "DontDestroyOnLoad");
+      target = optionsPanel;
 
-      if (optionsPanel == null)
+      if (!InitializeTab())
       {
-        Log.Error("OptionsPanel Not Found!!!");
-        return;
+        return false;
       }
 
-      Log.Info("OptionsPanel Found");
+      if (!CreateSettings())
+      {
+        return false;
+      }
 
-      // 使用反射获取tabButtons
-      var tabButtonsField = AccessTools.Field(optionsPanel.GetType(), "tabButtons");
-      var tabButtons = (List<OptionsPanel_TabButton>)tabButtonsField.GetValue(optionsPanel);
+      return true;
+    }
+
+    private bool InitializeTab()
+    {
+      if (target == null)
+      {
+        return false; // Target panel is not set
+      }
+
+      // Create custom UI elements
+      if (!CreatePrefabs())
+      {
+        Log.Error("Failed to create prefabs for the tab content.");
+        return false;
+      }
+
+      var tabButtons = AccessTools.Field(typeof(OptionsPanel), "tabButtons").GetValue(target) as List<OptionsPanel_TabButton>;
       if (tabButtons == null)
       {
-        Log.Error("Failed to get tabButtons via reflection!!!!");
-        return;
+        Log.Error("Failed to access tabButtons field.");
+        return false;
       }
 
-      Log.Info("Successfully got tabButtons via reflection");
-
-      // 复制一个tabButton的游戏对象
-      GameObject tabButtonGameObjectClone = UnityEngine.Object.Instantiate(tabButtons[0].gameObject, tabButtons[0].gameObject.transform.parent);
-      tabButtonGameObjectClone.name = "modTab";
-
-      OptionsPanel_TabButton modTabButton = tabButtonGameObjectClone.GetComponent<OptionsPanel_TabButton>();
-      if (modTabButton == null)
+      if (tabButtons.Count == 0)
       {
-        Log.Error("Failed to get OptionsPanel_TabButton component from cloned GameObject");
-        UnityEngine.Object.Destroy(tabButtonGameObjectClone);
-        return;
+        Log.Error("No tab buttons found in the OptionsPanel.");
+        return false;
+      }
+      // Clone the first tab button as a template
+      var tabButtonClone = UnityEngine.Object.Instantiate(tabButtons[0].gameObject, tabButtons[0].gameObject.transform.parent);
+      tabButtonClone.name = Constants.ModId + "_TabButton";
+
+      tabButton = tabButtonClone.GetComponent<OptionsPanel_TabButton>();
+      if (tabButton == null)
+      {
+        Log.Error("Failed to get OptionsPanel_TabButton component from cloned object.");
+        return false;
       }
 
-      this.modTabButton = modTabButton;
-
-      // 获取原始tab并克隆
-      var tabField = AccessTools.Field(modTabButton.GetType(), "tab");
-      var tab = (GameObject)tabField.GetValue(modTabButton);
+      // get the `tab` field of the tabButton
+      GameObject? tab = AccessTools.Field(typeof(OptionsPanel_TabButton), "tab")?.GetValue(tabButton) as GameObject;
       if (tab == null)
       {
-        Log.Error("Failed to get tab member from modTabButton via reflection");
-        UnityEngine.Object.Destroy(tabButtonGameObjectClone);
-        return;
+        Log.Error("Failed to access tab field of the tab button.");
+        Cleanup();
+        return false;
       }
 
-      GameObject tabClone = UnityEngine.Object.Instantiate(tab, tab.transform.parent);
-      tabClone.name = "modContent";
-      modContent = tabClone;
+      // Clone the tab
+      tabContent = (GameObject)UnityEngine.Object.Instantiate((UnityEngine.Object)tab, tab.transform.parent);
+      tabContent.name = Constants.ModId + "_Tab";
 
-      // 设置克隆的tab到tabButton
-      var tabField2 = AccessTools.Field(modTabButton.GetType(), "tab");
-      tabField2.SetValue(modTabButton, tabClone);
+      // Set the tab to the tabButton
+      AccessTools.Field(typeof(OptionsPanel_TabButton), "tab")?.SetValue(tabButton, tabContent);
 
-      // 添加到tabButtons列表
-      tabButtons.Add(modTabButton);
+      // Add the tabButton to the tabButtons list
+      tabButtons.Add(tabButton);
 
-      // 调用Setup更新UI
-      var setupMethod = AccessTools.Method(optionsPanel.GetType(), "Setup");
-      setupMethod.Invoke(optionsPanel, null);
+      // Call the setup method to refresh the tabs
+      var setupMethod = AccessTools.Method(typeof(OptionsPanel), "Setup");
+      setupMethod?.Invoke(target, null);
 
-      // 修改标签页名称
-      TextMeshProUGUI? tabName = modTabButton.GetComponentInChildren<TextMeshProUGUI>(true);
+      // Change the tab name
+      TextMeshProUGUI? tabName = tabButton.GetComponentInChildren<TextMeshProUGUI>(true);
       if (tabName != null)
       {
-        // 移除本地化组件
-        var localizor = modTabButton.GetComponentInChildren<TextLocalizor>(true);
-        if (localizor != null)
-          UnityEngine.Object.Destroy(localizor);
+        // Remove the TextLocalizor component if exists
+        var textLocalizor = tabName.GetComponent<TextLocalizor>();
+        if (textLocalizor != null)
+        {
+          UnityEngine.Object.DestroyImmediate(textLocalizor);
+        }
 
-        tabName.SetText("Mod Settings");
+        // Set the tab name
+        tabName.text = Localizations.I18n.ModNameKey.ToPlainText();
       }
 
-      // 清空内容并创建下拉列表预制体
-      if (modContent != null)
-      {
-        // Clear all children
-        for (int i = modContent.transform.childCount - 1; i >= 0; i--)
-        {
-          UnityEngine.Object.DestroyImmediate(modContent.transform.GetChild(i).gameObject);
-        }
+      // Cleanup the content of the tab and add our own UI elements
+      tabContent.transform.DestroyAllChildren();
 
-        // 查找分辨率下拉列表作为模板
-        OptionsUIEntry_Dropdown resolutionDropDown = tabClone.transform.parent.GetComponentsInChildren<OptionsUIEntry_Dropdown>(true)
-            .FirstOrDefault(dropdown => dropdown.gameObject.name == "UI_Resolution");
+      Log.Debug("GameSettingUI tab created successfully.");
 
-        if (resolutionDropDown != null)
-        {
-          GameObject dropdownListPrefab = UnityEngine.Object.Instantiate(resolutionDropDown.gameObject, modContent.transform);
-          dropdownListPrefab.name = "dropDownPrefab";
-          dropdownListPrefab.SetActive(false);
-          this.dropdownListPrefab = dropdownListPrefab;
-          Log.Info("Successfully created dropdown list prefab");
-        }
-        else
-        {
-          Log.Error("Resolution dropdown not found as template");
-        }
-      }
-
-      MakeInputWithSliderPrefab();
-
-      Log.Info("Mod settings tab creation completed");
-
-      // 立即处理等待的配置项
-      ProcessPendingConfigs();
+      return true;
     }
 
-    private void MakeInputWithSliderPrefab()
+    private bool CreateSettings()
     {
-      if (modContent == null)
-        return;
-
-      // 从游戏中克隆一个鼠标灵敏度的设置项作为模板
-      OptionsUIEntry_Slider mouseSensitivitySlider = UnityEngine.Object.FindObjectsOfType<OptionsUIEntry_Slider>(true)
-          .FirstOrDefault(slider => slider.gameObject.name == "UI_MouseSensitivity");
-
-      if (mouseSensitivitySlider != null)
+      if (tabContent == null)
       {
-        GameObject UI_MouseSensitivity_Clone = UnityEngine.Object.Instantiate(mouseSensitivitySlider.gameObject, modContent.transform);
-        UI_MouseSensitivity_Clone.name = "inputWithSliderPrefab";
-        UI_MouseSensitivity_Clone.SetActive(false);
-
-        // 获取引用
-        var labelField = AccessTools.Field(mouseSensitivitySlider.GetType(), "label");
-        var label = (TextMeshProUGUI)labelField.GetValue(mouseSensitivitySlider);
-        var sliderField = AccessTools.Field(mouseSensitivitySlider.GetType(), "slider");
-        var slider = (UnityEngine.UI.Slider)sliderField.GetValue(mouseSensitivitySlider);
-        var valueFieldField = AccessTools.Field(mouseSensitivitySlider.GetType(), "valueField");
-        var valueField = (TMP_InputField)valueFieldField.GetValue(mouseSensitivitySlider);
-
-        UnityEngine.Object.DestroyImmediate(UI_MouseSensitivity_Clone.GetComponent<OptionsUIEntry_Slider>());
-
-        inputWithSliderPrefab = UI_MouseSensitivity_Clone;
-        Log.Info("Successfully created input slider prefab");
+        Log.Error("Tab content is not set.");
+        return false;
       }
-      else
+
+      var settings = SettingManager.Instance.AllSettings;
+      foreach (var item in settings)
       {
-        Log.Error("Mouse sensitivity slider not found as template");
+        if (!CreateSetting(item))
+        {
+          Log.Error($"Failed to create setting UI for {item.Key.ToPlainText()}.");
+          return false;
+        }
+
+        Log.Debug($"Setting UI for {item.Key.ToPlainText()} created successfully.");
       }
+
+      Log.Debug("All settings created successfully.");
+
+      return true;
     }
 
-    private void TryCreatingModSettingTab()
+    private bool CreatePrefabs()
     {
-      if (!modTabCreated)
+      // Find OptionsUIEntry_Dropdown, OptionsUIEntry_Slider and OptionsUIEntry_Toggle prefabs from the existing game-wide UI
+      var dropdown = UnityEngine.Object.FindObjectOfType<OptionsUIEntry_Dropdown>(true);
+      var slider = UnityEngine.Object.FindObjectOfType<OptionsUIEntry_Slider>(true);
+      // toggle has never been used in the game, so we comment it out for now
+      // var toggle = UnityEngine.Object.FindObjectOfType<OptionsUIEntry_Toggle>(true);
+
+      if (dropdown == null)
       {
-        CreateModSettingTab();
-        modTabCreated = true;
+        Log.Error("Failed to find OptionsUIEntry_Dropdown prefab.");
+        return false;
       }
+
+      if (slider == null)
+      {
+        Log.Error("Failed to find OptionsUIEntry_Slider prefab.");
+        return false;
+      }
+
+      Log.Debug($"Clone {dropdown.name} and {slider.name} prefabs for GameSettingUI.");
+
+      // Clone and register the prefabs
+      dropdownPrefab = UnityEngine.Object.Instantiate(dropdown);
+      dropdownPrefab.name = Constants.ModId + "_DropdownPrefab";
+      dropdownPrefab.gameObject.SetActive(false);
+
+      sliderPrefab = UnityEngine.Object.Instantiate(slider);
+      sliderPrefab.name = Constants.ModId + "_SliderPrefab";
+      sliderPrefab.gameObject.SetActive(false);
+
+      // Dump Hierarchy for debugging
+      DebugUtils.DumpGameObjectHierarchy(dropdownPrefab.gameObject, 5, true, false, null);
+      DebugUtils.DumpGameObjectHierarchy(sliderPrefab.gameObject, 5, true, false, null);
+
+      Log.Debug("GameSettingUI prefabs created successfully.");
+
+      return true;
+    }
+
+    private bool CreateSetting(SettingItem item)
+    {
+      if (tabContent == null)
+      {
+        Log.Error("Tab content is not set.");
+        return false;
+      }
+
+      return item.Type switch
+      {
+        Type.Number => CreateSliderSetting(item),
+        Type.Toggle => CreateToggleSetting(item),
+        Type.Hotkey => true, // Hotkey setting is not implemented yet.
+        Type.Text => CreateInputSetting(item),
+        _ => false,
+      };
+
+    }
+
+    private bool CreateSliderSetting(SettingItem item)
+    {
+      if (sliderPrefab == null)
+      {
+        Log.Error("Slider prefab is not set.");
+        return false;
+      }
+
+      var sliderInstance = UnityEngine.Object.Instantiate(sliderPrefab, tabContent!.transform);
+      if (sliderInstance == null)
+      {
+        Log.Error("Failed to instantiate slider prefab for slider setting.");
+        return false;
+      }
+
+      // Replace the slider with our custom slider
+      var customSlider = sliderInstance.gameObject.AddComponent<SliderComponent>();
+      var oldSlider = sliderInstance.GetComponent<OptionsUIEntry_Slider>();
+      if (oldSlider == null)
+      {
+        Log.Error("Failed to get OptionsUIEntry_Slider component from slider instance.");
+        UnityEngine.Object.Destroy(sliderInstance.gameObject);
+        return false;
+      }
+
+      if (!customSlider.Setup(item, oldSlider))
+      {
+        Log.Error($"Failed to setup custom slider for setting {item.Key}.");
+        UnityEngine.Object.Destroy(sliderInstance.gameObject);
+        return false;
+      }
+
+      // Detach the custom slider from the original slider instance
+      customSlider.transform.SetParent(tabContent!.transform, false);
+      // Activate the custom slider and set its name
+      sliderInstance.gameObject.SetActive(true);
+      sliderInstance.name = "Settings_" + Constants.ModId + "_Slider_" + item.Key;
+      // Move the custom slider to the correct position
+      sliderInstance.transform.SetAsLastSibling();
+
+      // Remove the original component
+      UnityEngine.Object.DestroyImmediate(oldSlider);
+
+      return true;
+    }
+
+    private bool CreateToggleSetting(SettingItem item)
+    {
+      if (sliderPrefab == null)
+      {
+        Log.Error("Slider prefab is not set.");
+        return false;
+      }
+
+      var sliderInstance = UnityEngine.Object.Instantiate(sliderPrefab, tabContent!.transform);
+      // Replace the slider with our custom slider
+      var customToggle = sliderInstance.gameObject.AddComponent<ToggleComponent>();
+      var oldSlider = sliderInstance.GetComponent<OptionsUIEntry_Slider>();
+      if (oldSlider == null)
+      {
+        Log.Error("Failed to get OptionsUIEntry_Slider component from slider instance.");
+        UnityEngine.Object.Destroy(sliderInstance.gameObject);
+        return false;
+      }
+
+      if (!customToggle.Setup(item, oldSlider))
+      {
+        Log.Error($"Failed to setup custom toggle for setting {item.Key}.");
+        UnityEngine.Object.Destroy(sliderInstance.gameObject);
+        return false;
+      }
+
+      // Detach the custom toggle from the original slider instance
+      customToggle.transform.SetParent(tabContent.transform, false);
+      // Activate the custom toggle and set its name
+      sliderInstance.gameObject.SetActive(true);
+      sliderInstance.name = "Settings_" + Constants.ModId + "_Toggle_" + item.Key;
+      // Move the custom toggle to the correct position
+      sliderInstance.transform.SetAsLastSibling();
+
+      // Remove the original
+      UnityEngine.Object.DestroyImmediate(oldSlider);
+
+      return true;
+    }
+
+    private bool CreateInputSetting(SettingItem item)
+    {
+      if (sliderPrefab == null)
+      {
+        Log.Error("Slider prefab is not set.");
+        return false;
+      }
+
+      var sliderInstance = UnityEngine.Object.Instantiate(sliderPrefab, tabContent!.transform);
+      if (sliderInstance == null)
+      {
+        Log.Error("Failed to instantiate slider prefab for input setting.");
+        return false;
+      }
+
+      // Replace the slider with our custom input
+      var customInput = sliderInstance.gameObject.AddComponent<InputComponent>();
+      var oldSlider = sliderInstance.GetComponent<OptionsUIEntry_Slider>();
+      if (oldSlider == null)
+      {
+        Log.Error("Failed to get OptionsUIEntry_Slider component from slider instance.");
+        UnityEngine.Object.Destroy(sliderInstance.gameObject);
+        return false;
+      }
+
+      if (!customInput.Setup(item, oldSlider))
+      {
+        Log.Error($"Failed to setup custom input for setting {item.Key}.");
+        UnityEngine.Object.Destroy(sliderInstance.gameObject);
+        return false;
+      }
+
+      // Detach the custom input from the original slider instance
+      customInput.transform.SetParent(tabContent!.transform, false);
+      // Activate the custom input and set its name
+      sliderInstance.gameObject.SetActive(true);
+      sliderInstance.name = "Settings_" + Constants.ModId + "_Input_" + item.Key;
+      // Move the custom input to the correct position
+      sliderInstance.transform.SetAsLastSibling();
+
+      // Remove the original component
+      UnityEngine.Object.DestroyImmediate(oldSlider);
+
+      return true;
+    }
+
+    private void Cleanup()
+    {
+      if (tabButton != null)
+      {
+        UnityEngine.Object.Destroy(tabButton.gameObject);
+        tabButton = null;
+      }
+
+      if (tabContent != null)
+      {
+        UnityEngine.Object.Destroy(tabContent);
+        tabContent = null;
+      }
+
+      isInitialized = false;
+      target = null;
     }
   }
 }

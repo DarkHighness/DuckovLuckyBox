@@ -9,6 +9,7 @@ namespace DuckovLuckyBox.Core
     {
         public static class I18n
         {
+            public static readonly string ModNameKey = "ModName_DuckovLuckyBox";
             public static readonly string RefreshStockKey = "UI_RefreshStock";
             public static readonly string StorePickKey = "UI_StorePick";
             public static readonly string StreetPickKey = "UI_StreetPick";
@@ -22,11 +23,11 @@ namespace DuckovLuckyBox.Core
             public static readonly string NotEnoughMoneyFormatKey = "Notification_NotEnoughMoneyFormat";
 
             // Settings UI I18n keys
+            public static readonly string InvalidNumberInputKey = "UI_InvalidInput";
             public static readonly string SettingsPanelTitleKey = "UI_SettingsPanelTitle";
             public static readonly string SettingsCategoryGeneralKey = "UI_SettingsCategoryGeneral";
             public static readonly string SettingsCategoryPricingKey = "UI_SettingsCategoryPricing";
             public static readonly string SettingsEnableAnimationKey = "UI_SettingsEnableAnimation";
-            public static readonly string SettingsHotkeyKey = "UI_SettingsHotkey";
             public static readonly string SettingsPressAnyKeyKey = "UI_SettingsPressAnyKey";
             public static readonly string SettingsRefreshStockPriceKey = "UI_SettingsRefreshStockPrice";
             public static readonly string SettingsStorePickPriceKey = "UI_SettingsStorePickPrice";
@@ -77,6 +78,7 @@ namespace DuckovLuckyBox.Core
 
         private readonly Dictionary<SystemLanguage, Dictionary<string, string>> _localizedStrings = new Dictionary<SystemLanguage, Dictionary<string, string>> {
         { SystemLanguage.English, new Dictionary<string, string> {
+            { I18n.ModNameKey, "Lucky Box" },
             { I18n.RefreshStockKey, "Refresh" },
             { I18n.StorePickKey, "Roll from the merchant." },
             { I18n.RecycleKey, "Recycle" },
@@ -88,11 +90,11 @@ namespace DuckovLuckyBox.Core
             { I18n.StreetPickKey, "Roll from the street." },
             { I18n.InventoryFullAndSendToStorageKey, "Inventory full, sending to storage." },
             { I18n.NotEnoughMoneyFormatKey, "Not enough money! Need {price} coins." },
+            { I18n.InvalidNumberInputKey, "Invalid input. Please enter a valid number." },
             { I18n.SettingsPanelTitleKey, $"{Constants.ModName} SETTINGS" },
             { I18n.SettingsCategoryGeneralKey, "General" },
             { I18n.SettingsCategoryPricingKey, "Pricing" },
             { I18n.SettingsEnableAnimationKey, "Enable Animation" },
-            { I18n.SettingsHotkeyKey, "Settings Hotkey" },
             { I18n.SettingsPressAnyKeyKey, "Press any key..." },
             { I18n.SettingsRefreshStockPriceKey, "Refresh Stock Price" },
             { I18n.SettingsStorePickPriceKey, "Roll from the merchant Price" },
@@ -137,6 +139,7 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltMutatedNotificationKey, "Wait! Something seems to have changed subtly." }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
+            { I18n.ModNameKey, "幸运\"方块\"" },
             { I18n.RefreshStockKey, "刷新" },
             { I18n.StorePickKey, "商人那拾一个" },
             { I18n.RecycleKey, "\"汰换合同\"" },
@@ -148,11 +151,11 @@ namespace DuckovLuckyBox.Core
             { I18n.StreetPickKey, "路边拾一个" },
             { I18n.InventoryFullAndSendToStorageKey, "俺拾不动嘞，邮回仓库嘞。" },
             { I18n.NotEnoughMoneyFormatKey, "钱不够嘞！需要 {price} 个铜板。" },
+            { I18n.InvalidNumberInputKey, "输入无效。请输入一个有效的数字。" },
             { I18n.SettingsPanelTitleKey, "幸运\"方块\"设置" },
             { I18n.SettingsCategoryGeneralKey, "常规" },
             { I18n.SettingsCategoryPricingKey, "价格" },
             { I18n.SettingsEnableAnimationKey, "启用动画" },
-            { I18n.SettingsHotkeyKey, "设置快捷键" },
             { I18n.SettingsPressAnyKeyKey, "按任意键..." },
             { I18n.SettingsRefreshStockPriceKey, "刷新库存价格" },
             { I18n.SettingsStorePickPriceKey, "商人抽奖价格" },

@@ -19,10 +19,7 @@ namespace DuckovLuckyBox.Core
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new ItemOperationMenuUI();
-                }
+                _instance ??= new ItemOperationMenuUI();
                 return _instance;
             }
         }

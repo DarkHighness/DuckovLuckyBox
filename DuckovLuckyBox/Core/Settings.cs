@@ -36,9 +36,9 @@ namespace DuckovLuckyBox.Core.Settings
             get => _value;
             set
             {
-                if (!_hasValue || !EqualityComparer<object>.Default.Equals(_value, value))
+                if (!_hasValue || !IsEqual(_value, value))
                 {
-                    _value = value;
+                    _value = TransformValueToType(value, Type);
                     _hasValue = true;
                     OnValueChanged?.Invoke(_value);
                 }
@@ -58,6 +58,48 @@ namespace DuckovLuckyBox.Core.Settings
                     _value = value;
                     _hasValue = true;
                 }
+            }
+        }
+
+        private bool IsEqual(object a, object b)
+        {
+            // Check for nulls
+            if (a == null && b == null) return true;
+            if (a == null || b == null) return false;
+
+            // Check for type equality, If types differ and they are IConvertible, try to convert and compare
+            if (a.GetType() != b.GetType())
+            {
+                try
+                {
+                    var convertedB = System.Convert.ChangeType(b, a.GetType());
+                    return a.Equals(convertedB);
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            // Finally, use default equality check
+            if (a.Equals(b))
+                return true;
+
+            return false;
+        }
+
+        private object TransformValueToType(object value, Type type)
+        {
+            switch (type)
+            {
+                case Type.Toggle:
+                    return System.Convert.ToBoolean(value);
+                case Type.Number:
+                    return System.Convert.ToInt64(value);
+                case Type.Text:
+                    return System.Convert.ToString(value) ?? string.Empty;
+                default:
+                    return value;
             }
         }
 
@@ -84,6 +126,12 @@ namespace DuckovLuckyBox.Core.Settings
         {
             if (Value is float f)
                 return f;
+            if (Value is double d)
+                return (float)d;
+            if (Value is int i)
+                return i;
+            if (Value is long l)
+                return l;
 
             throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to float.");
         }
@@ -132,7 +180,6 @@ namespace DuckovLuckyBox.Core.Settings
     {
         // General Settings
         public const bool EnableAnimation = true;
-        public static readonly Hotkey SettingsHotkey = new Hotkey(KeyCode.F1, false, false, false);
         public const bool EnableDestroyButton = Constants.ModId != Constants.AnimationOnlyModId;
         public const bool EnableMeltButton = Constants.ModId != Constants.AnimationOnlyModId;
         public const bool EnableStockShopActions = Constants.ModId != Constants.AnimationOnlyModId;
@@ -165,16 +212,6 @@ namespace DuckovLuckyBox.Core.Settings
             Type = Type.Toggle,
             Category = Category.General,
             DefaultValue = DefaultSettings.EnableAnimation,
-        };
-
-        public SettingItem SettingsHotkey { get; set; } = new SettingItem
-        {
-            Key = "DuckovLuckyBox.Settings.SettingsHotkey",
-            Label = Localizations.I18n.SettingsHotkeyKey,
-            Description = "DuckovLuckyBox.Settings.SettingsHotkey.Description",
-            Type = Type.Hotkey,
-            Category = Category.General,
-            DefaultValue = DefaultSettings.SettingsHotkey,
         };
 
         public SettingItem EnableDestroyButton { get; set; } = new SettingItem
@@ -317,7 +354,6 @@ namespace DuckovLuckyBox.Core.Settings
             get
             {
                 yield return EnableAnimation;
-                yield return SettingsHotkey;
                 yield return EnableDestroyButton;
                 yield return EnableMeltButton;
                 yield return EnableDebug;

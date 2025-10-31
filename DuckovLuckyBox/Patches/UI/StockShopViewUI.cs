@@ -18,10 +18,7 @@ namespace DuckovLuckyBox.Core
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new StockShopViewUI();
-                }
+                _instance ??= new StockShopViewUI();
                 return _instance;
             }
         }

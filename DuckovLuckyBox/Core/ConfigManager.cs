@@ -12,7 +12,6 @@ namespace DuckovLuckyBox.Core.Settings
         // Default 0 means 'unspecified/old format' and will trigger migration
         public int Version = 0;
         public bool EnableAnimation = DefaultSettings.EnableAnimation;
-        public string SettingsHotkey = DefaultSettings.SettingsHotkey.ToString();
         public bool EnableDestroyButton = DefaultSettings.EnableDestroyButton;
         public bool EnableMeltButton = DefaultSettings.EnableMeltButton;
         public bool EnableDebug = DefaultSettings.EnableDebug;
@@ -309,7 +308,6 @@ namespace DuckovLuckyBox.Core.Settings
             {
                 Version = CurrentConfigVersion,
                 EnableAnimation = settings.EnableAnimation.GetAsBool(),
-                SettingsHotkey = settings.SettingsHotkey.GetAsHotkey().ToString(),
                 EnableDestroyButton = settings.EnableDestroyButton.GetAsBool(),
                 EnableMeltButton = settings.EnableMeltButton.GetAsBool(),
                 EnableDebug = settings.EnableDebug.GetAsBool(),
@@ -336,9 +334,6 @@ namespace DuckovLuckyBox.Core.Settings
             {
                 settings.EnableAnimation.Value = config.EnableAnimation;
 
-                // Parse Hotkey from string (e.g., "Ctrl+F1")
-                settings.SettingsHotkey.Value = Hotkey.Parse(config.SettingsHotkey);
-
                 settings.EnableDestroyButton.Value = config.EnableDestroyButton;
                 settings.EnableMeltButton.Value = config.EnableMeltButton;
                 settings.EnableDebug.Value = config.EnableDebug;
@@ -363,7 +358,6 @@ namespace DuckovLuckyBox.Core.Settings
         {
             var settings = SettingManager.Instance;
             settings.EnableAnimation.OnValueChanged += OnSettingChanged;
-            settings.SettingsHotkey.OnValueChanged += OnSettingChanged;
             settings.EnableDestroyButton.OnValueChanged += OnSettingChanged;
             settings.EnableMeltButton.OnValueChanged += OnSettingChanged;
             settings.EnableDebug.OnValueChanged += OnSettingChanged;
@@ -383,7 +377,6 @@ namespace DuckovLuckyBox.Core.Settings
             var settings = SettingManager.Instance;
 #pragma warning disable CS8601
             settings.EnableAnimation.OnValueChanged -= OnSettingChanged!;
-            settings.SettingsHotkey.OnValueChanged -= OnSettingChanged!;
             settings.EnableDestroyButton.OnValueChanged -= OnSettingChanged!;
             settings.EnableMeltButton.OnValueChanged -= OnSettingChanged!;
             settings.EnableDebug.OnValueChanged -= OnSettingChanged!;
