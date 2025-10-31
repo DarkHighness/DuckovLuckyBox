@@ -281,7 +281,7 @@ namespace DuckovLuckyBox.UI
             RectTransform toggleRect = toggleObj.AddComponent<RectTransform>();
             toggleRect.sizeDelta = new Vector2(200f, 32f);
 
-            Slider toggleSlider = toggleObj.AddComponent<Slider>();
+      UnityEngine.UI.Slider toggleSlider = toggleObj.AddComponent<UnityEngine.UI.Slider>();
             toggleSlider.wholeNumbers = true;
             toggleSlider.minValue = 0f;
             toggleSlider.maxValue = 1f;
@@ -473,7 +473,7 @@ namespace DuckovLuckyBox.UI
             RectTransform sliderRect = sliderObj.AddComponent<RectTransform>();
             sliderRect.sizeDelta = new Vector2(200f, 32f);
 
-            Slider slider = sliderObj.AddComponent<Slider>();
+      UnityEngine.UI.Slider slider = sliderObj.AddComponent<UnityEngine.UI.Slider>();
             slider.wholeNumbers = step >= 1f;
             slider.minValue = minValue;
             slider.maxValue = maxValue;

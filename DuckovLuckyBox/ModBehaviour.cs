@@ -60,6 +60,8 @@ namespace DuckovLuckyBox
                 await UniTask.Yield(); // Wait until settings are initialized
             }
 
+            GameSettingUI.Initialize();
+
             if (SettingManager.Instance.EnableDebug.GetAsBool())
             {
                 Log.Warning("Debug mode is enabled.");

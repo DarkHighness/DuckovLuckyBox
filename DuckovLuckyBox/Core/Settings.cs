@@ -27,8 +27,8 @@ namespace DuckovLuckyBox.Core.Settings
         public event System.Action<object> OnValueChanged = delegate { };
 
         // For Number type settings
-        public float MinValue { get; internal set; } = 0f;
-        public float MaxValue { get; internal set; } = 100f;
+        public float MinValue { get; internal set; } = -10000f;
+        public float MaxValue { get; internal set; } = 10000f;
         public float Step { get; internal set; } = 1f;
 
         public object Value
@@ -300,7 +300,7 @@ namespace DuckovLuckyBox.Core.Settings
         {
             Key = "DuckovLuckyBox.Settings.MeltBasePrice",
             Label = Localizations.I18n.SettingsMeltBasePriceKey,
-            Description = "熔炼每个物品的每个stack时扣除的基本价格乘以物品等级",
+            Description = "DuckovLuckyBox.Settings.MeltBasePrice.Description",
             Type = Type.Number,
             Category = Category.Pricing,
             DefaultValue = DefaultSettings.MeltBasePrice,
