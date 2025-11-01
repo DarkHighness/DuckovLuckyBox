@@ -9,6 +9,7 @@ using SodaCraft.Localizations;
 using FMODUnity;
 using FMOD;
 using DuckovLuckyBox.Core.Settings;
+using ItemStatsSystem;
 
 namespace DuckovLuckyBox.Core
 {
@@ -330,6 +331,7 @@ namespace DuckovLuckyBox.Core
             if (mainCharacter != null && mainCharacter != null)
             {
                 targetItem.Detach();
+                targetItem.DestroyTree();
             }
 
             // Destroy the dropped item immediately

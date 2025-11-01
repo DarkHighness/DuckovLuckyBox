@@ -68,6 +68,43 @@ namespace DuckovLuckyBox.Core
 
         public bool IsOpen => isOpen;
 
+        public Inventory? ContractInventory => _contractInventory;
+
+        public int GetItemIndexInContract(Item item)
+        {
+            if (_contractInventory != null)
+            {
+                return _contractInventory.Content.IndexOf(item);
+            }
+            return -1;
+        }
+
+        public bool IsItemInContract(Item item) => _contractInventory != null && _contractInventory.Content.Contains(item);
+
+        public void HandleDragReturn(Item item)
+        {
+            if (_contractInventory != null && _contractInventory.Content.Contains(item))
+            {
+                ReturnItem(item);
+                UpdateActionButtonsState();
+            }
+        }
+
+        public void RemoveFromContract(Item item)
+        {
+            if (_contractInventory != null)
+            {
+                if (_contractInventory.Content.Contains(item))
+                {
+                    _contractInventory.RemoveItem(item);
+                }
+                _itemOrigins.Remove(item);
+
+                // Update action buttons state
+                UpdateActionButtonsState();
+            }
+        }
+
         public void Open()
         {
             if (!isInitialized) return;
@@ -88,7 +125,7 @@ namespace DuckovLuckyBox.Core
             _contractRoot?.SetAsLastSibling();
             _contractRoot?.gameObject.SetActive(true);
             _contractDisplay.gameObject.SetActive(true);
-            _contractDisplay.Setup(_contractInventory, funcCanOperate: _ => true, movable: false);
+            _contractDisplay.Setup(_contractInventory, funcCanOperate: _ => true, movable: true);
             _contractDisplay.onDisplayDoubleClicked -= OnContractDoubleClicked;
             _contractDisplay.onDisplayDoubleClicked += OnContractDoubleClicked;
 
@@ -515,7 +552,7 @@ namespace DuckovLuckyBox.Core
                 Log.Warning("Cycle bin contract inventory is null during display setup.");
                 return;
             }
-            _contractDisplay.Setup(_contractInventory, funcCanOperate: _ => true, movable: false);
+            _contractDisplay.Setup(_contractInventory, funcCanOperate: _ => true, movable: true);
 
             Log.Debug("[Recycle:CreateContractDisplay] Adding double click event handler.");
             _contractDisplay.onDisplayDoubleClicked += OnContractDoubleClicked;
@@ -1234,7 +1271,7 @@ namespace DuckovLuckyBox.Core
             UpdateActionButtonsState();
         }
 
-        private async UniTask AddItemToContractAsync(Item item)
+        public async UniTask AddItemToContractAsync(Item item)
         {
             if (item == null)
             {
@@ -1355,6 +1392,179 @@ namespace DuckovLuckyBox.Core
                 if (!_contractInventory.AddItem(itemToMove))
                 {
                     Log.Warning("Cycle bin failed to add item into contract inventory.");
+
+                    if (stackSource != null)
+                    {
+                        stackSource.Combine(itemToMove);
+                    }
+                    else if (itemToMove != null && !origin.AddItem(itemToMove))
+                    {
+                        GiveToPlayer(itemToMove);
+                    }
+
+                    return;
+                }
+
+                if (itemToMove != null)
+                {
+                    _itemOrigins[itemToMove] = new OriginItemContext(origin, stackSource);
+                }
+
+                if (validation.IsFirstItem)
+                {
+                    _targetQuality = validation.Quality;
+                    _rewardQuality = validation.RewardLevel;
+                    if (!_rewardQuality.HasValue && _targetQuality.HasValue)
+                    {
+                        int nextLevelValue = (int)_targetQuality.Value + 1;
+                        if (Enum.IsDefined(typeof(ItemValueLevel), nextLevelValue))
+                        {
+                            _rewardQuality = (ItemValueLevel)nextLevelValue;
+                        }
+                    }
+                }
+
+                ItemUIUtilities.Select((ItemDisplay)null!);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[RecycleDebug] Exception during transfer: {ex.Message}");
+                throw;
+            }
+            finally
+            {
+                _transferring = false;
+                UpdateActionButtonsState();
+            }
+        }
+
+        public async UniTask AddItemToContractAtAsync(Item item, int index)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            if (_transferring)
+            {
+                return;
+            }
+
+            if (_contractInventory == null)
+            {
+                return;
+            }
+
+            // 检查目标位置是否有物品，如果有，不允许合并，直接失败
+            if (_contractInventory.GetItemAt(index) != null)
+            {
+                return;
+            }
+
+            var validation = EvaluateItemForContract(item);
+            if (!validation.IsValid)
+            {
+                if (!string.IsNullOrEmpty(validation.ErrorMessage))
+                {
+                    NotificationText.Push(validation.ErrorMessage);
+                }
+                return;
+            }
+
+            var origin = item.InInventory;
+            if (origin == null)
+            {
+                Log.Warning("Cycle bin could not resolve the source inventory for the item.");
+                return;
+            }
+
+            _transferring = true;
+
+            try
+            {
+                Item itemToMove = item;
+                Item? stackSource = null;
+
+                var itemCategory = RecycleService.GetItemCategory(item.TypeID);
+
+                // If bullet, move the whole stack (requirement: full stack checked in validation)
+                if (string.Equals(itemCategory, "Bullet", StringComparison.OrdinalIgnoreCase))
+                {
+                    // If the player holds more than one logical bullet group, split out a group of BulletGroupSize
+                    if (item.StackCount > RecycleService.BulletGroupSize)
+                    {
+                        Item? splitItem = null;
+                        try
+                        {
+                            splitItem = await item.Split(RecycleService.BulletGroupSize);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error($"Cycle bin failed to split bullet stack: {ex.Message}");
+                        }
+
+                        if (splitItem == null)
+                        {
+                            return;
+                        }
+
+                        itemToMove = splitItem;
+                        stackSource = item;
+                    }
+                    else
+                    {
+                        // StackCount is exactly BulletGroupSize (validation ensures >=), remove the whole stack
+                        if (!origin.RemoveItem(item))
+                        {
+                            Log.Warning("Cycle bin failed to remove bullet stack from source inventory.");
+                            return;
+                        }
+
+                        item.Detach();
+                        itemToMove = item;
+                    }
+                }
+                else
+                {
+                    if (item.StackCount > 1)
+                    {
+                        Item? splitItem = null;
+
+                        try
+                        {
+                            splitItem = await item.Split(1);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error($"Cycle bin failed to split item stack: {ex.Message}");
+                        }
+
+                        if (splitItem == null)
+                        {
+                            return;
+                        }
+
+                        itemToMove = splitItem;
+                        stackSource = item;
+                    }
+                    else
+                    {
+                        if (!origin.RemoveItem(item))
+                        {
+                            Log.Warning("Cycle bin failed to remove item from source inventory.");
+                            return;
+                        }
+
+                        item.Detach();
+                    }
+
+                    // non-bullet: each moved item is a single count
+                    itemToMove.StackCount = 1;
+                }
+
+                if (!_contractInventory.AddAt(itemToMove, index))
+                {
+                    Log.Warning("Cycle bin failed to add item into contract inventory at specific position.");
 
                     if (stackSource != null)
                     {
