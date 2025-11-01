@@ -12,13 +12,13 @@ A mod for "Escape from Duckov" that allows players to use additional features in
 
 ### Shop Features
 
-1. ⌚ A decent-looking lottery animation (can be skipped by left-clicking the mouse while playing)
+1. ⌚ A decent-looking lottery animation (can be skipped by left-clicking the mouse while playing) (up to 3 lotteries can be opened at once, requires settings to be enabled)
 
 2. ♻️ "Refresh": Refresh the current merchant's inventory
 
-3. 👌 "Pick One from Merchant": Randomly draw one item from the current merchant's inventory (reduces stock)
+3. 👌 "Pick One from Merchant": Randomly draw one item from the current merchant's inventory (reduces stock). Double-clicking can trigger multiple draws❗
 
-4. 😊 "Pick One from Roadside": Randomly draw one item from all possible items in the game (doesn't affect the stock)
+4. 😊 "Pick One from Roadside": Randomly draw one item from all possible items in the game (doesn't affect the stock). Double-clicking can trigger multiple draws❗
 
 ### Item Menu Features
 
