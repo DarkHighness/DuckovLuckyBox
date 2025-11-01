@@ -30,7 +30,7 @@ namespace DuckovLuckyBox.Core.Settings
 
     public class ConfigManager
     {
-        private const int CurrentConfigVersion = 3;
+        private const int CurrentConfigVersion = 4;
 
         // Create a timestamped backup of the current config file (if it exists).
         private void BackupConfigFile()
@@ -67,8 +67,9 @@ namespace DuckovLuckyBox.Core.Settings
                         case 0:
                         case 1:
                         case 2:
+                        case 3:
                             // For v0 -> v1 migration we intentionally reset all settings to defaults.
-                            Log.Info("Migrating config v0 -> v1/v2/v3: resetting all settings to defaults.");
+                            Log.Info("Migrating config v0 -> v1/v2/v3/v4: resetting all settings to defaults.");
 
                             var defaultConfig = new ConfigData
                             {

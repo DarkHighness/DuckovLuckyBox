@@ -179,8 +179,8 @@ namespace DuckovLuckyBox.Core.Settings
     public static class DefaultSettings
     {
         // General Settings
-    public const bool EnableAnimation = true;
-    public const bool EnableTripleLotteryAnimation = false;
+        public const bool EnableAnimation = true;
+        public const bool EnableTripleLotteryAnimation = true;
         public const bool EnableDestroyButton = Constants.ModId != Constants.AnimationOnlyModId;
         public const bool EnableMeltButton = Constants.ModId != Constants.AnimationOnlyModId;
         public const bool EnableStockShopActions = Constants.ModId != Constants.AnimationOnlyModId;
