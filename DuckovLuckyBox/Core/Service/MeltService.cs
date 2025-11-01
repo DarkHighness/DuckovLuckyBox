@@ -429,6 +429,7 @@ namespace DuckovLuckyBox.Core
                 {
                     var storageMessage = Localizations.I18n.InventoryFullAndSendToStorageKey.ToPlainText();
                     NotificationText.Push(storageMessage);
+                    ItemUtilities.SendToPlayerStorage(meltedItem, directToBuffer: false);
                 }
                 Log.Debug($"Melt: Sent melted item to player (iteration {i + 1}/{stackCount})");
 
