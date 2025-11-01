@@ -379,7 +379,11 @@ namespace DuckovLuckyBox.Core
             if (!meltResult.Success)
             {
                 Log.Error("Melt action failed");
+                // Restore the item to inventory if melt failed
+                mainCharacter?.CharacterItem?.Inventory?.AddItem(targetItem);
             }
+
+
         }
     }
 }
