@@ -78,7 +78,7 @@ namespace DuckovLuckyBox.Core
 
         private readonly Dictionary<SystemLanguage, Dictionary<string, string>> _localizedStrings = new Dictionary<SystemLanguage, Dictionary<string, string>> {
         { SystemLanguage.English, new Dictionary<string, string> {
-            { I18n.ModNameKey, "Lucky Box" },
+            { I18n.ModNameKey,  Constants.ModId != Constants.AnimationOnlyModId ? "Lucky Box" : "Lucky Animation" },
             { I18n.RefreshStockKey, "Refresh" },
             { I18n.StorePickKey, "Roll from the merchant." },
             { I18n.RecycleKey, "Recycle" },
@@ -139,7 +139,7 @@ namespace DuckovLuckyBox.Core
             { I18n.MeltMutatedNotificationKey, "Wait! Something seems to have changed subtly." }
         } },
         { SystemLanguage.ChineseSimplified, new Dictionary<string, string> {
-            { I18n.ModNameKey, "幸运\"方块\"" },
+            { I18n.ModNameKey, Constants.ModId != Constants.AnimationOnlyModId ? "幸运\"方块\"" : "抽奖动画" },
             { I18n.RefreshStockKey, "刷新" },
             { I18n.StorePickKey, "商人那拾一个" },
             { I18n.RecycleKey, "\"汰换合同\"" },
