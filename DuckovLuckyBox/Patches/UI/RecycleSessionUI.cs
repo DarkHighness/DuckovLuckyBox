@@ -753,11 +753,11 @@ namespace DuckovLuckyBox.Core
         {
             int uiLayer = parent.gameObject.layer;
 
-      var labelObject = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI))
-      {
-        layer = uiLayer
-      };
-      var label = labelObject.GetComponent<TextMeshProUGUI>();
+            var labelObject = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI))
+            {
+                layer = uiLayer
+            };
+            var label = labelObject.GetComponent<TextMeshProUGUI>();
 
             ConfigureActionLabel(label, labelText);
 

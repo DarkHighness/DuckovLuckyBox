@@ -456,7 +456,7 @@ namespace DuckovLuckyBox
             // Detach items after iteration to avoid modifying collection during enumeration
             foreach (var itemToDetach in itemsToDetach)
             {
-               itemToDetach.Detach();
+                itemToDetach.Detach();
             }
 
             return count - remainingToConsume; // Return number of items consumed

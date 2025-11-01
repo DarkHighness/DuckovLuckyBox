@@ -4,12 +4,12 @@ using HarmonyLib;
 
 namespace DuckovLuckyBox.Patches
 {
-  [HarmonyPatch(typeof(OptionsPanel), "Setup")]
-  public static class PatchOptionsPanel
-  {
-    public static void Postfix(OptionsPanel __instance)
+    [HarmonyPatch(typeof(OptionsPanel), "Setup")]
+    public static class PatchOptionsPanel
     {
-      GameSettingUI.Instance.Initialize(__instance);
+        public static void Postfix(OptionsPanel __instance)
+        {
+            GameSettingUI.Instance.Initialize(__instance);
+        }
     }
-  }
 }

@@ -179,7 +179,7 @@ namespace DuckovLuckyBox.UI
         private RectTransform? _overlayRoot;
         private CanvasGroup? _canvasGroup;
 
-    private readonly List<LaneUI> _lanes = new List<LaneUI>();
+        private readonly List<LaneUI> _lanes = new List<LaneUI>();
         private int _currentLaneCount = 0;
 
         private Sprite? _fallbackSprite;
