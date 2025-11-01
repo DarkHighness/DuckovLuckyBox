@@ -49,7 +49,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         /// <summary>
         /// Execute an action by name
         /// </summary>
-        public async UniTask ExecuteAsync(string actionName, StockShopView stockShopView)
+        public async UniTask ExecuteAsync(string actionName, StockShopView stockShopView, bool isDoubleClick = false)
         {
             if (!_actions.TryGetValue(actionName, out var action))
             {
@@ -59,7 +59,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
             try
             {
-                await action.ExecuteAsync(stockShopView);
+                await action.ExecuteAsync(stockShopView, isDoubleClick);
             }
             catch (System.Exception ex)
             {

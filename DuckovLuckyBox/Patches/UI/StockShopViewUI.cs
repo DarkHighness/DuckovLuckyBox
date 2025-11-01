@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Duckov.Economy.UI;
 using TMPro;
@@ -13,6 +14,67 @@ namespace DuckovLuckyBox.Core
 {
     public class StockShopViewUI : IComponent
     {
+        /// <summary>
+        /// Component to detect double clicks on buttons
+        /// </summary>
+        private class DoubleClickDetector
+        {
+            private Dictionary<string, float> _lastClickTimes = new Dictionary<string, float>();
+            private Dictionary<string, int> _clickCounts = new Dictionary<string, int>();
+            private const float DoubleClickThreshold = 0.3f;
+
+            /// <summary>
+            /// Event triggered on single click
+            /// </summary>
+            public event Action<string>? OnSingleClick;
+
+            /// <summary>
+            /// Event triggered on double click
+            /// </summary>
+            public event Action<string>? OnDoubleClick;
+
+            /// <summary>
+            /// Handle a button click for the given identifier
+            /// </summary>
+            public void HandleClick(string identifier)
+            {
+                if (!_lastClickTimes.ContainsKey(identifier)) _lastClickTimes[identifier] = -DoubleClickThreshold;
+                if (!_clickCounts.ContainsKey(identifier)) _clickCounts[identifier] = 0;
+
+                float currentTime = Time.unscaledTime;
+                float timeSinceLastClick = currentTime - _lastClickTimes[identifier];
+                _lastClickTimes[identifier] = currentTime;
+
+                if (timeSinceLastClick < DoubleClickThreshold)
+                {
+                    _clickCounts[identifier]++;
+                    if (_clickCounts[identifier] == 2)
+                    {
+                        // Double click
+                        OnDoubleClick?.Invoke(identifier);
+                        _clickCounts[identifier] = 0;
+                    }
+                }
+                else
+                {
+                    _clickCounts[identifier] = 1;
+                    // Start async task to handle single click after threshold
+                    HandleSingleClickAsync(identifier).Forget();
+                }
+            }
+
+            private async UniTask HandleSingleClickAsync(string identifier)
+            {
+                await UniTask.Delay(System.TimeSpan.FromSeconds(DoubleClickThreshold), DelayType.UnscaledDeltaTime);
+                if (_clickCounts.TryGetValue(identifier, out var clickCount) && clickCount == 1)
+                {
+                    // Single click
+                    OnSingleClick?.Invoke(identifier);
+                    _clickCounts[identifier] = 0;
+                }
+            }
+        }
+
         private static StockShopViewUI? _instance;
         public static StockShopViewUI Instance
         {
@@ -28,6 +90,7 @@ namespace DuckovLuckyBox.Core
         private StockShop? _currentStockShop = null;
         private StockShopView? _currentStockShopView = null;
         private StockShopActionManager? _actionManager = null;
+        private DoubleClickDetector? _doubleClickDetector = null;
         private Dictionary<string, TextMeshProUGUI> _actionTexts = new Dictionary<string, TextMeshProUGUI>();
         private Dictionary<string, Button> _actionButtons = new Dictionary<string, Button>();
         private RectTransform? _actionsContainer;
@@ -117,6 +180,14 @@ namespace DuckovLuckyBox.Core
             {
                 _actionManager = new StockShopActionManager();
                 Log.Debug("Stock shop action manager initialized");
+            }
+
+            if (_doubleClickDetector == null)
+            {
+                _doubleClickDetector = new DoubleClickDetector();
+                _doubleClickDetector.OnSingleClick += OnSingleClick;
+                _doubleClickDetector.OnDoubleClick += OnDoubleClick;
+                Log.Debug("Double click detector initialized");
             }
         }
 
@@ -209,18 +280,29 @@ namespace DuckovLuckyBox.Core
                 _actionButtons[actionName] = button;
 
                 // Bind click event
-                button.onClick.AddListener(() => ExecuteActionAsync(actionName).Forget());
+                button.onClick.AddListener(() => _doubleClickDetector?.HandleClick(actionName));
+
             }
 
             Log.Debug($"Created {_actionTexts.Count} action buttons");
         }
 
-        private async UniTaskVoid ExecuteActionAsync(string actionName)
+        private void OnSingleClick(string actionName)
+        {
+            ExecuteActionAsync(actionName, false).Forget();
+        }
+
+        private void OnDoubleClick(string actionName)
+        {
+            ExecuteActionAsync(actionName, true).Forget();
+        }
+
+        private async UniTaskVoid ExecuteActionAsync(string actionName, bool isDoubleClick)
         {
             if (_actionManager == null) return;
             if (_currentStockShopView != null)
             {
-                await _actionManager.ExecuteAsync(actionName, _currentStockShopView);
+                await _actionManager.ExecuteAsync(actionName, _currentStockShopView, isDoubleClick);
             }
             else
             {
@@ -244,19 +326,31 @@ namespace DuckovLuckyBox.Core
             if (_actionTexts.TryGetValue(nameof(RefreshStockAction), out var refreshText))
             {
                 var baseText = Localizations.I18n.RefreshStockKey.ToPlainText();
-                refreshText.text = refreshPrice > 0 ? $"{baseText} (${refreshPrice})" : $"{baseText} ({freeText})";
+                var priceText = refreshPrice > 0 ? $" (${refreshPrice})" : $" ({freeText})";
+                var fullText = $"{baseText}{priceText}";
             }
 
             if (_actionTexts.TryGetValue(nameof(StorePickAction), out var storePickText))
             {
                 var baseText = Localizations.I18n.StorePickKey.ToPlainText();
-                storePickText.text = storePickPrice > 0 ? $"{baseText} (${storePickPrice})" : $"{baseText} ({freeText})";
+                var priceText = storePickPrice > 0 ? $" (${storePickPrice})" : $" ({freeText})";
+                var doubleClickText = SettingManager.Instance.EnableTripleLotteryAnimation.GetAsBool()
+                    ? $" ({Localizations.I18n.DoubleClickToTripleLotteryKey.ToPlainText()})"
+                    : string.Empty;
+
+                var fullText = $"{baseText}{priceText}{doubleClickText}";
+                storePickText.text = fullText;
             }
 
             if (_actionTexts.TryGetValue(nameof(StreetPickAction), out var streetPickText))
             {
                 var baseText = Localizations.I18n.StreetPickKey.ToPlainText();
-                streetPickText.text = streetPickPrice > 0 ? $"{baseText} (${streetPickPrice})" : $"{baseText} ({freeText})";
+                var priceText = streetPickPrice > 0 ? $" (${streetPickPrice})" : $" ({freeText})";
+                var doubleClickText = SettingManager.Instance.EnableTripleLotteryAnimation.GetAsBool()
+                    ? $" ({Localizations.I18n.DoubleClickToTripleLotteryKey.ToPlainText()})"
+                    : string.Empty;
+                var fullText = $"{baseText}{priceText}{doubleClickText}";
+                streetPickText.text = fullText;
             }
 
             if (_actionTexts.TryGetValue(nameof(RecycleAction), out var recycleText))

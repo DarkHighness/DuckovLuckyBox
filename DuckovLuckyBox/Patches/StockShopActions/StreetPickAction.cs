@@ -2,6 +2,7 @@ using Duckov.Economy.UI;
 using Cysharp.Threading.Tasks;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
+using Duckov.Economy;
 
 namespace DuckovLuckyBox.Patches.StockShopActions
 {
@@ -12,16 +13,27 @@ namespace DuckovLuckyBox.Patches.StockShopActions
     {
         public string GetLocalizationKey() => Localizations.I18n.StreetPickKey;
 
-        public async UniTask ExecuteAsync(StockShopView stockShopView)
+        public async UniTask ExecuteAsync(StockShopView stockShopView, bool isDoubleClick = false)
         {
 
             // Get price from settings
-            long price = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
+            long unitPrice = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
+
+            // Determine the lottery count that can be performed with the current balance
+            int lotteryCount = 1;
+            if (SettingManager.Instance.EnableTripleLotteryAnimation.GetAsBool() && isDoubleClick)
+            {
+                while (lotteryCount < 3 && EconomyManager.IsEnough(new Cost(unitPrice * lotteryCount), true, true))
+                {
+                    lotteryCount++;
+                }
+            }
 
             var context = new DefaultLotteryContext();
             await LotteryService.PerformLotteryWithContextAsync(
                 itemTypeIds: ItemUtils.LotteryItemCache.GetAllItemTypeIds(),
-                unitPrice: price,
+                lotteryCount: lotteryCount,
+                unitPrice: unitPrice,
                 playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
                 context: context);
         }

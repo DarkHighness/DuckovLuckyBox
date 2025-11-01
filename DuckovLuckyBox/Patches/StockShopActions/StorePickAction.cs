@@ -15,7 +15,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
     {
         public string GetLocalizationKey() => Localizations.I18n.StorePickKey;
 
-        public async UniTask ExecuteAsync(StockShopView stockShopView)
+        public async UniTask ExecuteAsync(StockShopView stockShopView, bool isDoubleClick = false)
         {
 
             var target = AccessTools.Field(typeof(StockShopView), "target").GetValue(stockShopView) as Duckov.Economy.StockShop;
@@ -37,9 +37,12 @@ namespace DuckovLuckyBox.Patches.StockShopActions
             long unitPrice = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
             // Determine the lottery count that can be performed with the current balance
             int lotteryCount = 1;
-            while (lotteryCount < 3 && EconomyManager.IsEnough(new Cost(unitPrice * lotteryCount), true, true))
+            if (SettingManager.Instance.EnableTripleLotteryAnimation.GetAsBool() && isDoubleClick)
             {
-                lotteryCount++;
+                while (lotteryCount < 3 && EconomyManager.IsEnough(new Cost(unitPrice * lotteryCount), true, true))
+                {
+                    lotteryCount++;
+                }
             }
 
             var candidateTypeIds = itemEntries.Select(entry => entry.ItemTypeID).ToList();

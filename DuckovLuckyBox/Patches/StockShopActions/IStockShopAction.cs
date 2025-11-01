@@ -16,6 +16,6 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         /// <summary>
         /// Execute this action asynchronously
         /// </summary>
-        UniTask ExecuteAsync(StockShopView stockShopView);
+        UniTask ExecuteAsync(StockShopView stockShopView, bool isDoubleClick = false);
     }
 }

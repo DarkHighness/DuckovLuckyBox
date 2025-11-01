@@ -60,6 +60,7 @@ namespace DuckovLuckyBox.Core
             public static readonly string RecycleCannotMixKey = "UI_RecycleCannotMix";
             public static readonly string RecycleNoHigherLevelKey = "UI_RecycleNoHigherLevel";
             public static readonly string RecycleNoTargetUpgradeKey = "UI_RecycleNoTargetUpgrade";
+            public static readonly string DoubleClickToTripleLotteryKey = "UI_DoubleClickToTripleLottery";
 
             // Item Operation Menu I18n keys
             public static readonly string ItemMenuDestroyKey = "UI_ItemMenuDestroy";
@@ -112,6 +113,7 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsHighQualitySoundFilePathKey, "High Quality Item Sound File" },
             { I18n.SettingsEnableStockShopActionsKey, "Enable Shop Actions" },
             { I18n.SettingsEnableTripleLotteryAnimationKey, "Enable Triple Lottery Animation" },
+            { I18n.DoubleClickToTripleLotteryKey, "Double click to roll more times." },
             { I18n.RecyclingFailedKey, "Recycling failed." },
             { I18n.ItemIsNullKey, "Item is null." },
             { I18n.ContractInventoryNotAvailableKey, "Contract inventory not available." },
@@ -164,6 +166,7 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsStreetPickPriceKey, "街边抽奖价格" },
             { I18n.SettingsMeltBasePriceKey, "熔炼基本价格" },
             { I18n.SettingsResetToDefaultKey, "恢复默认值" },
+            { I18n.DoubleClickToTripleLotteryKey, "双击触发连击！" },
             { I18n.FreeKey, "免费！" },
             { I18n.SettingsEnableDestroyButtonKey, "启用销毁动作" },
             { I18n.SettingsEnableMeltButtonKey, "启用熔炼动作" },

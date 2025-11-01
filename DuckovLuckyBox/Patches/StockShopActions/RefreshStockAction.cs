@@ -19,7 +19,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
 
         public string GetLocalizationKey() => Localizations.I18n.RefreshStockKey;
 
-        public async UniTask ExecuteAsync(StockShopView stockShopView)
+        public async UniTask ExecuteAsync(StockShopView stockShopView, bool isDoubleClick = false)
         {
             var target = AccessTools.Field(typeof(StockShopView), "target").GetValue(stockShopView) as Duckov.Economy.StockShop;
             if (target == null) return;

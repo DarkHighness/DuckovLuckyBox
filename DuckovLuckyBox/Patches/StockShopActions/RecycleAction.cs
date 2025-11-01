@@ -11,7 +11,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
     {
         public string GetLocalizationKey() => Localizations.I18n.RecycleKey;
 
-        public async UniTask ExecuteAsync(StockShopView stockShopView)
+        public async UniTask ExecuteAsync(StockShopView stockShopView, bool isDoubleClick = false)
         {
             if (stockShopView == null)
             {
