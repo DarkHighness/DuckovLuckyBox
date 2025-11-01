@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
 using HarmonyLib;
+using ItemStatsSystem;
 
 namespace DuckovLuckyBox.Patches
 {
@@ -73,7 +74,7 @@ namespace DuckovLuckyBox.Patches
 
             return itemIds;
         }
-        public static bool Prefix(UseToCreateItem __instance, object? user)
+        public static bool Prefix(UseToCreateItem __instance, Item item, object? user)
         {
             // Check if the patch is enabled in settings
             if (!SettingManager.Instance.EnableUseToCreateItemPatch.GetAsBool())
@@ -98,9 +99,23 @@ namespace DuckovLuckyBox.Patches
                 return true;
             }
 
+            var lotteryCount = 1;
+            var requiredCount = 3;
+            if (SettingManager.Instance.EnableTripleLotteryAnimation.GetAsBool())
+            {
+
+                var requiredToConsume = requiredCount - lotteryCount;
+                var consumedCount = ItemUtils.ConsumeItem(item, requiredToConsume, true, true);
+                if (consumedCount < requiredToConsume)
+                {
+                    Log.Debug($"Not enough items to perform triple lottery animation. Required: {requiredToConsume}, Consumed: {consumedCount}");
+                }
+                lotteryCount += consumedCount;
+            }
+
             // Play animation
             var context = new DefaultLotteryContext();
-            LotteryService.PerformLotteryWithContextAsync(itemIds, 0, true, context).Forget();
+            LotteryService.PerformLotteryWithContextAsync(itemIds, lotteryCount, 0, true, context).Forget();
             return false; // skip the original method
         }
     }

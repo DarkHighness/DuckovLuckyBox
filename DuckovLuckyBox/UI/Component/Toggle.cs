@@ -35,10 +35,7 @@ namespace DuckovLuckyBox.UI.Component
       }
 
       // Hide the input field for toggle
-      if (inputField != null)
-      {
-        inputField.gameObject.SetActive(false);
-      }
+      inputField?.gameObject.SetActive(false);
 
       slider.wholeNumbers = true;
       slider.minValue = 0;
@@ -55,10 +52,7 @@ namespace DuckovLuckyBox.UI.Component
 
     private void OnDestroy()
     {
-      if (slider != null)
-      {
-        slider.onValueChanged.RemoveListener(OnToggleValueChanged);
-      }
+      slider?.onValueChanged.RemoveListener(OnToggleValueChanged);
 
       LocalizationManager.OnSetLanguage -= OnLanguageChanged;
     }

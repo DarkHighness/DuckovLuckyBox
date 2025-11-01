@@ -55,15 +55,9 @@ namespace DuckovLuckyBox.UI.Component
 
     private void OnDestroy()
     {
-      if (slider != null)
-      {
-        slider.onValueChanged.RemoveListener(OnSliderValueChanged);
-      }
+      slider?.onValueChanged.RemoveListener(OnSliderValueChanged);
 
-      if (inputField != null)
-      {
-        inputField.onEndEdit.RemoveListener(OnInputFieldEndEdit);
-      }
+      inputField?.onEndEdit.RemoveListener(OnInputFieldEndEdit);
       LocalizationManager.OnSetLanguage -= OnLanguageChanged;
     }
 

@@ -43,6 +43,7 @@ namespace DuckovLuckyBox.Core
             public static readonly string SettingsEnableHighQualitySoundKey = "UI_SettingsEnableHighQualitySound";
             public static readonly string SettingsHighQualitySoundFilePathKey = "UI_SettingsHighQualitySoundFile";
             public static readonly string SettingsEnableStockShopActionsKey = "UI_SettingsEnableStockShopActions";
+            public static readonly string SettingsEnableTripleLotteryAnimationKey = "UI_SettingsEnableTripleLotteryAnimation";
             public static readonly string RecyclingFailedKey = "UI_RecyclingFailed";
             public static readonly string ItemIsNullKey = "UI_ItemIsNull";
             public static readonly string ContractInventoryNotAvailableKey = "UI_ContractInventoryNotAvailable";
@@ -110,6 +111,7 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableHighQualitySoundKey, "Enable High Quality Item Sound" },
             { I18n.SettingsHighQualitySoundFilePathKey, "High Quality Item Sound File" },
             { I18n.SettingsEnableStockShopActionsKey, "Enable Shop Actions" },
+            { I18n.SettingsEnableTripleLotteryAnimationKey, "Enable Triple Lottery Animation" },
             { I18n.RecyclingFailedKey, "Recycling failed." },
             { I18n.ItemIsNullKey, "Item is null." },
             { I18n.ContractInventoryNotAvailableKey, "Contract inventory not available." },
@@ -171,6 +173,7 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableHighQualitySoundKey, "启用高等级物品音效" },
             { I18n.SettingsHighQualitySoundFilePathKey, "高等级物品音效文件" },
             { I18n.SettingsEnableStockShopActionsKey, "启用商店动作" },
+            { I18n.SettingsEnableTripleLotteryAnimationKey, "启用三连抽动画" },
             { I18n.RecyclingFailedKey, "回收失败。" },
             { I18n.ItemIsNullKey, "物品为空。" },
             { I18n.ContractInventoryNotAvailableKey, "合同库存不可用。" },

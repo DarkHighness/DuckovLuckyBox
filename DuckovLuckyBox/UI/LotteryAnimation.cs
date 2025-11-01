@@ -16,21 +16,172 @@ namespace DuckovLuckyBox.UI
     /// </summary>
     public class LotteryAnimation
     {
+        private sealed class LaneUI
+        {
+            public LaneUI(string name, RectTransform root, RectTransform viewport, RectTransform itemsContainer, GameObject pointerRoot, Graphic pointerGraphic, Color pointerActiveColor, TextMeshProUGUI resultText, float laneHeight)
+            {
+                if (string.IsNullOrEmpty(name))
+                {
+                    throw new ArgumentException("Lane name cannot be null or empty.", nameof(name));
+                }
+
+                Name = name;
+                Root = root ?? throw new ArgumentNullException(nameof(root));
+                Viewport = viewport ?? throw new ArgumentNullException(nameof(viewport));
+                ItemsContainer = itemsContainer ?? throw new ArgumentNullException(nameof(itemsContainer));
+                PointerRoot = pointerRoot ?? throw new ArgumentNullException(nameof(pointerRoot));
+                PointerGraphic = pointerGraphic ?? throw new ArgumentNullException(nameof(pointerGraphic));
+                PointerActiveColor = pointerActiveColor;
+                PointerInactiveColor = new Color(pointerActiveColor.r, pointerActiveColor.g, pointerActiveColor.b, 0f);
+                ResultText = resultText ?? throw new ArgumentNullException(nameof(resultText));
+                LaneHeight = Mathf.Max(laneHeight, 1f);
+
+                if (ResultText != null)
+                {
+                    ResultText.text = string.Empty;
+                    var color = ResultText.color;
+                    color.a = 0f;
+                    ResultText.color = color;
+                }
+            }
+
+            public string Name { get; }
+            public RectTransform Root { get; }
+            public RectTransform Viewport { get; }
+            public RectTransform ItemsContainer { get; }
+            public GameObject PointerRoot { get; }
+            public Graphic PointerGraphic { get; }
+            public TextMeshProUGUI ResultText { get; } = null!;
+            public float LaneHeight { get; }
+
+            private Color PointerActiveColor { get; }
+            private Color PointerInactiveColor { get; }
+
+            public void ResetVisualState()
+            {
+                SetPointerVisible(false);
+                if (ItemsContainer != null)
+                {
+                    ItemsContainer.anchoredPosition = Vector2.zero;
+                }
+
+                if (ResultText != null)
+                {
+                    ResultText.text = string.Empty;
+                    var color = ResultText.color;
+                    color.a = 0f;
+                    ResultText.color = color;
+                }
+            }
+
+            public void SetPointerVisible(bool visible)
+            {
+                PointerRoot?.SetActive(visible);
+
+                if (PointerGraphic != null)
+                {
+                    PointerGraphic.color = visible ? PointerActiveColor : PointerInactiveColor;
+                }
+            }
+
+            public void SetResultVisibility(bool visible)
+            {
+                if (ResultText == null) return;
+
+                var color = ResultText.color;
+                color.a = visible ? 1f : 0f;
+                ResultText.color = color;
+            }
+
+            public void SetResultText(string text)
+            {
+                if (ResultText == null) return;
+                ResultText.text = text;
+            }
+        }
+
+        private readonly struct LaneResult
+        {
+            public LaneResult(int typeId, string displayName, Sprite? icon, bool isRewardLane)
+            {
+                TypeId = typeId;
+                DisplayName = displayName;
+                Icon = icon;
+                IsRewardLane = isRewardLane;
+            }
+
+            public int TypeId { get; }
+            public string DisplayName { get; }
+            public Sprite? Icon { get; }
+            public bool IsRewardLane { get; }
+        }
+
+        public readonly struct LaneFinalData
+        {
+            public LaneFinalData(int typeId, string displayName, Sprite? icon, bool isRewardLane = true)
+            {
+                TypeId = typeId;
+                DisplayName = displayName;
+                Icon = icon;
+                IsRewardLane = isRewardLane;
+            }
+
+            public int TypeId { get; }
+            public string DisplayName { get; }
+            public Sprite? Icon { get; }
+            public bool IsRewardLane { get; }
+        }
+
+        private sealed class AnimationPlan
+        {
+            public AnimationPlan(List<Slot> slots, int finalSlotIndex, float startOffset, float finalOffset, float[] velocityCurve, bool reverseDirection, float initialVelocityInSlots)
+            {
+                Slots = slots;
+                FinalSlotIndex = finalSlotIndex;
+                StartOffset = startOffset;
+                FinalOffset = finalOffset;
+                VelocityCurve = velocityCurve;
+                ReverseDirection = reverseDirection;
+                InitialVelocityInSlots = initialVelocityInSlots;
+            }
+
+            public List<Slot> Slots { get; }
+            public int FinalSlotIndex { get; }
+            public float StartOffset { get; }
+            public float FinalOffset { get; }
+            public float[] VelocityCurve { get; }
+            public bool ReverseDirection { get; }
+            public float InitialVelocityInSlots { get; }
+
+            public Slot FinalSlot
+            {
+                get
+                {
+                    if (FinalSlotIndex >= 0 && FinalSlotIndex < Slots.Count)
+                    {
+                        return Slots[FinalSlotIndex];
+                    }
+
+                    Log.Warning($"Invalid FinalSlotIndex: {FinalSlotIndex}, Slots.Count: {Slots.Count}. Returning last slot.");
+                    return Slots[Slots.Count - 1];
+                }
+            }
+        }
+
         private static LotteryAnimation? _instance;
         public static LotteryAnimation Instance => _instance ??= new LotteryAnimation();
 
         private LotteryAnimation() { }
 
-        private bool _isInitialized = false;
+        private bool _isInitialized;
 
         private Canvas? _canvas;
-
         private RectTransform? _overlayRoot;
-        private RectTransform? _viewport;
-        private RectTransform? _itemsContainer;
-        private Graphic? _centerPointer;
-        private TextMeshProUGUI? _resultText;
         private CanvasGroup? _canvasGroup;
+
+    private readonly List<LaneUI> _lanes = new List<LaneUI>();
+        private int _currentLaneCount = 0;
+
         private Sprite? _fallbackSprite;
         private bool _isAnimating;
         private bool _skipRequested;
@@ -40,38 +191,27 @@ namespace DuckovLuckyBox.UI
         private const float ItemSpacing = 16f;
         private const float SlotPadding = 24f;
         private static readonly float SlotFullWidth = IconSize.x + SlotPadding + ItemSpacing;
-        private const int MinimumSlotsBeforeFinal = 140; // Minimum slots before final - adapted for 20 slots/s speed (requires more slots)
-        private const int SlotsAfterFinal = 20; // Extra slots after final for visual buffer
+        private const int SlotsAfterFinal = 20;
 
-        // Physics-based animation parameters (CSGO-style) - using slot as the unit
-        private const float BaseInitialVelocityInSlots = 50f; // Base initial scroll speed (slots/second) - scroll 50 slots per second initially
-        private const float MaxAnimationDurationInSeconds = 10f; // Maximum animation duration (seconds) - force stop if final slot not reached by this time
+        private const float BaseInitialVelocityInSlots = 50f;
+        private const float MaxAnimationDurationInSeconds = 10f;
+        private const int AnimationStepsPerSecond = 100;
+        private const float VelocityAt7Seconds = 1f;
+        private const float DecelerationDuration = 7.0f;
+        private const float TotalCurveDuration = 8.5f;
+        private const float InitialVelocityRandomRange = 10.0f;
 
-        // Animation precision and timing constants
-        private const int AnimationStepsPerSecond = 100; // Samples per second for higher precision (every 0.01s)
-        private const float VelocityAt7Seconds = 1f; // Velocity at 7 seconds (slots/second)
-        private const float DecelerationDuration = 7.0f; // Duration of deceleration phase (seconds)
-        private const float TotalCurveDuration = 8.5f; // Total duration of velocity curve (seconds)
-
-        // Randomness parameters for animation variation
-        // InitialVelocityRandomRange controls how much the animation can vary within the final slot
-        // Larger values = more variation in stopping position within final slot
-        private const float InitialVelocityRandomRange = 10.0f; // ±N slots/second variation on initial velocity for randomness within final slot
-
-        // Per-animation state
-        private float _currentAnimationInitialVelocity = BaseInitialVelocityInSlots;
-
-        // Pre-calculated velocity curve for smooth deceleration
-        private float[]? _velocityCurve = null;
-
-        // Visual effect constants
-        private const float GlowPulseSpeed = 3f; // Glow pulse frequency (Hz)
-        private const float HighlightIntensity = 1.5f; // Highlight glow intensity multiplier
+        private const float GlowPulseSpeed = 3f;
+        private const float HighlightIntensity = 1.5f;
 
         private const float FadeDuration = 0.25f;
         private const float SkippedFadeDuration = 0.1f;
         private const float CelebrateDuration = 0.5f;
         private const float PointerThickness = 12f;
+        private const float ViewportHorizontalPadding = 120f;
+        private const float LaneVerticalSpacing = 48f;
+        private const float MinLaneHeight = 140f;
+        private const float MaxLaneHeight = 240f;
 
         private static readonly Color OverlayColor = new Color(0f, 0f, 0f, 0.7f);
         private static readonly Color FinalFrameColor = new Color(0.95f, 0.8f, 0.35f, 1f);
@@ -84,7 +224,6 @@ namespace DuckovLuckyBox.UI
         {
             if (_isInitialized) return;
 
-            // Create full-screen canvas if it doesn't exist
             if (_canvas == null)
             {
                 var canvasObj = new GameObject("LotteryAnimationCanvas", typeof(Canvas), typeof(GraphicRaycaster), typeof(CanvasScaler));
@@ -97,7 +236,6 @@ namespace DuckovLuckyBox.UI
                 scaler.referenceResolution = new Vector2(1920f, 1080f);
             }
 
-            // Create full-screen overlay
             _overlayRoot = new GameObject("LotteryAnimationOverlay", typeof(RectTransform), typeof(CanvasGroup), typeof(Image)).GetComponent<RectTransform>();
             _overlayRoot.SetParent(_canvas.transform, false);
             _overlayRoot.anchorMin = Vector2.zero;
@@ -115,204 +253,26 @@ namespace DuckovLuckyBox.UI
             overlayImage.color = OverlayColor;
             overlayImage.raycastTarget = true;
 
-            // Create viewport in center of screen
-            var canvasRect = _canvas.GetComponent<RectTransform>();
-            var canvasSize = canvasRect.rect.size;
-            var viewportHeight = Mathf.Min(200f, canvasSize.y * 0.3f);
-            var viewportWidth = canvasSize.x * 0.8f;
-
-            _viewport = new GameObject("LotteryViewport", typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
-            _viewport.SetParent(_overlayRoot, false);
-            _viewport.anchorMin = new Vector2(0.5f, 0.5f);
-            _viewport.anchorMax = new Vector2(0.5f, 0.5f);
-            _viewport.pivot = new Vector2(0.5f, 0.5f);
-            _viewport.sizeDelta = new Vector2(viewportWidth, viewportHeight);
-
-            // Create black background layer behind items
-            var itemsBackground = new GameObject("LotteryItemsBackground", typeof(RectTransform), typeof(Image));
-            var bgRect = itemsBackground.GetComponent<RectTransform>();
-            bgRect.SetParent(_viewport, false);
-            bgRect.anchorMin = new Vector2(0.5f, 0.5f);
-            bgRect.anchorMax = new Vector2(0.5f, 0.5f);
-            bgRect.pivot = new Vector2(0.5f, 0.5f);
-            bgRect.sizeDelta = new Vector2(viewportWidth * 2f, viewportHeight);
-
-            var bgImage = itemsBackground.GetComponent<Image>();
-            bgImage.sprite = EnsureFallbackSprite();
-            bgImage.type = Image.Type.Simple;
-            bgImage.color = new Color(0f, 0f, 0f, 0.5f);
-            bgImage.raycastTarget = false;
-
-            _itemsContainer = new GameObject("LotteryItemsContainer", typeof(RectTransform)).GetComponent<RectTransform>();
-            _itemsContainer.SetParent(_viewport, false);
-            _itemsContainer.anchorMin = new Vector2(0.5f, 0.5f);
-            _itemsContainer.anchorMax = new Vector2(0.5f, 0.5f);
-            _itemsContainer.pivot = new Vector2(0.5f, 0.5f);
-
-            // Create center pointer with improved visuals - vertical line with diamond accent
-            var pointerContainer = new GameObject("LotteryPointerContainer", typeof(RectTransform)).GetComponent<RectTransform>();
-            pointerContainer.SetParent(_overlayRoot, false);
-            pointerContainer.anchorMin = new Vector2(0.5f, 0.5f);
-            pointerContainer.anchorMax = new Vector2(0.5f, 0.5f);
-            pointerContainer.pivot = new Vector2(0.5f, 0.5f);
-            pointerContainer.sizeDelta = Vector2.zero;
-            pointerContainer.anchoredPosition = Vector2.zero;
-
-            // Main vertical line pointer (rounded capsule with inner stripe and subtle shadow)
-            var pointerLineObj = new GameObject("PointerLine", typeof(RectTransform));
-            var pointerLineRect = pointerLineObj.GetComponent<RectTransform>();
-            pointerLineRect.SetParent(pointerContainer, false);
-            pointerLineRect.anchorMin = new Vector2(0.5f, 0.5f);
-            pointerLineRect.anchorMax = new Vector2(0.5f, 0.5f);
-            pointerLineRect.pivot = new Vector2(0.5f, 0.5f);
-            pointerLineRect.sizeDelta = new Vector2(PointerThickness * 1.1f, viewportHeight + 64f);
-            pointerLineRect.anchoredPosition = Vector2.zero;
-
-            // Rounded capsule for the pointer body
-            var pointerLineGraphic = pointerLineObj.AddComponent<RoundedRectGraphic>();
-            pointerLineGraphic.raycastTarget = false;
-            pointerLineGraphic.cornerSegments = 8;
-            pointerLineGraphic.cornerRadius = pointerLineRect.sizeDelta.x * 0.5f; // capsule ends
-            pointerLineGraphic.color = new Color(1f, 1f, 1f, 0.95f); // near-opaque white
-
-            // Subtle outline and shadow for polish
-            var pointerLineOutline = pointerLineObj.AddComponent<Outline>();
-            pointerLineOutline.effectColor = new Color(0f, 0f, 0f, 0.25f);
-            pointerLineOutline.effectDistance = new Vector2(1f, -1f);
-            pointerLineOutline.useGraphicAlpha = true;
-
-            var pointerLineShadow = pointerLineObj.AddComponent<Shadow>();
-            pointerLineShadow.effectColor = new Color(0f, 0f, 0f, 0.15f);
-            pointerLineShadow.effectDistance = new Vector2(0f, -4f);
-
-            // Thin vertical highlight stripe on the pointer body
-            var stripeObj = new GameObject("PointerInnerStripe", typeof(RectTransform));
-            var stripeRect = stripeObj.GetComponent<RectTransform>();
-            stripeRect.SetParent(pointerLineRect, false);
-            stripeRect.anchorMin = new Vector2(0.5f, 0.5f);
-            stripeRect.anchorMax = new Vector2(0.5f, 0.5f);
-            stripeRect.pivot = new Vector2(0.5f, 0.5f);
-            stripeRect.sizeDelta = new Vector2(pointerLineRect.sizeDelta.x * 0.22f, pointerLineRect.sizeDelta.y * 0.82f);
-            stripeRect.anchoredPosition = Vector2.zero;
-
-            var stripe = stripeObj.AddComponent<RoundedRectGraphic>();
-            stripe.raycastTarget = false;
-            stripe.cornerSegments = 6;
-            stripe.cornerRadius = stripeRect.sizeDelta.x * 0.5f;
-            stripe.color = new Color(1f, 1f, 1f, 0.12f); // subtle vertical highlight
-
-            // Top arrowhead (procedural triangle) - points up
-            var topArrowObj = new GameObject("TopArrow", typeof(RectTransform));
-            var topArrowRect = topArrowObj.GetComponent<RectTransform>();
-            topArrowRect.SetParent(pointerContainer, false);
-            topArrowRect.anchorMin = new Vector2(0.5f, 0.5f);
-            topArrowRect.anchorMax = new Vector2(0.5f, 0.5f);
-            topArrowRect.pivot = new Vector2(0.5f, 0.5f);
-            topArrowRect.sizeDelta = new Vector2(PointerThickness * 2.5f, PointerThickness * 2.5f);
-            topArrowRect.anchoredPosition = new Vector2(0f, viewportHeight * 0.5f + 32f);
-
-            var topArrowGraphic = topArrowObj.AddComponent<TriangleGraphic>();
-            topArrowGraphic.raycastTarget = false;
-            topArrowGraphic.color = new Color(1f, 1f, 1f, 0.9f);
-            topArrowGraphic.direction = TriangleGraphic.TriangleDirection.Up;
-
-            var topArrowOutline = topArrowObj.AddComponent<Outline>();
-            topArrowOutline.effectColor = new Color(1f, 1f, 1f, 0.4f);
-            topArrowOutline.effectDistance = new Vector2(0.5f, -0.5f);
-            topArrowOutline.useGraphicAlpha = false;
-            // Subtle drop shadow for depth
-            var topArrowShadow = topArrowObj.AddComponent<Shadow>();
-            topArrowShadow.effectColor = new Color(0f, 0f, 0f, 0.12f);
-            topArrowShadow.effectDistance = new Vector2(0f, -3f);
-
-            // Inner highlight: smaller triangle inset
-            var topInnerObj = new GameObject("TopArrowInner", typeof(RectTransform));
-            var topInnerRect = topInnerObj.GetComponent<RectTransform>();
-            topInnerRect.SetParent(topArrowRect, false);
-            topInnerRect.anchorMin = Vector2.zero;
-            topInnerRect.anchorMax = Vector2.one;
-            topInnerRect.pivot = new Vector2(0.5f, 0.5f);
-            // Inset by 15% to create a subtle highlight
-            float inset = 0.15f;
-            topInnerRect.sizeDelta = Vector2.zero;
-            topInnerRect.anchoredPosition = Vector2.zero;
-            topInnerRect.localScale = Vector3.one * (1f - inset);
-
-            var topInner = topInnerObj.AddComponent<TriangleGraphic>();
-            topInner.raycastTarget = false;
-            topInner.color = new Color(1f, 1f, 1f, 0.12f); // light inner highlight (subtler)
-            topInner.direction = TriangleGraphic.TriangleDirection.Up;
-
-            // Bottom arrowhead (procedural triangle) - points down
-            var bottomArrowObj = new GameObject("BottomArrow", typeof(RectTransform));
-            var bottomArrowRect = bottomArrowObj.GetComponent<RectTransform>();
-            bottomArrowRect.SetParent(pointerContainer, false);
-            bottomArrowRect.anchorMin = new Vector2(0.5f, 0.5f);
-            bottomArrowRect.anchorMax = new Vector2(0.5f, 0.5f);
-            bottomArrowRect.pivot = new Vector2(0.5f, 0.5f);
-            bottomArrowRect.sizeDelta = new Vector2(PointerThickness * 2.5f, PointerThickness * 2.5f);
-            bottomArrowRect.anchoredPosition = new Vector2(0f, -viewportHeight * 0.5f - 32f);
-
-            var bottomArrowGraphic = bottomArrowObj.AddComponent<TriangleGraphic>();
-            bottomArrowGraphic.raycastTarget = false;
-            bottomArrowGraphic.color = new Color(1f, 1f, 1f, 0.9f);
-            bottomArrowGraphic.direction = TriangleGraphic.TriangleDirection.Down;
-
-            var bottomArrowOutline = bottomArrowObj.AddComponent<Outline>();
-            bottomArrowOutline.effectColor = new Color(1f, 1f, 1f, 0.4f);
-            bottomArrowOutline.effectDistance = new Vector2(0.5f, -0.5f);
-            bottomArrowOutline.useGraphicAlpha = false;
-            // Subtle drop shadow for depth
-            var bottomArrowShadow = bottomArrowObj.AddComponent<Shadow>();
-            bottomArrowShadow.effectColor = new Color(0f, 0f, 0f, 0.12f);
-            bottomArrowShadow.effectDistance = new Vector2(0f, 3f);
-
-            // Inner highlight: smaller triangle inset
-            var bottomInnerObj = new GameObject("BottomArrowInner", typeof(RectTransform));
-            var bottomInnerRect = bottomInnerObj.GetComponent<RectTransform>();
-            bottomInnerRect.SetParent(bottomArrowRect, false);
-            bottomInnerRect.anchorMin = Vector2.zero;
-            bottomInnerRect.anchorMax = Vector2.one;
-            bottomInnerRect.pivot = new Vector2(0.5f, 0.5f);
-            bottomInnerRect.sizeDelta = Vector2.zero;
-            bottomInnerRect.anchoredPosition = Vector2.zero;
-            bottomInnerRect.localScale = Vector3.one * (1f - inset);
-
-            var bottomInner = bottomInnerObj.AddComponent<TriangleGraphic>();
-            bottomInner.raycastTarget = false;
-            bottomInner.color = new Color(1f, 1f, 1f, 0.12f); // light inner highlight (subtler)
-            bottomInner.direction = TriangleGraphic.TriangleDirection.Down;
-
-            _centerPointer = pointerLineGraphic;  // Store the main line for visibility control
-
-            // Create result text
-            _resultText = new GameObject("LotteryResultText", typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
-            _resultText.rectTransform.SetParent(_overlayRoot, false);
-            _resultText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-            _resultText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            _resultText.rectTransform.pivot = new Vector2(0.5f, 1f);
-            _resultText.rectTransform.anchoredPosition = new Vector2(0f, -viewportHeight * 0.75f);
-            _resultText.fontSize = 36;
-            _resultText.alignment = TextAlignmentOptions.Center;
-            _resultText.raycastTarget = false;
-            ResetResultText();
-
             _isInitialized = true;
         }
 
         /// <summary>
-        /// Plays the lottery animation
+        /// Plays the lottery animation across one to three lanes depending on the provided results.
         /// </summary>
-        public async UniTask PlayAsync(IEnumerable<int> candidateTypeIds, int finalTypeId, string finalDisplayName, Sprite? finalIcon)
+        public async UniTask PlayAsync(IEnumerable<int> candidateTypeIds, IReadOnlyList<LaneFinalData> finalLaneData)
         {
-            // Check if animation is enabled in settings
             var enableAnimationValue = Core.Settings.SettingManager.Instance.EnableAnimation.Value;
             if (enableAnimationValue is bool enabled && !enabled)
             {
                 return;
             }
 
-            // Auto-initialize if not already initialized
+            if (finalLaneData == null || finalLaneData.Count == 0)
+            {
+                Log.Warning("[LotteryAnimation] No final lane data provided. Skipping animation.");
+                return;
+            }
+
             if (!_isInitialized)
             {
                 Log.Debug("[LotteryAnimation] Auto-initializing");
@@ -325,13 +285,108 @@ namespace DuckovLuckyBox.UI
                 return;
             }
 
-            // Generate random initial velocity for this animation to create variation within final slot
-            _currentAnimationInitialVelocity = BaseInitialVelocityInSlots + UnityEngine.Random.Range(-InitialVelocityRandomRange, InitialVelocityRandomRange);
-            Log.Debug($"[LotteryAnimation] Initial velocity: {_currentAnimationInitialVelocity} slots/s (base: {BaseInitialVelocityInSlots})");
+            var candidatePool = candidateTypeIds?.ToList() ?? new List<int>();
+            int requestedLaneCount = Mathf.Clamp(finalLaneData.Count, 1, 3);
 
-            if (!TryBuildAnimationPlan(candidateTypeIds, finalTypeId, finalIcon, out var plan))
+            EnsureLanes(requestedLaneCount);
+
+            if (_overlayRoot == null || _canvasGroup == null || _lanes.Count == 0)
             {
-                Log.Warning("Failed to prepare lottery animation plan.");
+                Log.Error("Lottery animation failed to initialize properly.");
+                return;
+            }
+
+            var laneResults = BuildLaneResults(candidatePool, finalLaneData);
+            if (laneResults.Count == 0)
+            {
+                Log.Warning("[LotteryAnimation] No lane results could be prepared. Skipping animation.");
+                return;
+            }
+            if (laneResults.Count < _lanes.Count)
+            {
+                EnsureLanes(laneResults.Count);
+            }
+
+            if (laneResults.Count > _lanes.Count)
+            {
+                laneResults = laneResults.Take(_lanes.Count).ToList();
+            }
+
+            if (_lanes.Count == 0 || laneResults.Count == 0)
+            {
+                Log.Warning("[LotteryAnimation] No lanes available to animate. Skipping animation.");
+                return;
+            }
+
+            var laneDirections = new List<bool>(_lanes.Count);
+            for (int i = 0; i < _lanes.Count; i++)
+            {
+                laneDirections.Add(UnityEngine.Random.value > 0.5f);
+            }
+
+            if (_lanes.Count > 1 && laneDirections.TrueForAll(d => d == laneDirections[0]))
+            {
+                laneDirections[0] = !laneDirections[0];
+            }
+
+            var laneInitialVelocities = new List<float>(_lanes.Count);
+            var laneDecelerationDurations = new List<float>(_lanes.Count);
+            var laneVelocityAtDecelerations = new List<float>(_lanes.Count);
+            var laneTotalCurveDurations = new List<float>(_lanes.Count);
+            for (int i = 0; i < _lanes.Count; i++)
+            {
+                float initialVelocity = BaseInitialVelocityInSlots + UnityEngine.Random.Range(-InitialVelocityRandomRange, InitialVelocityRandomRange);
+                initialVelocity += i * 1.5f;
+                initialVelocity = Mathf.Max(10f, initialVelocity);
+                laneInitialVelocities.Add(initialVelocity);
+
+                float decelDuration = DecelerationDuration + UnityEngine.Random.Range(-0.75f, 0.75f);
+                float clampedDecelDuration = Mathf.Clamp(decelDuration, 5.5f, 8.5f);
+                laneDecelerationDurations.Add(clampedDecelDuration);
+
+                float velocityAtDecelEnd = VelocityAt7Seconds + UnityEngine.Random.Range(-0.4f, 0.4f);
+                float clampedVelocityAtDecelEnd = Mathf.Clamp(velocityAtDecelEnd, 0.2f, 2.0f);
+                laneVelocityAtDecelerations.Add(clampedVelocityAtDecelEnd);
+
+                float totalCurveDuration = TotalCurveDuration + UnityEngine.Random.Range(-0.5f, 0.5f);
+                float clampedTotalCurveDuration = Mathf.Clamp(totalCurveDuration, clampedDecelDuration + 0.5f, clampedDecelDuration + 2.5f);
+                laneTotalCurveDurations.Add(clampedTotalCurveDuration);
+            }
+
+            var activeLanes = new List<(LaneUI lane, AnimationPlan plan, LaneResult result, int originalIndex)>(laneResults.Count);
+
+            for (int i = 0; i < laneResults.Count && i < _lanes.Count; i++)
+            {
+                var lane = _lanes[i];
+                var laneResult = laneResults[i];
+                bool reverseDirection = laneDirections[Mathf.Min(i, laneDirections.Count - 1)];
+                float initialVelocityInSlots = laneInitialVelocities[Mathf.Min(i, laneInitialVelocities.Count - 1)];
+                float decelerationDuration = laneDecelerationDurations[Mathf.Min(i, laneDecelerationDurations.Count - 1)];
+                float velocityAtDecelEnd = laneVelocityAtDecelerations[Mathf.Min(i, laneVelocityAtDecelerations.Count - 1)];
+                float totalCurveDuration = laneTotalCurveDurations[Mathf.Min(i, laneTotalCurveDurations.Count - 1)];
+
+                Log.Debug($"[LotteryAnimation] Lane {lane.Name} initial velocity: {initialVelocityInSlots:F2} slots/s, decelDuration: {decelerationDuration:F2}s, endVel: {velocityAtDecelEnd:F2} slots/s, totalDuration: {totalCurveDuration:F2}s, direction: {(reverseDirection ? "RightToLeft" : "LeftToRight")}");
+
+                if (!TryBuildAnimationPlan(lane, candidatePool, laneResult.TypeId, laneResult.Icon, initialVelocityInSlots, decelerationDuration, velocityAtDecelEnd, totalCurveDuration, reverseDirection, out var plan))
+                {
+                    Log.Warning($"Failed to prepare lottery animation plan for lane {lane.Name}. Lane will be skipped.");
+                    lane.ResetVisualState();
+                    lane.SetPointerVisible(false);
+                    lane.SetResultVisibility(false);
+                    lane.SetResultText(string.Empty);
+                    continue;
+                }
+
+                lane.ResetVisualState();
+                lane.SetResultVisibility(true);
+                lane.SetResultText(string.Empty);
+                lane.SetPointerVisible(true);
+                activeLanes.Add((lane, plan, laneResult, i));
+            }
+
+            if (activeLanes.Count == 0)
+            {
+                Log.Warning("[LotteryAnimation] No lanes could be prepared successfully. Skipping animation.");
                 return;
             }
 
@@ -340,60 +395,63 @@ namespace DuckovLuckyBox.UI
 
             try
             {
-                if (_overlayRoot == null || _canvasGroup == null)
+                if (_canvas != null && !_canvas.gameObject.activeSelf)
                 {
-                    Log.Error("Lottery animation failed to initialize properly.");
-                    return;
+                    _canvas.gameObject.SetActive(true);
                 }
 
                 _overlayRoot.gameObject.SetActive(true);
                 _canvasGroup.blocksRaycasts = true;
 
-                // Show Pointer at the start of animation
-                if (_centerPointer != null)
-                {
-                    var pointerColor = _centerPointer.color;
-                    pointerColor.a = 0.95f;
-                    _centerPointer.color = pointerColor;
-                }
-
-                // Show result text at the start - it will update in real-time during animation
-                if (_resultText != null)
-                {
-                    _resultText.text = ""; // Start with empty text
-                    var textColor = _resultText.color;
-                    textColor.a = 1f; // Make text visible from the start
-                    _resultText.color = textColor;
-                }
-
-                // Fade in
                 await FadeCanvasGroup(_canvasGroup, 0f, 1f, FadeDuration);
 
-                // Play rolling sound
                 RuntimeManager.GetBus("bus:/Master/SFX").getChannelGroup(out ChannelGroup sfxGroup);
                 SoundUtils.PlaySound(Constants.Sound.ROLLING_SOUND, sfxGroup);
 
-                // Physics-based continuous roll animation (CSGO-style)
-                await PerformPhysicsBasedRoll(plan, sfxGroup);
+                int primaryLaneIndex = activeLanes.FindIndex(entry => entry.originalIndex == 1);
+                if (primaryLaneIndex < 0)
+                {
+                    primaryLaneIndex = 0;
+                }
 
-                // If skip requested, skip the following animations
+                var rollTasks = new List<UniTask>(activeLanes.Count);
+                for (int i = 0; i < activeLanes.Count; i++)
+                {
+                    bool canHandleSkip = i == primaryLaneIndex;
+                    var entry = activeLanes[i];
+                    rollTasks.Add(PerformPhysicsBasedRoll(entry.lane, entry.plan, canHandleSkip, sfxGroup));
+                }
+
+                await UniTask.WhenAll(rollTasks);
+
                 if (!_skipRequested)
                 {
-                    // Celebration on final slot
-                    await AnimateCelebration(plan, finalTypeId, sfxGroup);
+                    var celebrationTasks = new List<UniTask>(activeLanes.Count);
+                    for (int i = 0; i < activeLanes.Count; i++)
+                    {
+                        var entry = activeLanes[i];
+                        celebrationTasks.Add(AnimateCelebration(entry.lane, entry.plan, entry.result.TypeId, entry.result.IsRewardLane, sfxGroup));
+                    }
 
-                    // Reveal result and hold
-                    await RevealResult(finalDisplayName);
+                    await UniTask.WhenAll(celebrationTasks);
+
+                    var revealTasks = new List<UniTask>(activeLanes.Count);
+                    for (int i = 0; i < activeLanes.Count; i++)
+                    {
+                        var entry = activeLanes[i];
+                        revealTasks.Add(RevealResult(entry.lane, entry.result.DisplayName));
+                    }
+
+                    await UniTask.WhenAll(revealTasks);
                 }
                 else
                 {
-                    if (_resultText != null)
+                    foreach (var entry in activeLanes)
                     {
-                        _resultText.text = string.Empty;
+                        entry.lane.SetResultText(string.Empty);
                     }
                 }
 
-                // Fade out
                 await FadeCanvasGroup(_canvasGroup, 1f, 0f, !_skipRequested ? FadeDuration : SkippedFadeDuration);
             }
             finally
@@ -401,121 +459,389 @@ namespace DuckovLuckyBox.UI
                 _isAnimating = false;
 
                 if (_canvasGroup != null)
-                    _canvasGroup.alpha = 0f;
-                if (_canvasGroup != null)
-                    _canvasGroup.blocksRaycasts = false;
-                _overlayRoot?.gameObject.SetActive(false);
-
-                // Hide Pointer after animation ends
-                if (_centerPointer != null)
                 {
-                    var pointerColor = _centerPointer.color;
-                    pointerColor.a = 0f;
-                    _centerPointer.color = pointerColor;
+                    _canvasGroup.alpha = 0f;
+                    _canvasGroup.blocksRaycasts = false;
                 }
 
-                ResetResultText();
-                ClearItems();
-                if (_itemsContainer != null)
-                    _itemsContainer.anchoredPosition = Vector2.zero;
+                _overlayRoot?.gameObject.SetActive(false);
+
+                _canvas?.gameObject.SetActive(false);
+
+                foreach (var lane in _lanes)
+                {
+                    lane.ResetVisualState();
+                    ClearItems(lane);
+                }
+
+                _skipRequested = false;
             }
         }
 
-        private bool TryBuildAnimationPlan(IEnumerable<int> candidateTypeIds, int finalTypeId, Sprite? finalIcon, out AnimationPlan plan)
+        private void EnsureLanes(int laneCount)
         {
-            plan = default!;
+            if (_overlayRoot == null || _canvas == null)
+            {
+                return;
+            }
 
-            if (_itemsContainer == null) return false;
-            if (_viewport == null) return false;
+            laneCount = Mathf.Clamp(laneCount, 1, 3);
 
-            // Step 1: Generate velocity curve based on current animation's initial velocity
-            _velocityCurve = GenerateVelocityCurve();
+            if (_currentLaneCount == laneCount && _lanes.Count == laneCount)
+            {
+                foreach (var lane in _lanes)
+                {
+                    lane.ResetVisualState();
+                    ClearItems(lane);
+                }
+                return;
+            }
 
-            // Step 2: Calculate total distance with high precision
-            // We need to know exactly which slot we'll end up in and where within that slot
-            float totalDistanceInPixels = CalculateTotalDistanceInPixels(_velocityCurve);
+            foreach (var lane in _lanes)
+            {
+                if (lane.Root != null)
+                {
+                    UnityEngine.Object.Destroy(lane.Root.gameObject);
+                }
+            }
 
-            // Calculate which slot and position within slot
+            _lanes.Clear();
+
+            var canvasRect = _canvas.GetComponent<RectTransform>();
+            var canvasSize = canvasRect.rect.size;
+
+            float laneHeight = CalculateLaneHeight(laneCount, canvasSize.y);
+            float totalHeight = laneCount * laneHeight + LaneVerticalSpacing * (laneCount - 1);
+            float topOffset = laneCount == 1 ? 0f : (totalHeight - laneHeight) * 0.5f;
+
+            for (int i = 0; i < laneCount; i++)
+            {
+                float verticalOffset = laneCount == 1 ? 0f : topOffset - i * (laneHeight + LaneVerticalSpacing);
+                var lane = CreateLane($"LotteryLane_{i}", laneHeight, canvasSize.x, verticalOffset);
+                lane.ResetVisualState();
+                ClearItems(lane);
+                _lanes.Add(lane);
+            }
+
+            _currentLaneCount = laneCount;
+        }
+
+        private float CalculateLaneHeight(int laneCount, float canvasHeight)
+        {
+            float totalSpacing = LaneVerticalSpacing * (laneCount - 1);
+            float minimumRequired = laneCount * MinLaneHeight + totalSpacing;
+            float availableHeight = Mathf.Max(canvasHeight * 0.75f, minimumRequired);
+            float laneHeight = (availableHeight - totalSpacing) / laneCount;
+            return Mathf.Clamp(laneHeight, MinLaneHeight, MaxLaneHeight);
+        }
+
+        private LaneUI CreateLane(string laneName, float laneHeight, float canvasWidth, float verticalOffset)
+        {
+            if (_overlayRoot == null)
+            {
+                throw new InvalidOperationException("Overlay root is not initialized.");
+            }
+
+            var laneRoot = new GameObject(laneName, typeof(RectTransform)).GetComponent<RectTransform>();
+            laneRoot.SetParent(_overlayRoot, false);
+            laneRoot.anchorMin = new Vector2(0f, 0.5f);
+            laneRoot.anchorMax = new Vector2(1f, 0.5f);
+            laneRoot.pivot = new Vector2(0.5f, 0.5f);
+            laneRoot.sizeDelta = new Vector2(0f, laneHeight);
+            laneRoot.anchoredPosition = new Vector2(0f, verticalOffset);
+
+            float clampedPadding = Mathf.Clamp(ViewportHorizontalPadding, 0f, canvasWidth * 0.25f);
+
+            var viewport = new GameObject($"{laneName}_Viewport", typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
+            viewport.SetParent(laneRoot, false);
+            viewport.anchorMin = new Vector2(0f, 0.5f);
+            viewport.anchorMax = new Vector2(1f, 0.5f);
+            viewport.pivot = new Vector2(0.5f, 0.5f);
+            viewport.sizeDelta = new Vector2(-2f * clampedPadding, laneHeight);
+            viewport.anchoredPosition = Vector2.zero;
+
+            var backgroundObj = new GameObject($"{laneName}_Background", typeof(RectTransform), typeof(Image));
+            var bgRect = backgroundObj.GetComponent<RectTransform>();
+            bgRect.SetParent(viewport, false);
+            bgRect.anchorMin = new Vector2(0f, 0.5f);
+            bgRect.anchorMax = new Vector2(1f, 0.5f);
+            bgRect.pivot = new Vector2(0.5f, 0.5f);
+            bgRect.sizeDelta = new Vector2(0f, laneHeight);
+
+            var bgImage = backgroundObj.GetComponent<Image>();
+            bgImage.sprite = EnsureFallbackSprite();
+            bgImage.type = Image.Type.Simple;
+            bgImage.color = new Color(0f, 0f, 0f, 0.5f);
+            bgImage.raycastTarget = false;
+
+            var itemsContainer = new GameObject($"{laneName}_ItemsContainer", typeof(RectTransform)).GetComponent<RectTransform>();
+            itemsContainer.SetParent(viewport, false);
+            itemsContainer.anchorMin = new Vector2(0.5f, 0.5f);
+            itemsContainer.anchorMax = new Vector2(0.5f, 0.5f);
+            itemsContainer.pivot = new Vector2(0.5f, 0.5f);
+
+            var pointerContainer = new GameObject($"{laneName}_Pointer", typeof(RectTransform)).GetComponent<RectTransform>();
+            pointerContainer.SetParent(laneRoot, false);
+            pointerContainer.anchorMin = new Vector2(0.5f, 0.5f);
+            pointerContainer.anchorMax = new Vector2(0.5f, 0.5f);
+            pointerContainer.pivot = new Vector2(0.5f, 0.5f);
+            pointerContainer.sizeDelta = Vector2.zero;
+            pointerContainer.anchoredPosition = Vector2.zero;
+
+            var pointerGraphic = BuildPointerVisuals(pointerContainer, laneHeight, out var pointerActiveColor);
+            pointerContainer.gameObject.SetActive(false);
+
+            var resultText = new GameObject($"{laneName}_ResultText", typeof(RectTransform), typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+            var resultRect = resultText.rectTransform;
+            resultRect.SetParent(laneRoot, false);
+            resultRect.anchorMin = new Vector2(0.5f, 0.5f);
+            resultRect.anchorMax = new Vector2(0.5f, 0.5f);
+            resultRect.pivot = new Vector2(0.5f, 1f);
+            float pointerArrowSize = PointerThickness * 2.5f;
+            float pointerTipY = -laneHeight * 0.5f - 32f - pointerArrowSize * 0.5f;
+            resultRect.anchoredPosition = new Vector2(0f, pointerTipY - 20f);
+            resultText.fontSize = 32f;
+            resultText.alignment = TextAlignmentOptions.Center;
+            resultText.raycastTarget = false;
+
+            return new LaneUI(laneName, laneRoot, viewport, itemsContainer, pointerContainer.gameObject, pointerGraphic, pointerActiveColor, resultText, laneHeight);
+        }
+
+        private Graphic BuildPointerVisuals(RectTransform pointerContainer, float laneHeight, out Color pointerActiveColor)
+        {
+            var pointerLineObj = new GameObject("PointerLine", typeof(RectTransform));
+            var pointerLineRect = pointerLineObj.GetComponent<RectTransform>();
+            pointerLineRect.SetParent(pointerContainer, false);
+            pointerLineRect.anchorMin = new Vector2(0.5f, 0.5f);
+            pointerLineRect.anchorMax = new Vector2(0.5f, 0.5f);
+            pointerLineRect.pivot = new Vector2(0.5f, 0.5f);
+            pointerLineRect.sizeDelta = new Vector2(PointerThickness * 1.1f, laneHeight + 64f);
+            pointerLineRect.anchoredPosition = Vector2.zero;
+
+            var pointerLineGraphic = pointerLineObj.AddComponent<RoundedRectGraphic>();
+            pointerLineGraphic.raycastTarget = false;
+            pointerLineGraphic.cornerSegments = 8;
+            pointerLineGraphic.cornerRadius = pointerLineRect.sizeDelta.x * 0.5f;
+            pointerActiveColor = new Color(1f, 1f, 1f, 0.95f);
+            pointerLineGraphic.color = pointerActiveColor;
+
+            var pointerLineOutline = pointerLineObj.AddComponent<Outline>();
+            pointerLineOutline.effectColor = new Color(0f, 0f, 0f, 0.25f);
+            pointerLineOutline.effectDistance = new Vector2(1f, -1f);
+            pointerLineOutline.useGraphicAlpha = true;
+
+            var pointerLineShadow = pointerLineObj.AddComponent<Shadow>();
+            pointerLineShadow.effectColor = new Color(0f, 0f, 0f, 0.15f);
+            pointerLineShadow.effectDistance = new Vector2(0f, -4f);
+
+            var stripeObj = new GameObject("PointerInnerStripe", typeof(RectTransform));
+            var stripeRect = stripeObj.GetComponent<RectTransform>();
+            stripeRect.SetParent(pointerLineRect, false);
+            stripeRect.anchorMin = new Vector2(0.5f, 0.5f);
+            stripeRect.anchorMax = new Vector2(0.5f, 0.5f);
+            stripeRect.pivot = new Vector2(0.5f, 0.5f);
+            stripeRect.sizeDelta = new Vector2(pointerLineRect.sizeDelta.x * 0.22f, pointerLineRect.sizeDelta.y * 0.82f);
+
+            var stripe = stripeObj.AddComponent<RoundedRectGraphic>();
+            stripe.raycastTarget = false;
+            stripe.cornerSegments = 6;
+            stripe.cornerRadius = stripeRect.sizeDelta.x * 0.5f;
+            stripe.color = new Color(1f, 1f, 1f, 0.12f);
+
+            var topArrowObj = new GameObject("TopArrow", typeof(RectTransform));
+            var topArrowRect = topArrowObj.GetComponent<RectTransform>();
+            topArrowRect.SetParent(pointerContainer, false);
+            topArrowRect.anchorMin = new Vector2(0.5f, 0.5f);
+            topArrowRect.anchorMax = new Vector2(0.5f, 0.5f);
+            topArrowRect.pivot = new Vector2(0.5f, 0.5f);
+            topArrowRect.sizeDelta = new Vector2(PointerThickness * 2.5f, PointerThickness * 2.5f);
+            topArrowRect.anchoredPosition = new Vector2(0f, laneHeight * 0.5f + 32f);
+
+            var topArrowGraphic = topArrowObj.AddComponent<TriangleGraphic>();
+            topArrowGraphic.raycastTarget = false;
+            topArrowGraphic.color = new Color(1f, 1f, 1f, 0.9f);
+            topArrowGraphic.direction = TriangleGraphic.TriangleDirection.Up;
+
+            var topArrowOutline = topArrowObj.AddComponent<Outline>();
+            topArrowOutline.effectColor = new Color(1f, 1f, 1f, 0.4f);
+            topArrowOutline.effectDistance = new Vector2(0.5f, -0.5f);
+            topArrowOutline.useGraphicAlpha = false;
+
+            var topArrowShadow = topArrowObj.AddComponent<Shadow>();
+            topArrowShadow.effectColor = new Color(0f, 0f, 0f, 0.12f);
+            topArrowShadow.effectDistance = new Vector2(0f, -3f);
+
+            var topInnerObj = new GameObject("TopArrowInner", typeof(RectTransform));
+            var topInnerRect = topInnerObj.GetComponent<RectTransform>();
+            topInnerRect.SetParent(topArrowRect, false);
+            topInnerRect.anchorMin = Vector2.zero;
+            topInnerRect.anchorMax = Vector2.one;
+            topInnerRect.pivot = new Vector2(0.5f, 0.5f);
+            topInnerRect.sizeDelta = Vector2.zero;
+            topInnerRect.anchoredPosition = Vector2.zero;
+            topInnerRect.localScale = Vector3.one * 0.85f;
+
+            var topInner = topInnerObj.AddComponent<TriangleGraphic>();
+            topInner.raycastTarget = false;
+            topInner.color = new Color(1f, 1f, 1f, 0.12f);
+            topInner.direction = TriangleGraphic.TriangleDirection.Up;
+
+            var bottomArrowObj = new GameObject("BottomArrow", typeof(RectTransform));
+            var bottomArrowRect = bottomArrowObj.GetComponent<RectTransform>();
+            bottomArrowRect.SetParent(pointerContainer, false);
+            bottomArrowRect.anchorMin = new Vector2(0.5f, 0.5f);
+            bottomArrowRect.anchorMax = new Vector2(0.5f, 0.5f);
+            bottomArrowRect.pivot = new Vector2(0.5f, 0.5f);
+            bottomArrowRect.sizeDelta = new Vector2(PointerThickness * 2.5f, PointerThickness * 2.5f);
+            bottomArrowRect.anchoredPosition = new Vector2(0f, -laneHeight * 0.5f - 32f);
+
+            var bottomArrowGraphic = bottomArrowObj.AddComponent<TriangleGraphic>();
+            bottomArrowGraphic.raycastTarget = false;
+            bottomArrowGraphic.color = new Color(1f, 1f, 1f, 0.9f);
+            bottomArrowGraphic.direction = TriangleGraphic.TriangleDirection.Down;
+
+            var bottomArrowOutline = bottomArrowObj.AddComponent<Outline>();
+            bottomArrowOutline.effectColor = new Color(1f, 1f, 1f, 0.4f);
+            bottomArrowOutline.effectDistance = new Vector2(0.5f, -0.5f);
+            bottomArrowOutline.useGraphicAlpha = false;
+
+            var bottomArrowShadow = bottomArrowObj.AddComponent<Shadow>();
+            bottomArrowShadow.effectColor = new Color(0f, 0f, 0f, 0.12f);
+            bottomArrowShadow.effectDistance = new Vector2(0f, 3f);
+
+            var bottomInnerObj = new GameObject("BottomArrowInner", typeof(RectTransform));
+            var bottomInnerRect = bottomInnerObj.GetComponent<RectTransform>();
+            bottomInnerRect.SetParent(bottomArrowRect, false);
+            bottomInnerRect.anchorMin = Vector2.zero;
+            bottomInnerRect.anchorMax = Vector2.one;
+            bottomInnerRect.pivot = new Vector2(0.5f, 0.5f);
+            bottomInnerRect.sizeDelta = Vector2.zero;
+            bottomInnerRect.anchoredPosition = Vector2.zero;
+            bottomInnerRect.localScale = Vector3.one * 0.85f;
+
+            var bottomInner = bottomInnerObj.AddComponent<TriangleGraphic>();
+            bottomInner.raycastTarget = false;
+            bottomInner.color = new Color(1f, 1f, 1f, 0.12f);
+            bottomInner.direction = TriangleGraphic.TriangleDirection.Down;
+
+            return pointerLineGraphic;
+        }
+
+        private List<LaneResult> BuildLaneResults(List<int> candidatePool, IReadOnlyList<LaneFinalData> finalLaneData)
+        {
+            var results = new List<LaneResult>(finalLaneData.Count);
+
+            for (int i = 0; i < finalLaneData.Count; i++)
+            {
+                var laneData = finalLaneData[i];
+
+                if (!candidatePool.Contains(laneData.TypeId))
+                {
+                    candidatePool.Add(laneData.TypeId);
+                }
+
+                string display = !string.IsNullOrWhiteSpace(laneData.DisplayName)
+                    ? laneData.DisplayName
+                    : RecycleService.GetDisplayName(laneData.TypeId) ?? string.Empty;
+
+                var icon = laneData.Icon ?? RecycleService.GetItemIcon(laneData.TypeId);
+
+                results.Add(new LaneResult(laneData.TypeId, display, icon, laneData.IsRewardLane));
+            }
+
+            return results;
+        }
+
+        private bool TryBuildAnimationPlan(LaneUI lane, List<int> candidateTypeIds, int finalTypeId, Sprite? finalIcon, float initialVelocityInSlots, float decelerationDuration, float velocityAtEndOfDeceleration, float totalCurveDuration, bool reverseDirection, out AnimationPlan plan)
+        {
+            plan = null!;
+
+            if (lane.ItemsContainer == null || lane.Viewport == null)
+            {
+                return false;
+            }
+
+            var velocityCurve = GenerateVelocityCurve(initialVelocityInSlots, decelerationDuration, velocityAtEndOfDeceleration, totalCurveDuration);
+            float totalDistanceInPixels = CalculateTotalDistanceInPixels(velocityCurve);
+
             float slotWidth = SlotFullWidth;
+            float viewportWidth = lane.Viewport.rect.width;
+            int minSlotsForViewport = Mathf.CeilToInt(viewportWidth / slotWidth) + 2;
             int completeSlots = Mathf.FloorToInt(totalDistanceInPixels / slotWidth);
             float remainingPixelsInFinalSlot = totalDistanceInPixels - (completeSlots * slotWidth);
 
-            Log.Debug($"[Animation] Total distance: {totalDistanceInPixels}px = {completeSlots} complete slots + {remainingPixelsInFinalSlot}px");
+            Log.Debug($"[Animation:{lane.Name}] Total distance: {totalDistanceInPixels}px = {completeSlots} complete slots + {remainingPixelsInFinalSlot}px");
 
-            // Step 3: The stopping position within the final slot is already determined by the velocity curve
-            // remainingPixelsInFinalSlot (from -100px to +100px relative to slot center) is the stopping offset
-            // This variation comes from the randomized initial velocity, so no additional randomization needed here
-
-            // Step 4: Calculate final slot index
-            // The animation will stop in the slot at: startSlotIndex + completeSlots
-            const int startSlotIndex = 20;
+            int startSlotIndex = Mathf.Max(20, minSlotsForViewport);
             int finalSlotIndex = startSlotIndex + completeSlots;
 
-            // Total slots needed = final slot index + buffer slots after + 1
-            int totalSlotsNeeded = finalSlotIndex + SlotsAfterFinal + 1;
+            int slotsAfterFinal = Mathf.Max(SlotsAfterFinal, minSlotsForViewport);
+            int totalSlotsNeeded = finalSlotIndex + slotsAfterFinal + 1;
 
-            // Check if weighted lottery is enabled
-            var enableWeightedLottery = Core.Settings.SettingManager.Instance.EnableWeightedLottery.GetAsBool();
+            bool enableWeightedLottery = Core.Settings.SettingManager.Instance.EnableWeightedLottery.GetAsBool();
 
-            // Step 5: Build complete slot sequence
             var slotSequence = BuildSlotSequenceWithFixedFinal(candidateTypeIds, finalTypeId, enableWeightedLottery, totalSlotsNeeded, finalSlotIndex);
             if (slotSequence.Count == 0)
             {
                 return false;
             }
 
-            ClearItems();
+            if (startSlotIndex >= slotSequence.Count || finalSlotIndex >= slotSequence.Count)
+            {
+                Log.Warning($"[Animation:{lane.Name}] Slot sequence too short (count={slotSequence.Count}, startIndex={startSlotIndex}, finalIndex={finalSlotIndex}).");
+                return false;
+            }
+
+            ClearItems(lane);
 
             var totalWidth = slotSequence.Count * slotWidth;
-            _itemsContainer.sizeDelta = new Vector2(totalWidth, 200f);
+            lane.ItemsContainer.sizeDelta = new Vector2(totalWidth, lane.LaneHeight);
 
             var slots = new List<Slot>(slotSequence.Count);
 
-            // Step 6: Create UI slots for each item in the sequence
             for (int i = 0; i < slotSequence.Count; i++)
             {
                 var typeId = slotSequence[i];
-                var isFinal = i == finalSlotIndex;
+                bool isFinal = i == finalSlotIndex;
 
                 var sprite = isFinal ? (finalIcon ?? RecycleService.GetItemIcon(typeId)) : RecycleService.GetItemIcon(typeId);
-                var slot = CreateSlot(typeId, sprite, RecycleService.GetDisplayName(typeId), RecycleService.GetItemQualityColor(typeId));
+                var slot = CreateSlot(lane, typeId, sprite, RecycleService.GetDisplayName(typeId), RecycleService.GetItemQualityColor(typeId));
 
-                // Position: container is centered, so position is offset from center
                 var positionX = i * slotWidth - totalWidth * 0.5f + slotWidth * 0.5f;
+                if (reverseDirection)
+                {
+                    positionX = -positionX;
+                }
                 slot.Rect.anchoredPosition = new Vector2(positionX, 0f);
 
                 slots.Add(slot);
             }
 
-            // Step 7: Calculate final offset
-            // The animation will stop at: finalSlotCenter + offsetWithinSlot
-            // offsetWithinSlot = remainingPixelsInFinalSlot - slotWidth/2 (convert from [0, slotWidth] to [-slotWidth/2, slotWidth/2])
             var finalSlotCenterX = slots[finalSlotIndex].Rect.anchoredPosition.x;
             float slotHalfWidth = slotWidth * 0.5f;
             float offsetWithinSlot = remainingPixelsInFinalSlot - slotHalfWidth;
-            var finalStopPositionX = finalSlotCenterX + offsetWithinSlot;
-            var endOffset = -finalStopPositionX;
+            if (reverseDirection)
+            {
+                offsetWithinSlot = -offsetWithinSlot;
+            }
+            float finalStopPositionX = finalSlotCenterX + offsetWithinSlot;
+            float endOffset = -finalStopPositionX;
 
-            Log.Debug($"[Animation] Final slot center: {finalSlotCenterX}, Remaining in slot: {remainingPixelsInFinalSlot}px, Offset from center: {offsetWithinSlot}px, Stop at: {finalStopPositionX}, endOffset: {endOffset}");
+            Log.Debug($"[Animation:{lane.Name}] Final slot center: {finalSlotCenterX}, Remaining in slot: {remainingPixelsInFinalSlot}px, Offset: {offsetWithinSlot}px, Stop: {finalStopPositionX}, endOffset: {endOffset}");
 
-            // Step 8: Calculate start offset
             var startItemPos = slots[startSlotIndex].Rect.anchoredPosition.x;
-            var startOffset = -startItemPos;
+            float startOffset = -startItemPos;
 
-            plan = new AnimationPlan(slots, finalSlotIndex, startOffset, endOffset);
+            plan = new AnimationPlan(slots, finalSlotIndex, startOffset, endOffset, velocityCurve, reverseDirection, initialVelocityInSlots);
             return true;
         }
 
-        /// <summary>
-        /// Build slot sequence with final item at a specific index
-        /// </summary>
-        private List<int> BuildSlotSequenceWithFixedFinal(IEnumerable<int> candidateTypeIds, int finalTypeId, bool useWeightedLottery, int totalSlots, int finalSlotIndex)
+        private static List<int> BuildSlotSequenceWithFixedFinal(IEnumerable<int> candidateTypeIds, int finalTypeId, bool useWeightedLottery, int totalSlots, int finalSlotIndex)
         {
             var pool = candidateTypeIds?.ToList() ?? new List<int>();
             if (!pool.Contains(finalTypeId)) pool.Add(finalTypeId);
             if (pool.Count == 0) pool.Add(finalTypeId);
 
-            // Pre-convert to weighted items once if using weighted lottery
             var weightedItemsCache = useWeightedLottery ? LotteryService.ConvertToQualityWeightedItems(pool) : null;
 
             var sequence = new List<int>();
@@ -528,7 +854,7 @@ namespace DuckovLuckyBox.UI
 
                 int pick;
 
-                if (useWeightedLottery && weightedItemsCache != null)
+                if (useWeightedLottery && weightedItemsCache != null && weightedItemsCache.Count > 0)
                 {
                     var selectedId = LotteryService.SampleWeightedItems(weightedItemsCache);
                     if (selectedId < 0)
@@ -554,25 +880,21 @@ namespace DuckovLuckyBox.UI
                 return pick;
             }
 
-            // Build all slots
             for (int i = 0; i < totalSlots; i++)
             {
                 int id;
 
                 if (i == finalSlotIndex)
                 {
-                    // Place final item at specific index
                     id = finalTypeId;
                 }
                 else
                 {
-                    // Fill with random items
                     id = SampleNext(lastId, lastIdCount);
                 }
 
                 sequence.Add(id);
 
-                // Update consecutive count
                 if (lastId.HasValue && id == lastId.Value)
                 {
                     lastIdCount++;
@@ -588,20 +910,17 @@ namespace DuckovLuckyBox.UI
             return sequence;
         }
 
-        private Slot CreateSlot(int typeId, Sprite? sprite, string displayName, Color frameColor)
+        private Slot CreateSlot(LaneUI lane, int typeId, Sprite? sprite, string displayName, Color frameColor)
         {
-            // Root acts as the slot container and is what we position inside the items container
             var root = new GameObject($"LotterySlot_{typeId}", typeof(RectTransform));
             var rect = root.GetComponent<RectTransform>();
-            rect.SetParent(_itemsContainer, false);
+            rect.SetParent(lane.ItemsContainer, false);
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(IconSize.x + SlotPadding, IconSize.y + SlotPadding);
 
-            // Background slightly larger than the frame to act as a border
-            // Increase padding to make the border thicker. Change color below to set border color.
-            const float borderPadding = 16f; // increased border thickness
+            const float borderPadding = 16f;
             var backgroundObj = new GameObject("LotterySlotBackground", typeof(RectTransform));
             var bgRect = backgroundObj.GetComponent<RectTransform>();
             bgRect.SetParent(rect, false);
@@ -611,14 +930,12 @@ namespace DuckovLuckyBox.UI
             bgRect.anchoredPosition = Vector2.zero;
             bgRect.sizeDelta = rect.sizeDelta + new Vector2(borderPadding, borderPadding);
 
-            // Use a rounded rect graphic for the border so mods don't need external sprites.
             var bgGraphic = backgroundObj.AddComponent<RoundedRectGraphic>();
             bgGraphic.raycastTarget = false;
-            bgGraphic.cornerRadius = Mathf.Min(rect.sizeDelta.x, rect.sizeDelta.y) * 0.12f; // adaptive radius
+            bgGraphic.cornerRadius = Mathf.Min(rect.sizeDelta.x, rect.sizeDelta.y) * 0.12f;
             bgGraphic.cornerSegments = 6;
-            bgGraphic.color = new Color(0f, 0f, 0f, 0.8f); // black with 80% opacity
+            bgGraphic.color = new Color(0f, 0f, 0f, 0.8f);
 
-            // Frame (the colored background for quality) sits above the white background
             var frameObj = new GameObject("LotterySlotFrame", typeof(RectTransform));
             var frameRect = frameObj.GetComponent<RectTransform>();
             frameRect.SetParent(rect, false);
@@ -626,27 +943,24 @@ namespace DuckovLuckyBox.UI
             frameRect.anchorMax = new Vector2(0.5f, 0.5f);
             frameRect.pivot = new Vector2(0.5f, 0.5f);
             frameRect.anchoredPosition = Vector2.zero;
-            frameRect.sizeDelta = rect.sizeDelta; // Match root size (icon + padding)
+            frameRect.sizeDelta = rect.sizeDelta;
 
             var frameGraphic = frameObj.AddComponent<RoundedRectGraphic>();
-            // Match the frame size to rect
             frameGraphic.cornerRadius = Mathf.Min(frameRect.sizeDelta.x, frameRect.sizeDelta.y) * 0.1f;
             frameGraphic.cornerSegments = 6;
-            // Force opaque alpha so the border underneath remains visible
             frameGraphic.color = new Color(frameColor.r, frameColor.g, frameColor.b, 1f);
             frameGraphic.raycastTarget = false;
 
             var frameMask = frameObj.AddComponent<Mask>();
             frameMask.showMaskGraphic = true;
 
-            // Icon is clipped by the frame mask
             var iconObject = new GameObject("LotterySlotIcon", typeof(RectTransform), typeof(Image));
             var iconRect = iconObject.GetComponent<RectTransform>();
             iconRect.SetParent(frameRect, false);
             iconRect.anchorMin = new Vector2(0.5f, 0.5f);
             iconRect.anchorMax = new Vector2(0.5f, 0.5f);
             iconRect.pivot = new Vector2(0.5f, 0.5f);
-            iconRect.anchoredPosition = new Vector2(0f, 0f);
+            iconRect.anchoredPosition = Vector2.zero;
             iconRect.sizeDelta = IconSize;
 
             var icon = iconObject.GetComponent<Image>();
@@ -662,109 +976,93 @@ namespace DuckovLuckyBox.UI
             iconOutline.effectDistance = new Vector2(2f, -2f);
             iconOutline.useGraphicAlpha = false;
 
-            // Return the root RectTransform as Slot.Rect (used for positioning/scaling). The frame remains the visual frame.
             return new Slot(rect, frameGraphic, icon, iconOutline, displayName);
         }
 
-        /// <summary>
-        /// Generate velocity curve for smooth deceleration from initial to minimum velocity over target duration
-        /// Custom curve: velocity at 7s is 0.1 slots/s, velocity at 8s is 0 (complete stop)
-        /// Uses the current animation's initial velocity for variation
-        /// </summary>
-        private float[] GenerateVelocityCurve()
+        private float[] GenerateVelocityCurve(float initialVelocityInSlots, float decelerationDuration, float velocityAtEndOfDeceleration, float totalCurveDuration)
         {
-            // AnimationStepsPerSecond samples per second for higher precision
-            int totalSteps = (int)(TotalCurveDuration * AnimationStepsPerSecond);
+            float clampedInitialVelocity = Mathf.Max(0.1f, initialVelocityInSlots);
+            float clampedDecelerationDuration = Mathf.Max(0.1f, decelerationDuration);
+            float clampedVelocityAtEnd = Mathf.Clamp(velocityAtEndOfDeceleration, 0f, clampedInitialVelocity);
+            float clampedTotalDuration = Mathf.Max(clampedDecelerationDuration + 0.1f, totalCurveDuration);
+
+            int totalSteps = Mathf.Max(1, (int)(clampedTotalDuration * AnimationStepsPerSecond));
             var curve = new float[totalSteps];
 
             for (int i = 0; i < totalSteps; i++)
             {
-                // Current sample point corresponding time
                 float timeInSeconds = (float)i / AnimationStepsPerSecond;
 
-                if (timeInSeconds < DecelerationDuration)
+                if (timeInSeconds < clampedDecelerationDuration)
                 {
-                    // First 7 seconds: decelerate from current initial velocity to 0.1, using ease-out quartic curve for faster deceleration
-                    float t = timeInSeconds / DecelerationDuration; // 0.0 to 1.0
+                    float t = timeInSeconds / clampedDecelerationDuration;
                     float easeT = 1f - Mathf.Pow(1f - t, 4f);
-                    curve[i] = Mathf.Lerp(_currentAnimationInitialVelocity, VelocityAt7Seconds, easeT);
+                    curve[i] = Mathf.Lerp(clampedInitialVelocity, clampedVelocityAtEnd, easeT);
                 }
                 else
                 {
-                    // 7-8 seconds: linearly decelerate from 1 to 0.0 (complete stop)
-                    float t = (timeInSeconds - DecelerationDuration) / (TotalCurveDuration - DecelerationDuration); // 0.0 to 1.0
-                    curve[i] = Mathf.Lerp(VelocityAt7Seconds, 0f, t);
+                    float remainingDuration = Mathf.Max(0.001f, clampedTotalDuration - clampedDecelerationDuration);
+                    float t = (timeInSeconds - clampedDecelerationDuration) / remainingDuration;
+                    curve[i] = Mathf.Lerp(clampedVelocityAtEnd, 0f, Mathf.Clamp01(t));
                 }
             }
 
             return curve;
         }
 
-        /// <summary>
-        /// Calculate total distance traveled based on velocity curve
-        /// </summary>
         private float CalculateTotalDistanceInSlots(float[] velocityCurve)
         {
-            float timeStepInSeconds = 1.0f / AnimationStepsPerSecond; // Each sample point time interval
+            float timeStepInSeconds = 1.0f / AnimationStepsPerSecond;
             float totalDistance = 0f;
 
             for (int i = 0; i < velocityCurve.Length; i++)
             {
-                // Distance = velocity × time
                 totalDistance += velocityCurve[i] * timeStepInSeconds;
             }
 
             return totalDistance;
         }
 
-        /// <summary>
-        /// Calculate total distance in pixels (slots × SlotFullWidth)
-        /// </summary>
         private float CalculateTotalDistanceInPixels(float[] velocityCurve)
         {
             float distanceInSlots = CalculateTotalDistanceInSlots(velocityCurve);
             return distanceInSlots * SlotFullWidth;
         }
 
-        /// <summary>
-        /// Physics-based rolling animation (CSGO-style smooth deceleration)
-        /// </summary>
-        private async UniTask PerformPhysicsBasedRoll(AnimationPlan plan, ChannelGroup sfxGroup)
+        private async UniTask PerformPhysicsBasedRoll(LaneUI lane, AnimationPlan plan, bool canHandleSkipInput, ChannelGroup sfxGroup)
         {
-            if (_itemsContainer == null) return;
+            if (lane.ItemsContainer == null) return;
 
-            // Regenerate velocity curve based on current initial velocity for this animation
-            _velocityCurve = GenerateVelocityCurve();
+            var velocityCurve = plan.VelocityCurve;
 
-            // Convert pixel position to slot unit for physics calculation
             float currentPositionInPixels = plan.StartOffset;
             float targetPositionInPixels = plan.FinalOffset;
-
-            _itemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
+            lane.ItemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
 
             int lastHighlightedIndex = -1;
-            float elapsedTime = 0f; // Track elapsed time
+            float elapsedTime = 0f;
 
-            // Add debug info
-            Log.Debug($"[Animation] Start - Current: {currentPositionInPixels}, Target: {targetPositionInPixels}, Distance: {(targetPositionInPixels - currentPositionInPixels) / SlotFullWidth} slots");
-
-            // Determine velocity direction
             float velocityDirection = targetPositionInPixels < currentPositionInPixels ? -1f : 1f;
+
+            string directionLabel = plan.ReverseDirection ? "RightToLeft" : "LeftToRight";
+            Log.Debug($"[Animation:{lane.Name}] Start ({directionLabel}) - Current: {currentPositionInPixels}, Target: {targetPositionInPixels}, Distance: {(targetPositionInPixels - currentPositionInPixels) / SlotFullWidth} slots, InitialVel: {plan.InitialVelocityInSlots:F2} slots/s");
 
             while (true)
             {
-                // Check for skip request
-                if (Input.GetMouseButtonDown(0))
+                if (!_skipRequested && canHandleSkipInput && Input.GetMouseButtonDown(0))
                 {
                     _skipRequested = true;
-
-                    // Get the SFX group and play skip sound
                     var result = sfxGroup.stop();
                     if (result != FMOD.RESULT.OK)
                     {
                         Log.Warning($"Failed to stop rolling sound: {result}");
                     }
+                }
 
+                if (_skipRequested)
+                {
+                    currentPositionInPixels = targetPositionInPixels;
+                    lane.ItemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
                     break;
                 }
 
@@ -772,80 +1070,57 @@ namespace DuckovLuckyBox.UI
                 float deltaTime = Time.deltaTime;
                 elapsedTime += deltaTime;
 
-                // DEBUG: Log elapsed time and distance to target
                 float distanceToTarget = Mathf.Abs(targetPositionInPixels - currentPositionInPixels);
-                Log.Debug($"[Animation] Elapsed: {elapsedTime:F2}s, Distance to target: {distanceToTarget:F1}px ({distanceToTarget / SlotFullWidth:F2} slots)");
+                Log.Debug($"[Animation:{lane.Name}] Elapsed: {elapsedTime:F2}s, Distance to target: {distanceToTarget:F1}px ({distanceToTarget / SlotFullWidth:F2} slots)");
 
-                // Look up current velocity from pre-generated velocity curve
-                // Use FloorToInt: round down to nearest sample point
-                // This avoids array bounds and ensures we use "current or previous" velocity value
-                int curveIndex = Mathf.FloorToInt(elapsedTime * AnimationStepsPerSecond); // One sample every time step
-                curveIndex = Mathf.Clamp(curveIndex, 0, _velocityCurve.Length - 1);
-                float currentVelocityInSlots = _velocityCurve[curveIndex] * velocityDirection;
+                int curveIndex = Mathf.FloorToInt(elapsedTime * AnimationStepsPerSecond);
+                curveIndex = Mathf.Clamp(curveIndex, 0, velocityCurve.Length - 1);
+                float currentVelocityInSlots = velocityCurve[curveIndex] * velocityDirection;
 
-                // Convert slot/s to pixel/s, then calculate displacement
                 float velocityInPixels = currentVelocityInSlots * SlotFullWidth;
                 float movementInPixels = velocityInPixels * deltaTime;
                 float nextPositionInPixels = currentPositionInPixels + movementInPixels;
 
-                // Primary stopping condition: Check if next position reaches or overshoots target
                 if ((velocityDirection == -1 && nextPositionInPixels <= targetPositionInPixels) ||
                     (velocityDirection == 1 && nextPositionInPixels >= targetPositionInPixels))
                 {
-                    // Clamp to target position and stop
                     currentPositionInPixels = targetPositionInPixels;
-                    _itemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
-                    Log.Debug($"[Animation] Reached target position at {elapsedTime:F2}s (next: {nextPositionInPixels:F1}, target: {targetPositionInPixels:F1})");
+                    lane.ItemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
+                    Log.Debug($"[Animation:{lane.Name}] Reached target position at {elapsedTime:F2}s (next: {nextPositionInPixels:F1}, target: {targetPositionInPixels:F1})");
                     break;
                 }
 
                 currentPositionInPixels = nextPositionInPixels;
+                lane.ItemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
 
-                // Set base position first
-                _itemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
-
-                // Update highlighting with smooth transitions
                 int currentIndex = FindCenteredSlotIndex(plan, currentPositionInPixels);
                 if (currentIndex != lastHighlightedIndex)
                 {
-                    // Remove previous highlight
                     if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count)
                     {
                         var prevSlot = plan.Slots[lastHighlightedIndex];
                         prevSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 0f);
-
-                        // Reset scale
                         prevSlot.Rect.localScale = Vector3.one;
                     }
 
-                    // Apply new highlight
                     if (currentIndex >= 0 && currentIndex < plan.Slots.Count)
                     {
                         var currentSlot = plan.Slots[currentIndex];
                         currentSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f);
-
-                        // Slight scale up for emphasis
                         currentSlot.Rect.localScale = Vector3.one * 1.05f;
-
-                        if (_resultText != null)
-                        {
-                            _resultText.text = currentSlot.DisplayName;
-                        }
+                        lane.SetResultText(currentSlot.DisplayName);
                     }
 
                     lastHighlightedIndex = currentIndex;
                 }
 
-                // Secondary condition: Force stop after extended duration if target not reached
-                // This allows for slight timing variations but prevents infinite loops
                 if (elapsedTime >= MaxAnimationDurationInSeconds)
                 {
-                    Log.Warning($"[Animation] Force stopped after {elapsedTime:F2}s - target position not reached (pos: {currentPositionInPixels:F1}, target: {targetPositionInPixels:F1})");
+                    Log.Warning($"[Animation:{lane.Name}] Force stopped after {elapsedTime:F2}s - target position not reached (pos: {currentPositionInPixels:F1}, target: {targetPositionInPixels:F1})");
                     break;
                 }
             }
 
-            // Ensure final position and highlight
             if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count && lastHighlightedIndex != plan.FinalSlotIndex)
             {
                 var prevSlot = plan.Slots[lastHighlightedIndex];
@@ -857,10 +1132,7 @@ namespace DuckovLuckyBox.UI
             finalSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f);
             finalSlot.Rect.localScale = Vector3.one * 1.05f;
 
-            if (_resultText != null)
-            {
-                _resultText.text = finalSlot.DisplayName;
-            }
+            lane.SetResultText(finalSlot.DisplayName);
         }
 
         private int FindCenteredSlotIndex(AnimationPlan plan, float currentOffset)
@@ -884,7 +1156,7 @@ namespace DuckovLuckyBox.UI
             return closestIndex;
         }
 
-        private async UniTask AnimateCelebration(AnimationPlan plan, int finalTypeId, ChannelGroup sfxGroup)
+        private async UniTask AnimateCelebration(LaneUI lane, AnimationPlan plan, int finalTypeId, bool isRewardLane, ChannelGroup sfxGroup)
         {
             var slot = plan.FinalSlot;
             var frame = slot.Frame;
@@ -895,13 +1167,11 @@ namespace DuckovLuckyBox.UI
 
             frame.color = initialFrameColor;
 
-            // Multi-stage celebration effect
             const int pulseCount = 3;
             const float pulseDuration = CelebrateDuration / pulseCount;
 
             for (int pulse = 0; pulse < pulseCount; pulse++)
             {
-                // Scale pulse
                 var elapsed = 0f;
                 while (elapsed < pulseDuration)
                 {
@@ -909,48 +1179,45 @@ namespace DuckovLuckyBox.UI
                     elapsed += Time.deltaTime;
                     var t = Mathf.Clamp01(elapsed / pulseDuration);
 
-                    // Frame color transition
                     frame.color = Color.Lerp(initialFrameColor, targetFrameColor, t);
 
-                    // Pulsing scale effect
                     float scaleProgress = Mathf.Sin(t * Mathf.PI);
-                    float scale = 1.05f + scaleProgress * 0.15f; // Pulse from 1.05 to 1.20 and back
+                    float scale = 1.05f + scaleProgress * 0.15f;
                     slot.Rect.localScale = Vector3.one * scale;
 
-                    // Glow intensity on icon outline
                     float glowIntensity = Mathf.Lerp(1f, HighlightIntensity, scaleProgress);
                     slot.IconOutline.effectColor = new Color(1f, 1f, 1f, glowIntensity);
 
-                    // Icon brightness pulse
                     icon.color = Color.Lerp(Color.white, new Color(1.2f, 1.2f, 1.2f), scaleProgress * 0.5f);
                 }
             }
 
-            // Final state
             frame.color = targetFrameColor;
             slot.Rect.localScale = Vector3.one * 1.1f;
             slot.IconOutline.effectColor = new Color(1f, 1f, 1f, HighlightIntensity);
             icon.color = Color.white;
 
-            // Continuous glow effect
-            StartContinuousGlow(slot);
+            StartContinuousGlow(slot, isRewardLane);
 
-            // Play high-quality lottery sound if enabled
-            var finalItemQuality = RecycleService.GetItemQuality(finalTypeId);
-
-            if (finalItemQuality.IsHighQuality())
+            if (isRewardLane)
             {
-                SoundUtils.PlayHighQualitySound(sfxGroup, Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND);
+                var finalItemQuality = RecycleService.GetItemQuality(finalTypeId);
+                if (finalItemQuality.IsHighQuality())
+                {
+                    SoundUtils.PlayHighQualitySound(sfxGroup, Constants.Sound.HIGH_QUALITY_LOTTERY_SOUND);
+                }
             }
         }
 
-        /// <summary>
-        /// Continuous glow effect on final slot
-        /// </summary>
-        private async void StartContinuousGlow(Slot slot)
+        private async void StartContinuousGlow(Slot slot, bool isRewardLane)
         {
+            if (!isRewardLane)
+            {
+                return;
+            }
+
             float startTime = Time.time;
-            const float glowDuration = 2f; // Glow for 2 seconds
+            const float glowDuration = 2f;
 
             while (Time.time - startTime < glowDuration)
             {
@@ -967,45 +1234,21 @@ namespace DuckovLuckyBox.UI
             }
         }
 
-        private void ResetResultText()
+        private void ClearItems(LaneUI lane)
         {
-            if (_resultText == null) return;
+            if (lane.ItemsContainer == null) return;
 
-            var textColor = _resultText.color;
-            textColor.a = 0f;
-            _resultText.color = textColor;
-            _resultText.text = string.Empty;
+            for (int i = lane.ItemsContainer.childCount - 1; i >= 0; i--)
+            {
+                UnityEngine.Object.Destroy(lane.ItemsContainer.GetChild(i).gameObject);
+            }
         }
 
-        private async UniTask RevealResult(string finalDisplayName)
+        private async UniTask RevealResult(LaneUI lane, string finalDisplayName)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(0.5f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
-
-            if (_resultText != null)
-            {
-                _resultText.text = finalDisplayName;
-            }
-
+            lane.SetResultText(finalDisplayName);
             await UniTask.Delay(TimeSpan.FromSeconds(0.75f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
-        }
-
-        private Sprite EnsureFallbackSprite()
-        {
-            if (_fallbackSprite != null) return _fallbackSprite;
-
-            var texture = Texture2D.whiteTexture;
-            _fallbackSprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-            return _fallbackSprite;
-        }
-
-        private void ClearItems()
-        {
-            if (_itemsContainer == null) return;
-
-            for (int i = _itemsContainer.childCount - 1; i >= 0; i--)
-            {
-                UnityEngine.Object.Destroy(_itemsContainer.GetChild(i).gameObject);
-            }
         }
 
         private async UniTask FadeCanvasGroup(CanvasGroup group, float from, float to, float duration)
@@ -1030,11 +1273,31 @@ namespace DuckovLuckyBox.UI
             group.alpha = to;
         }
 
+        private Sprite EnsureFallbackSprite()
+        {
+            if (_fallbackSprite != null) return _fallbackSprite;
+
+            var texture = Texture2D.whiteTexture;
+            _fallbackSprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            return _fallbackSprite;
+        }
+
         /// <summary>
         /// Destroys the Lottery animation UI
         /// </summary>
         public void Destroy()
         {
+            foreach (var lane in _lanes)
+            {
+                if (lane.Root != null)
+                {
+                    UnityEngine.Object.Destroy(lane.Root.gameObject);
+                }
+            }
+
+            _lanes.Clear();
+            _currentLaneCount = 0;
+
             if (_overlayRoot != null)
             {
                 UnityEngine.Object.Destroy(_overlayRoot.gameObject);
@@ -1047,15 +1310,10 @@ namespace DuckovLuckyBox.UI
                 _canvas = null;
             }
 
-            _viewport = null;
-            _itemsContainer = null;
-            _centerPointer = null;
-            _resultText = null;
             _canvasGroup = null;
             _fallbackSprite = null;
             _isAnimating = false;
             _skipRequested = false;
-            _velocityCurve = null;
             _isInitialized = false;
             _instance = null;
         }
@@ -1075,39 +1333,6 @@ namespace DuckovLuckyBox.UI
                 Icon = icon;
                 IconOutline = iconOutline;
                 DisplayName = displayName;
-            }
-        }
-
-        private sealed class AnimationPlan
-        {
-            public AnimationPlan(List<Slot> slots, int finalSlotIndex, float startOffset, float finalOffset)
-            {
-                Slots = slots;
-                FinalSlotIndex = finalSlotIndex;
-                StartOffset = startOffset;
-                FinalOffset = finalOffset;
-            }
-
-            public List<Slot> Slots { get; }
-            public int FinalSlotIndex { get; }
-            public float StartOffset { get; }
-            public float FinalOffset { get; }
-
-            public Slot FinalSlot
-            {
-                get
-                {
-                    // FinalSlotIndex is calculated based on velocity curve distance
-                    // and is guaranteed to be within Slots.Count
-                    if (FinalSlotIndex >= 0 && FinalSlotIndex < Slots.Count)
-                    {
-                        return Slots[FinalSlotIndex];
-                    }
-
-                    // Fallback to last slot if something goes wrong (should never happen)
-                    Log.Warning($"Invalid FinalSlotIndex: {FinalSlotIndex}, Slots.Count: {Slots.Count}. Returning last slot.");
-                    return Slots[Slots.Count - 1];
-                }
             }
         }
     }

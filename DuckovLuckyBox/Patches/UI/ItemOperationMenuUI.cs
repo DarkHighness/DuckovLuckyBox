@@ -383,7 +383,6 @@ namespace DuckovLuckyBox.Core
                 mainCharacter?.CharacterItem?.Inventory?.AddItem(targetItem);
             }
 
-
         }
     }
 }

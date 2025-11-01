@@ -257,86 +257,130 @@ namespace DuckovLuckyBox.Core
         /// Performs a complete lottery flow with context support
         /// Uses reservoir sampling for even quality distribution when sampling
         /// </summary>
-        /// <param name="price">Price to charge (0 for free)</param>
+        /// <param name="unitPrice">Price to charge (0 for free)</param>
         /// <param name="playAnimation">Whether to play lottery animation</param>
         /// <param name="context">Context for handling payment, success/failure callbacks</param>
-        /// <returns>Tuple of (success, item, sentToStorage)</returns>
-        public static async UniTask<(bool success, Item? item, bool sentToStorage)> PerformLotteryWithContextAsync(
+        /// <returns>Tuple of (success, awarded items, sent-to-storage flags)</returns>
+        public static async UniTask<(bool success, List<Item> items, List<bool> sentToStorageFlags)> PerformLotteryWithContextAsync(
             IEnumerable<int> itemTypeIds,
-            long price = 0,
+            long lotteryCount = 1,
+            long unitPrice = 0,
             bool playAnimation = true,
             ILotteryContext? context = null)
         {
+            var candidateIds = itemTypeIds?.ToList() ?? new List<int>();
+            if (candidateIds.Count == 0)
+            {
+                Log.Error("No items available for lottery");
+                context?.OnLotteryFailed();
+                return (false, new List<Item>(), new List<bool>());
+            }
+
+            long clampedCountLong = Math.Clamp(lotteryCount, 1L, 3L);
+            int drawCount = (int)clampedCountLong;
+
             bool useWeightedSampling = SettingManager.Instance.EnableWeightedLottery.GetAsBool();
 
             // Use reservoir sampling to select one item
-            var sampledIds = ReservoirSampleByQuality(itemTypeIds, 1, useWeightedSampling);
+            var sampledIds = ReservoirSampleByQuality(candidateIds, drawCount, useWeightedSampling);
             if (sampledIds.Count == 0)
             {
                 Log.Error("Failed to sample item for lottery");
                 context?.OnLotteryFailed();
-                return (false, null, false);
+                return (false, new List<Item>(), new List<bool>());
             }
 
-            int selectedItemTypeId = sampledIds[0];
+            if (sampledIds.Count < drawCount)
+            {
+                Log.Warning($"Requested {drawCount} lottery draws but only received {sampledIds.Count} samples.");
+                drawCount = sampledIds.Count;
+                clampedCountLong = drawCount;
+            }
+
+            if (drawCount <= 0)
+            {
+                context?.OnLotteryFailed();
+                return (false, new List<Item>(), new List<bool>());
+            }
 
             // Call context pre-lottery hook
             if (context != null && !await context.OnBeforeLotteryAsync())
             {
                 context.OnLotteryFailed();
-                return (false, null, false);
+                return (false, new List<Item>(), new List<bool>());
             }
 
             // Charge player
-            if (price > 0)
+            if (unitPrice > 0)
             {
-                if (!EconomyManager.Pay(new Cost(price), true, true))
+                long totalCost = unitPrice * clampedCountLong;
+                if (!EconomyManager.Pay(new Cost(totalCost), true, true))
                 {
-                    var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", price.ToString());
+                    var notEnoughMoneyMessage = Localizations.I18n.NotEnoughMoneyFormatKey.ToPlainText().Replace("{price}", totalCost.ToString());
                     NotificationText.Push(notEnoughMoneyMessage);
                     context?.OnLotteryFailed();
-                    return (false, null, false);
+                    return (false, new List<Item>(), new List<bool>());
                 }
             }
 
             // Instantiate item
-            Item? item = await ItemAssetsCollection.InstantiateAsync(selectedItemTypeId);
-            if (item == null)
+            var awardedItems = new List<Item>(drawCount);
+            foreach (var typeId in sampledIds.Take(drawCount))
             {
-                Log.Error($"Failed to instantiate lottery item: {selectedItemTypeId}");
+                var instantiated = await ItemAssetsCollection.InstantiateAsync(typeId);
+                if (instantiated == null)
+                {
+                    Log.Error($"Failed to instantiate lottery item: {typeId}");
+                    continue;
+                }
+
+                awardedItems.Add(instantiated);
+            }
+
+            if (awardedItems.Count == 0)
+            {
+                Log.Error("Failed to instantiate any lottery items.");
                 context?.OnLotteryFailed();
-                return (false, null, false);
+                return (false, new List<Item>(), new List<bool>());
             }
 
             // Play animation if requested
             if (playAnimation)
             {
-                await LotteryAnimation.Instance.PlayAsync(itemTypeIds, selectedItemTypeId, item.DisplayName, item.Icon);
+                var laneData = awardedItems
+                    .Select(item => new LotteryAnimation.LaneFinalData(item.TypeID, item.DisplayName, item.Icon, true))
+                    .ToList();
+
+                await LotteryAnimation.Instance.PlayAsync(candidateIds, laneData);
             }
 
             // Send to inventory or storage
-            var sentToStorage = !ItemUtilities.SendToPlayerCharacterInventory(item);
-            if (sentToStorage)
+            var sentToStorageFlags = new List<bool>(awardedItems.Count);
+            foreach (var item in awardedItems)
             {
-                Log.Warning($"Failed to send item to player inventory: {selectedItemTypeId}. Sending to storage.");
-                ItemUtilities.SendToPlayerStorage(item);
+                bool sentToStorage = !ItemUtilities.SendToPlayerCharacterInventory(item);
+                if (sentToStorage)
+                {
+                    Log.Warning($"Failed to send item to player inventory: {item.TypeID}. Sending to storage.");
+                    ItemUtilities.SendToPlayerStorage(item);
+                }
+
+                sentToStorageFlags.Add(sentToStorage);
+                context?.OnLotterySuccess(item, sentToStorage);
             }
 
-            // Call context success hook
-            context?.OnLotterySuccess(item, sentToStorage);
-
             // Update consecutive high level failure counter
-            var itemLevel = QualityUtils.GetCachedItemValueLevel(item);
-            if ((int)itemLevel >= (int)HIGH_LEVEL_THRESHOLD)
+            bool hasHighLevelReward = awardedItems.Any(it => (int)QualityUtils.GetCachedItemValueLevel(it) >= (int)HIGH_LEVEL_THRESHOLD);
+            if (hasHighLevelReward)
             {
                 consecutiveHighLevelFailures = 0; // Reset on high level item
             }
             else
             {
-                consecutiveHighLevelFailures++; // Increment on non-high level item
+                consecutiveHighLevelFailures += awardedItems.Count; // Increment per non-high level reward
             }
 
-            return (true, item, sentToStorage);
+            return (true, awardedItems, sentToStorageFlags);
         }
 
         public static async UniTask<List<Item>> PickRandomItemsByQualityAsync(ItemValueLevel level, int count)

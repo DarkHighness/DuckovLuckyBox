@@ -21,7 +21,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
             var context = new DefaultLotteryContext();
             await LotteryService.PerformLotteryWithContextAsync(
                 itemTypeIds: ItemUtils.LotteryItemCache.GetAllItemTypeIds(),
-                price: price,
+                unitPrice: price,
                 playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
                 context: context);
         }

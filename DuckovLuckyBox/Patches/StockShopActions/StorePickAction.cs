@@ -4,6 +4,7 @@ using System.Linq;
 using DuckovLuckyBox.Core;
 using DuckovLuckyBox.Core.Settings;
 using HarmonyLib;
+using Duckov.Economy;
 
 namespace DuckovLuckyBox.Patches.StockShopActions
 {
@@ -33,14 +34,21 @@ namespace DuckovLuckyBox.Patches.StockShopActions
             }
 
             // Get price from settings
-            long price = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
+            long unitPrice = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
+            // Determine the lottery count that can be performed with the current balance
+            int lotteryCount = 1;
+            while (lotteryCount < 3 && EconomyManager.IsEnough(new Cost(unitPrice * lotteryCount), true, true))
+            {
+                lotteryCount++;
+            }
 
             var candidateTypeIds = itemEntries.Select(entry => entry.ItemTypeID).ToList();
             var context = new StoreLotteryContext(target, itemEntries);
             await LotteryService.PerformLotteryWithContextAsync(
                     candidateTypeIds,
-                    price,
-                    playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
+                    lotteryCount,
+                    unitPrice,
+                    SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
                     context);
         }
     }

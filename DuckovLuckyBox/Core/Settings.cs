@@ -179,7 +179,8 @@ namespace DuckovLuckyBox.Core.Settings
     public static class DefaultSettings
     {
         // General Settings
-        public const bool EnableAnimation = true;
+    public const bool EnableAnimation = true;
+    public const bool EnableTripleLotteryAnimation = false;
         public const bool EnableDestroyButton = Constants.ModId != Constants.AnimationOnlyModId;
         public const bool EnableMeltButton = Constants.ModId != Constants.AnimationOnlyModId;
         public const bool EnableStockShopActions = Constants.ModId != Constants.AnimationOnlyModId;
@@ -212,6 +213,16 @@ namespace DuckovLuckyBox.Core.Settings
             Type = Type.Toggle,
             Category = Category.General,
             DefaultValue = DefaultSettings.EnableAnimation,
+        };
+
+        public SettingItem EnableTripleLotteryAnimation { get; set; } = new SettingItem
+        {
+            Key = "DuckovLuckyBox.Settings.EnableTripleLotteryAnimation",
+            Label = Localizations.I18n.SettingsEnableTripleLotteryAnimationKey,
+            Description = "DuckovLuckyBox.Settings.EnableTripleLotteryAnimation.Description",
+            Type = Type.Toggle,
+            Category = Category.General,
+            DefaultValue = DefaultSettings.EnableTripleLotteryAnimation,
         };
 
         public SettingItem EnableDestroyButton { get; set; } = new SettingItem
@@ -354,6 +365,7 @@ namespace DuckovLuckyBox.Core.Settings
             get
             {
                 yield return EnableAnimation;
+                yield return EnableTripleLotteryAnimation;
                 yield return EnableDestroyButton;
                 yield return EnableMeltButton;
                 yield return EnableDebug;

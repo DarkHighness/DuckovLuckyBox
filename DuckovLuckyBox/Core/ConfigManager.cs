@@ -12,6 +12,7 @@ namespace DuckovLuckyBox.Core.Settings
         // Default 0 means 'unspecified/old format' and will trigger migration
         public int Version = 0;
         public bool EnableAnimation = DefaultSettings.EnableAnimation;
+        public bool EnableTripleLotteryAnimation = DefaultSettings.EnableTripleLotteryAnimation;
         public bool EnableDestroyButton = DefaultSettings.EnableDestroyButton;
         public bool EnableMeltButton = DefaultSettings.EnableMeltButton;
         public bool EnableDebug = DefaultSettings.EnableDebug;
@@ -313,6 +314,7 @@ namespace DuckovLuckyBox.Core.Settings
             {
                 Version = CurrentConfigVersion,
                 EnableAnimation = settings.EnableAnimation.GetAsBool(),
+                EnableTripleLotteryAnimation = settings.EnableTripleLotteryAnimation.GetAsBool(),
                 EnableDestroyButton = settings.EnableDestroyButton.GetAsBool(),
                 EnableMeltButton = settings.EnableMeltButton.GetAsBool(),
                 EnableDebug = settings.EnableDebug.GetAsBool(),
@@ -338,7 +340,7 @@ namespace DuckovLuckyBox.Core.Settings
             try
             {
                 settings.EnableAnimation.Value = config.EnableAnimation;
-
+                settings.EnableTripleLotteryAnimation.Value = config.EnableTripleLotteryAnimation;
                 settings.EnableDestroyButton.Value = config.EnableDestroyButton;
                 settings.EnableMeltButton.Value = config.EnableMeltButton;
                 settings.EnableDebug.Value = config.EnableDebug;
@@ -363,6 +365,7 @@ namespace DuckovLuckyBox.Core.Settings
         {
             var settings = SettingManager.Instance;
             settings.EnableAnimation.OnValueChanged += OnSettingChanged;
+            settings.EnableTripleLotteryAnimation.OnValueChanged += OnSettingChanged;
             settings.EnableDestroyButton.OnValueChanged += OnSettingChanged;
             settings.EnableMeltButton.OnValueChanged += OnSettingChanged;
             settings.EnableDebug.OnValueChanged += OnSettingChanged;
@@ -380,8 +383,8 @@ namespace DuckovLuckyBox.Core.Settings
         private void UnsubscribeFromSettingChanges()
         {
             var settings = SettingManager.Instance;
-#pragma warning disable CS8601
             settings.EnableAnimation.OnValueChanged -= OnSettingChanged!;
+            settings.EnableTripleLotteryAnimation.OnValueChanged -= OnSettingChanged!;
             settings.EnableDestroyButton.OnValueChanged -= OnSettingChanged!;
             settings.EnableMeltButton.OnValueChanged -= OnSettingChanged!;
             settings.EnableDebug.OnValueChanged -= OnSettingChanged!;
@@ -394,7 +397,6 @@ namespace DuckovLuckyBox.Core.Settings
             settings.StorePickPrice.OnValueChanged -= OnSettingChanged!;
             settings.StreetPickPrice.OnValueChanged -= OnSettingChanged!;
             settings.MeltBasePrice.OnValueChanged -= OnSettingChanged!;
-#pragma warning restore CS8601
         }
 
         private void OnSettingChanged(object value)

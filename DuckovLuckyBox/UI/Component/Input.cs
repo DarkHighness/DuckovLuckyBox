@@ -70,10 +70,7 @@ namespace DuckovLuckyBox.UI.Component
 
     private void OnDestroy()
     {
-      if (inputField != null)
-      {
-        inputField.onEndEdit.RemoveListener(OnInputFieldEndEdit);
-      }
+      inputField?.onEndEdit.RemoveListener(OnInputFieldEndEdit);
       LocalizationManager.OnSetLanguage -= OnLanguageChanged;
     }
 

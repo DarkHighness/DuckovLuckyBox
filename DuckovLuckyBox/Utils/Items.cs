@@ -414,5 +414,74 @@ namespace DuckovLuckyBox
                 return _bulletItemCache;
             }
         }
+
+        // Utility method
+        private static int ConsumeItemFromInventory(Inventory inventory, Item item, int count, bool excludeItemInUse, ref int remainingToConsume)
+        {
+            if (inventory == null)
+            {
+                return 0;
+            }
+
+            var itemsToDetach = new List<Item>();
+            foreach (var invItem in inventory.Content)
+            {
+                if (invItem != null && invItem.TypeID == item.TypeID)
+                {
+                    if (invItem == item && excludeItemInUse)
+                    {
+                        continue; // Skip the item that is currently in use
+                    }
+
+                    if (invItem.Stackable && invItem.StackCount > remainingToConsume)
+                    {
+                        invItem.StackCount -= remainingToConsume;
+                        remainingToConsume = 0;
+                        break;
+                    }
+                    else
+                    {
+                        // Remove the entire stack
+                        itemsToDetach.Add(invItem);
+                        // StackCount must be 1
+                        remainingToConsume -= invItem.StackCount;
+                        if (remainingToConsume <= 0)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Detach items after iteration to avoid modifying collection during enumeration
+            foreach (var itemToDetach in itemsToDetach)
+            {
+               itemToDetach.Detach();
+            }
+
+            return count - remainingToConsume; // Return number of items consumed
+        }
+        public static int ConsumeItem(Item item, int count = 1, bool includeStorage = false, bool excludeItemInUse = true)
+        {
+            var character = ItemUtilities.GetCharacterMainControl(item);
+            if (character == null)
+            {
+                return 0;
+            }
+
+            var characterItem = character.CharacterItem;
+            var inventory = characterItem.Inventory;
+            int remainingToConsume = count;
+
+            int consumedFromInventory = ConsumeItemFromInventory(inventory, item, count, excludeItemInUse, ref remainingToConsume);
+            int consumedFromStorage = 0;
+            if (includeStorage && remainingToConsume > 0)
+            {
+                var storage = PlayerStorage.Inventory;
+                consumedFromStorage = ConsumeItemFromInventory(storage, item, remainingToConsume, excludeItemInUse, ref remainingToConsume);
+            }
+
+            return consumedFromInventory + consumedFromStorage;
+        }
     }
 }

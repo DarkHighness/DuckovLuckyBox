@@ -984,10 +984,7 @@ namespace DuckovLuckyBox.Core
 
         private void HideTooltip()
         {
-            if (_tooltipPanel != null)
-            {
-                _tooltipPanel.SetActive(false);
-            }
+            _tooltipPanel?.SetActive(false);
         }
 
         private void ForceClearContractInventory()
@@ -1130,7 +1127,7 @@ namespace DuckovLuckyBox.Core
                 if (item.StackCount < requiredGroupSize)
                 {
                     var template = Localizations.I18n.BulletMustBeFullStackKey.ToPlainText();
-                    var message = template != null ? template.Replace("{groupSize}", requiredGroupSize.ToString()) : null;
+                    var message = template?.Replace("{groupSize}", requiredGroupSize.ToString());
                     return ContractValidationResult.Invalid(category, quality, isFirstItem, message);
                 }
             }
