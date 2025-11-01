@@ -29,7 +29,7 @@ namespace DuckovLuckyBox.Core.Settings
 
     public class ConfigManager
     {
-        private const int CurrentConfigVersion = 2;
+        private const int CurrentConfigVersion = 3;
 
         // Create a timestamped backup of the current config file (if it exists).
         private void BackupConfigFile()
@@ -65,11 +65,14 @@ namespace DuckovLuckyBox.Core.Settings
                     {
                         case 0:
                         case 1:
+                        case 2:
                             // For v0 -> v1 migration we intentionally reset all settings to defaults.
-                            Log.Info("Migrating config v0 -> v1/v2: resetting all settings to defaults.");
+                            Log.Info("Migrating config v0 -> v1/v2/v3: resetting all settings to defaults.");
 
-                            var defaultConfig = new ConfigData();
-                            defaultConfig.Version = CurrentConfigVersion;
+                            var defaultConfig = new ConfigData
+                            {
+                                Version = CurrentConfigVersion
+                            };
 
                             // Return early with default config to indicate migration result
                             return defaultConfig;
@@ -86,8 +89,10 @@ namespace DuckovLuckyBox.Core.Settings
             {
                 Log.Error($"Error migrating config: {ex.Message}");
                 // On failure, fall back to defaults
-                var defaultConfig = new ConfigData();
-                defaultConfig.Version = CurrentConfigVersion;
+                var defaultConfig = new ConfigData
+                {
+                    Version = CurrentConfigVersion
+                };
                 return defaultConfig;
             }
 
