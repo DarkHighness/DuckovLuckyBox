@@ -9,7 +9,6 @@ namespace DuckovLuckyBox.Patches
         public static void Postfix()
         {
             // Destroy all UI elements created by the mod when the level is initialized (i.e., when returning to the main menu, returning to the base).
-            ModBehaviour.SettingsUI?.Destroy();
             ItemOperationMenuUI.Instance.Destroy();
             StockShopViewUI.Instance.Destroy();
             RecycleSessionUI.Instance.Destroy();

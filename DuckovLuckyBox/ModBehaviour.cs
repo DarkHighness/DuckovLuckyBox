@@ -17,7 +17,6 @@ namespace DuckovLuckyBox
 
     public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
-        public static SettingsUI? SettingsUI = null;
         private Harmony? harmony = null;
 
         void Awake()
@@ -39,9 +38,6 @@ namespace DuckovLuckyBox
             harmony = new Harmony(Constants.ModId);
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             Log.Debug("Harmony patches applied.");
-
-            SettingsUI = gameObject.AddComponent<SettingsUI>();
-            Log.Debug("Settings UI component created.");
 
             Constants.Sound.LoadSounds();
 
