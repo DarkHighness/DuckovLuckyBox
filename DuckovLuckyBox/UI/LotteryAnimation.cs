@@ -208,7 +208,7 @@ namespace DuckovLuckyBox.UI
         private const float SkippedFadeDuration = 0.1f;
         private const float CelebrateDuration = 0.5f;
         private const float PointerThickness = 12f;
-        private const float ViewportHorizontalPadding = 120f;
+        private const float ViewportHorizontalPadding = 8f;
         private const float LaneVerticalSpacing = 48f;
         private const float MinLaneHeight = 140f;
         private const float MaxLaneHeight = 240f;
@@ -390,6 +390,37 @@ namespace DuckovLuckyBox.UI
                 return;
             }
 
+            var laneDisplayNames = new Dictionary<int, string>();
+            foreach (var entry in activeLanes)
+            {
+                laneDisplayNames[entry.originalIndex] = string.Empty;
+            }
+
+            void UpdateAggregatedResultText()
+            {
+                if (activeLanes.Count == 0) return;
+
+                var orderedNames = activeLanes
+                    .Select(a => laneDisplayNames.TryGetValue(a.originalIndex, out var name) ? name ?? string.Empty : string.Empty)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .ToList();
+
+                string combinedText = orderedNames.Count == 0 ? string.Empty : string.Join(" ", orderedNames);
+
+                foreach (var activeLane in activeLanes)
+                {
+                    activeLane.lane.SetResultText(combinedText);
+                }
+            }
+
+            void UpdateLaneResultLabel(int laneIndex, string label)
+            {
+                laneDisplayNames[laneIndex] = label ?? string.Empty;
+                UpdateAggregatedResultText();
+            }
+
+            UpdateAggregatedResultText();
+
             _isAnimating = true;
             _skipRequested = false;
 
@@ -419,7 +450,7 @@ namespace DuckovLuckyBox.UI
                 {
                     bool canHandleSkip = i == primaryLaneIndex;
                     var entry = activeLanes[i];
-                    rollTasks.Add(PerformPhysicsBasedRoll(entry.lane, entry.plan, canHandleSkip, sfxGroup));
+                    rollTasks.Add(PerformPhysicsBasedRoll(entry.lane, entry.plan, canHandleSkip, sfxGroup, entry.originalIndex, UpdateLaneResultLabel));
                 }
 
                 await UniTask.WhenAll(rollTasks);
@@ -430,7 +461,7 @@ namespace DuckovLuckyBox.UI
                     for (int i = 0; i < activeLanes.Count; i++)
                     {
                         var entry = activeLanes[i];
-                        celebrationTasks.Add(AnimateCelebration(entry.lane, entry.plan, entry.result.TypeId, entry.result.IsRewardLane, sfxGroup));
+                        celebrationTasks.Add(AnimateCelebration(entry.lane, entry.plan, entry.result.TypeId, entry.result.IsRewardLane, sfxGroup, entry.originalIndex, UpdateLaneResultLabel));
                     }
 
                     await UniTask.WhenAll(celebrationTasks);
@@ -439,7 +470,7 @@ namespace DuckovLuckyBox.UI
                     for (int i = 0; i < activeLanes.Count; i++)
                     {
                         var entry = activeLanes[i];
-                        revealTasks.Add(RevealResult(entry.lane, entry.result.DisplayName));
+                        revealTasks.Add(RevealResult(entry.lane, entry.result.DisplayName, entry.originalIndex, UpdateLaneResultLabel));
                     }
 
                     await UniTask.WhenAll(revealTasks);
@@ -448,7 +479,7 @@ namespace DuckovLuckyBox.UI
                 {
                     foreach (var entry in activeLanes)
                     {
-                        entry.lane.SetResultText(string.Empty);
+                        UpdateLaneResultLabel(entry.originalIndex, string.Empty);
                     }
                 }
 
@@ -1029,7 +1060,7 @@ namespace DuckovLuckyBox.UI
             return distanceInSlots * SlotFullWidth;
         }
 
-        private async UniTask PerformPhysicsBasedRoll(LaneUI lane, AnimationPlan plan, bool canHandleSkipInput, ChannelGroup sfxGroup)
+        private async UniTask PerformPhysicsBasedRoll(LaneUI lane, AnimationPlan plan, bool canHandleSkipInput, ChannelGroup sfxGroup, int laneIndex, Action<int, string> updateLaneResult)
         {
             if (lane.ItemsContainer == null) return;
 
@@ -1108,7 +1139,7 @@ namespace DuckovLuckyBox.UI
                         var currentSlot = plan.Slots[currentIndex];
                         currentSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f);
                         currentSlot.Rect.localScale = Vector3.one * 1.05f;
-                        lane.SetResultText(currentSlot.DisplayName);
+                        updateLaneResult?.Invoke(laneIndex, currentSlot.DisplayName);
                     }
 
                     lastHighlightedIndex = currentIndex;
@@ -1132,7 +1163,7 @@ namespace DuckovLuckyBox.UI
             finalSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f);
             finalSlot.Rect.localScale = Vector3.one * 1.05f;
 
-            lane.SetResultText(finalSlot.DisplayName);
+            updateLaneResult?.Invoke(laneIndex, finalSlot.DisplayName);
         }
 
         private int FindCenteredSlotIndex(AnimationPlan plan, float currentOffset)
@@ -1156,11 +1187,13 @@ namespace DuckovLuckyBox.UI
             return closestIndex;
         }
 
-        private async UniTask AnimateCelebration(LaneUI lane, AnimationPlan plan, int finalTypeId, bool isRewardLane, ChannelGroup sfxGroup)
+        private async UniTask AnimateCelebration(LaneUI lane, AnimationPlan plan, int finalTypeId, bool isRewardLane, ChannelGroup sfxGroup, int laneIndex, Action<int, string> updateLaneResult)
         {
             var slot = plan.FinalSlot;
             var frame = slot.Frame;
             var icon = slot.Icon;
+
+            updateLaneResult?.Invoke(laneIndex, slot.DisplayName);
 
             var initialFrameColor = SlotFrameColor;
             var targetFrameColor = FinalFrameColor;
@@ -1244,10 +1277,10 @@ namespace DuckovLuckyBox.UI
             }
         }
 
-        private async UniTask RevealResult(LaneUI lane, string finalDisplayName)
+        private async UniTask RevealResult(LaneUI lane, string finalDisplayName, int laneIndex, Action<int, string> updateLaneResult)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(0.5f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
-            lane.SetResultText(finalDisplayName);
+            updateLaneResult?.Invoke(laneIndex, finalDisplayName);
             await UniTask.Delay(TimeSpan.FromSeconds(0.75f), DelayType.DeltaTime, PlayerLoopTiming.Update, default);
         }
 
