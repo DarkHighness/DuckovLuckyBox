@@ -43,7 +43,7 @@ A mod for "Escape from Duckov" that allows players to use additional features in
 
 ### Settings
 
-- ⚙️ Press F1 to open the settings panel
+- ⚙️ The settings panel has been integrated into the game settings
   - Enable/disable lottery animation
   - Enable/disable high-quality item sound effects (customize sound file path)
   - Customize the cost of shop features (default: 100) (both account balance and cash can be used for payment)
@@ -57,7 +57,6 @@ A mod for "Escape from Duckov" that allows players to use additional features in
 ## Future Plans
 
 1. 📦 Add "Lucky Box" item that randomly draws an item or BUFF when opened
-2. ~~Settings persistence~~ ✅ **Completed!**
 
 ## Configuration
 
@@ -66,9 +65,6 @@ Settings are automatically saved to `{Application.persistentDataPath}/Duckov.Luc
 The configuration file supports:
 
 - **EnableAnimation**: Enable/disable lottery animation (default: `true`)
-- **SettingsHotkey**: Hotkey to open settings panel (default: `"F1"`)
-  - Supports modifier keys, e.g.: `"Ctrl+F1"`, `"Shift+F2"`, `"Alt+F3"`, `"Ctrl+Shift+F4"`
-  - Available modifiers: `Ctrl`, `Shift`, `Alt`
 - **EnableHighQualitySound**: Enable/disable high-quality item sound effects (default: `true`)
 - **HighQualitySoundFilePath**: Custom file path for high-quality item sound effects (default: empty string, uses default sound)
  - **RefreshStockPrice**: Cost to refresh merchant inventory (default: `100`, range: 0-10000, step: 100)
