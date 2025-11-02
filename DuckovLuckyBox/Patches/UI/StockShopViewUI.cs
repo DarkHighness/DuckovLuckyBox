@@ -222,11 +222,12 @@ namespace DuckovLuckyBox.Core
             EnsureActionContainer(merchantNameText);
             CreateActionButtons(merchantNameText);
 
-            // Hide if disabled
-            if (!SettingManager.Instance.EnableStockShopActions.GetAsBool())
-            {
-                _actionsContainer?.gameObject.SetActive(false);
-            }
+            // Hide container if no actions are enabled
+            bool anyActionEnabled = SettingManager.Instance.EnableRefreshStock.GetAsBool() ||
+                                    SettingManager.Instance.EnableStorePick.GetAsBool() ||
+                                    SettingManager.Instance.EnableStreetPick.GetAsBool() ||
+                                    SettingManager.Instance.EnableRecycle.GetAsBool();
+            _actionsContainer?.gameObject.SetActive(anyActionEnabled);
         }
 
         private void EnsureActionContainer(TextMeshProUGUI merchantNameText)
@@ -245,7 +246,7 @@ namespace DuckovLuckyBox.Core
                 _actionsContainer.anchorMin = new Vector2(0.5f, 0f);
                 _actionsContainer.anchorMax = new Vector2(0.5f, 0f);
                 _actionsContainer.pivot = new Vector2(0.5f, 0f);
-                _actionsContainer.anchoredPosition = new Vector2(0f, 20f);
+                _actionsContainer.anchoredPosition = new Vector2(0f, 40f);
 
                 float width = merchantNameText.rectTransform.rect.width;
                 if (width <= 0f) width = ActionsContainerFallbackWidth;
@@ -269,20 +270,46 @@ namespace DuckovLuckyBox.Core
 
             foreach (var action in _actionManager.GetAllActions())
             {
+                string actionName = action.GetType().Name;
+                bool isEnabled = false;
+
+                switch (actionName)
+                {
+                    case nameof(RefreshStockAction):
+                        isEnabled = SettingManager.Instance.EnableRefreshStock.GetAsBool();
+                        break;
+                    case nameof(StorePickAction):
+                        isEnabled = SettingManager.Instance.EnableStorePick.GetAsBool();
+                        break;
+                    case nameof(StreetPickAction):
+                        isEnabled = SettingManager.Instance.EnableStreetPick.GetAsBool();
+                        break;
+                    case nameof(RecycleAction):
+                        isEnabled = SettingManager.Instance.EnableRecycle.GetAsBool();
+                        break;
+                    default:
+                        isEnabled = true; // Default to enabled for unknown actions
+                        break;
+                }
+
+                // Always create the button, just set active based on setting
                 var actionText = UnityEngine.Object.Instantiate(merchantNameText, _actionsContainer);
-                ConfigureActionLabel(actionText, action.GetLocalizationKey().ToPlainText());
+                ConfigureActionLabel(actionText);
 
                 var button = actionText.gameObject.AddComponent<Button>();
                 ConfigureActionButton(button, actionText);
 
-                string actionName = action.GetType().Name;
+                // Set active based on setting
+                actionText.gameObject.SetActive(isEnabled);
+
                 _actionTexts[actionName] = actionText;
                 _actionButtons[actionName] = button;
 
                 // Bind click event
                 button.onClick.AddListener(() => _doubleClickDetector?.HandleClick(actionName));
-
             }
+
+            UpdateButtonTexts();
 
             Log.Debug($"Created {_actionTexts.Count} action buttons");
         }
@@ -315,53 +342,64 @@ namespace DuckovLuckyBox.Core
 
         private void UpdateButtonTexts()
         {
-            if (_actionTexts.Count == 0) return;
+            UpdateRefreshStockButtonText();
+            UpdateStorePickButtonText();
+            UpdateStreetPickButtonText();
+            UpdateRecycleButtonText();
+        }
+
+        private void UpdateRefreshStockButtonText()
+        {
+            if (!_actionTexts.TryGetValue(nameof(RefreshStockAction), out var refreshText)) return;
 
             long refreshPrice = SettingManager.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
-            long storePickPrice = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
-            long streetPickPrice = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
-
             var freeText = Localizations.I18n.FreeKey.ToPlainText();
+            var baseText = Localizations.I18n.RefreshStockKey.ToPlainText();
+            var priceText = refreshPrice > 0 ? $" (${refreshPrice})" : $" ({freeText})";
+            var fullText = $"{baseText}{priceText}";
+            refreshText.text = fullText;
+        }
 
-            if (_actionTexts.TryGetValue(nameof(RefreshStockAction), out var refreshText))
-            {
-                var baseText = Localizations.I18n.RefreshStockKey.ToPlainText();
-                var priceText = refreshPrice > 0 ? $" (${refreshPrice})" : $" ({freeText})";
-                var fullText = $"{baseText}{priceText}";
-            }
+        private void UpdateStorePickButtonText()
+        {
+            if (!_actionTexts.TryGetValue(nameof(StorePickAction), out var storePickText)) return;
 
-            if (_actionTexts.TryGetValue(nameof(StorePickAction), out var storePickText))
-            {
-                var baseText = Localizations.I18n.StorePickKey.ToPlainText();
-                var priceText = storePickPrice > 0 ? $" (${storePickPrice})" : $" ({freeText})";
-                var doubleClickText = SettingManager.Instance.EnableTripleLotteryAnimation.GetAsBool()
-                    ? $" ({Localizations.I18n.DoubleClickToTripleLotteryKey.ToPlainText()})"
-                    : string.Empty;
+            long storePickPrice = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
+            var freeText = Localizations.I18n.FreeKey.ToPlainText();
+            var baseText = Localizations.I18n.StorePickKey.ToPlainText();
+            var priceText = storePickPrice > 0 ? $" (${storePickPrice})" : $" ({freeText})";
+            var doubleClickText = SettingManager.Instance.EnableTripleLotteryAnimation.GetAsBool()
+                ? $" ({Localizations.I18n.DoubleClickToTripleLotteryKey.ToPlainText()})"
+                : string.Empty;
 
-                var fullText = $"{baseText}{priceText}{doubleClickText}";
-                storePickText.text = fullText;
-            }
+            var fullText = $"{baseText}{priceText}{doubleClickText}";
+            storePickText.text = fullText;
+        }
 
-            if (_actionTexts.TryGetValue(nameof(StreetPickAction), out var streetPickText))
-            {
-                var baseText = Localizations.I18n.StreetPickKey.ToPlainText();
-                var priceText = streetPickPrice > 0 ? $" (${streetPickPrice})" : $" ({freeText})";
-                var doubleClickText = SettingManager.Instance.EnableTripleLotteryAnimation.GetAsBool()
-                    ? $" ({Localizations.I18n.DoubleClickToTripleLotteryKey.ToPlainText()})"
-                    : string.Empty;
-                var fullText = $"{baseText}{priceText}{doubleClickText}";
-                streetPickText.text = fullText;
-            }
+        private void UpdateStreetPickButtonText()
+        {
+            if (!_actionTexts.TryGetValue(nameof(StreetPickAction), out var streetPickText)) return;
 
-            if (_actionTexts.TryGetValue(nameof(RecycleAction), out var recycleText))
-            {
-                // Display "Close Recycle" when the recycle view is open, otherwise display "Open Recycle".
-                // This decision is based solely on the IsOpen flag and does not depend on HasItems.
-                var text = RecycleSessionUI.Instance.IsOpen
-                    ? Localizations.I18n.CloseKey.ToPlainText() + " " + Localizations.I18n.RecycleKey.ToPlainText()
-                    : Localizations.I18n.OpenKey.ToPlainText() + " " + Localizations.I18n.RecycleKey.ToPlainText();
-                recycleText.text = text;
-            }
+            long streetPickPrice = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
+            var freeText = Localizations.I18n.FreeKey.ToPlainText();
+            var baseText = Localizations.I18n.StreetPickKey.ToPlainText();
+            var priceText = streetPickPrice > 0 ? $" (${streetPickPrice})" : $" ({freeText})";
+            var doubleClickText = SettingManager.Instance.EnableTripleLotteryAnimation.GetAsBool()
+                ? $" ({Localizations.I18n.DoubleClickToTripleLotteryKey.ToPlainText()})"
+                : string.Empty;
+            var fullText = $"{baseText}{priceText}{doubleClickText}";
+            streetPickText.text = fullText;
+        }
+
+        private void UpdateRecycleButtonText()
+        {
+            if (!_actionTexts.TryGetValue(nameof(RecycleAction), out var recycleText)) return;
+
+            // Display "Close Recycle" when the recycle view is open, otherwise display "Open Recycle".
+            var text = RecycleSessionUI.Instance.IsOpen
+                ? Localizations.I18n.CloseKey.ToPlainText() + " " + Localizations.I18n.RecycleKey.ToPlainText()
+                : Localizations.I18n.OpenKey.ToPlainText() + " " + Localizations.I18n.RecycleKey.ToPlainText();
+            recycleText.text = text;
         }
 
         private void SubscribeToPriceChanges()
@@ -369,24 +407,74 @@ namespace DuckovLuckyBox.Core
             if (_priceChangeSubscribed) return;
 
             var settings = SettingManager.Instance;
-            settings.RefreshStockPrice.OnValueChanged += _ => UpdateButtonTexts();
-            settings.StorePickPrice.OnValueChanged += _ => UpdateButtonTexts();
-            settings.StreetPickPrice.OnValueChanged += _ => UpdateButtonTexts();
-            settings.EnableStockShopActions.OnValueChanged += OnEnableStockShopActionsChanged;
+            settings.RefreshStockPrice.OnValueChanged += _ => UpdateRefreshStockButtonText();
+            settings.StorePickPrice.OnValueChanged += _ => UpdateStorePickButtonText();
+            settings.StreetPickPrice.OnValueChanged += _ => UpdateStreetPickButtonText();
+            settings.EnableRefreshStock.OnValueChanged += OnEnableRefreshStockChanged;
+            settings.EnableStorePick.OnValueChanged += OnEnableStorePickChanged;
+            settings.EnableStreetPick.OnValueChanged += OnEnableStreetPickChanged;
+            settings.EnableRecycle.OnValueChanged += OnEnableRecycleChanged;
 
             _priceChangeSubscribed = true;
             Log.Debug("Subscribed to price change events");
         }
 
-        private void OnEnableStockShopActionsChanged(object value)
+        private void OnEnableRefreshStockChanged(object value)
         {
             bool enabled = value is bool b && b;
-            _actionsContainer?.gameObject.SetActive(enabled);
+            if (_actionTexts.TryGetValue(nameof(RefreshStockAction), out var text))
+            {
+                text.gameObject.SetActive(enabled);
+            }
+            UpdateContainerVisibility();
+            ForceRebuildLayout();
         }
 
-        private void ConfigureActionLabel(TextMeshProUGUI label, string text)
+        private void OnEnableStorePickChanged(object value)
         {
-            label.text = text;
+            bool enabled = value is bool b && b;
+            if (_actionTexts.TryGetValue(nameof(StorePickAction), out var text))
+            {
+                text.gameObject.SetActive(enabled);
+            }
+            UpdateContainerVisibility();
+            ForceRebuildLayout();
+        }
+
+        private void OnEnableStreetPickChanged(object value)
+        {
+            bool enabled = value is bool b && b;
+            if (_actionTexts.TryGetValue(nameof(StreetPickAction), out var text))
+            {
+                text.gameObject.SetActive(enabled);
+            }
+            UpdateContainerVisibility();
+            ForceRebuildLayout();
+        }
+
+        private void OnEnableRecycleChanged(object value)
+        {
+            bool enabled = value is bool b && b;
+            if (_actionTexts.TryGetValue(nameof(RecycleAction), out var text))
+            {
+                text.gameObject.SetActive(enabled);
+            }
+            UpdateContainerVisibility();
+            ForceRebuildLayout();
+        }
+
+        private void UpdateContainerVisibility()
+        {
+            bool anyActionEnabled = SettingManager.Instance.EnableRefreshStock.GetAsBool() ||
+                                    SettingManager.Instance.EnableStorePick.GetAsBool() ||
+                                    SettingManager.Instance.EnableStreetPick.GetAsBool() ||
+                                    SettingManager.Instance.EnableRecycle.GetAsBool();
+            _actionsContainer?.gameObject.SetActive(anyActionEnabled);
+        }
+
+        private void ConfigureActionLabel(TextMeshProUGUI label)
+        {
+            label.text = string.Empty;
             label.margin = Vector4.zero;
             label.alignment = TextAlignmentOptions.Center;
             label.enableAutoSizing = false;
@@ -397,11 +485,12 @@ namespace DuckovLuckyBox.Core
             rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            rectTransform.sizeDelta = new Vector2(0f, ActionLabelPreferredHeight);
+            // Increase button width for better click area
+            rectTransform.sizeDelta = new Vector2(Mathf.Max(200f, label.preferredWidth + ActionLabelExtraWidth), ActionLabelPreferredHeight);
 
             var layoutElement = label.GetComponent<LayoutElement>() ?? label.gameObject.AddComponent<LayoutElement>();
             layoutElement.preferredHeight = ActionLabelPreferredHeight;
-            layoutElement.preferredWidth = Mathf.Max(ActionLabelMinWidth, label.preferredWidth + ActionLabelExtraWidth);
+            layoutElement.preferredWidth = Mathf.Max(200f, label.preferredWidth + ActionLabelExtraWidth);
             layoutElement.flexibleWidth = 0f;
         }
 
@@ -438,9 +527,16 @@ namespace DuckovLuckyBox.Core
                 return;
             }
 
-            // Show container if enabled in settings
-            bool enabled = SettingManager.Instance.EnableStockShopActions.GetAsBool();
-            _actionsContainer.gameObject.SetActive(enabled);
+            // Update container visibility based on individual settings
+            UpdateContainerVisibility();
+        }
+
+        private void ForceRebuildLayout()
+        {
+            if (_actionsContainer != null)
+            {
+                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(_actionsContainer);
+            }
         }
     }
 }

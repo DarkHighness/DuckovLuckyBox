@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using FMOD;
 using FMODUnity;
 using DuckovLuckyBox.Core;
+using DuckovLuckyBox.Core.Settings;
 
 namespace DuckovLuckyBox.UI
 {
@@ -365,7 +366,10 @@ namespace DuckovLuckyBox.UI
                 float velocityAtDecelEnd = laneVelocityAtDecelerations[Mathf.Min(i, laneVelocityAtDecelerations.Count - 1)];
                 float totalCurveDuration = laneTotalCurveDurations[Mathf.Min(i, laneTotalCurveDurations.Count - 1)];
 
-                Log.Debug($"[LotteryAnimation] Lane {lane.Name} initial velocity: {initialVelocityInSlots:F2} slots/s, decelDuration: {decelerationDuration:F2}s, endVel: {velocityAtDecelEnd:F2} slots/s, totalDuration: {totalCurveDuration:F2}s, direction: {(reverseDirection ? "RightToLeft" : "LeftToRight")}");
+                if (SettingManager.Instance.EnableDebug.GetAsBool())
+                {
+                    Log.Debug($"[LotteryAnimation] Lane {lane.Name} initial velocity: {initialVelocityInSlots:F2} slots/s, decelDuration: {decelerationDuration:F2}s, endVel: {velocityAtDecelEnd:F2} slots/s, totalDuration: {totalCurveDuration:F2}s, direction: {(reverseDirection ? "RightToLeft" : "LeftToRight")}");
+                }
 
                 if (!TryBuildAnimationPlan(lane, candidatePool, laneResult.TypeId, laneResult.Icon, initialVelocityInSlots, decelerationDuration, velocityAtDecelEnd, totalCurveDuration, reverseDirection, out var plan))
                 {

@@ -42,7 +42,10 @@ namespace DuckovLuckyBox.Core
             public static readonly string SettingsEnableWeightedLotteryKey = "UI_SettingsEnableWeightedLottery";
             public static readonly string SettingsEnableHighQualitySoundKey = "UI_SettingsEnableHighQualitySound";
             public static readonly string SettingsHighQualitySoundFilePathKey = "UI_SettingsHighQualitySoundFile";
-            public static readonly string SettingsEnableStockShopActionsKey = "UI_SettingsEnableStockShopActions";
+            public static readonly string SettingsEnableRefreshStockKey = "UI_SettingsEnableRefreshStock";
+            public static readonly string SettingsEnableStorePickKey = "UI_SettingsEnableStorePick";
+            public static readonly string SettingsEnableStreetPickKey = "UI_SettingsEnableStreetPick";
+            public static readonly string SettingsEnableRecycleKey = "UI_SettingsEnableRecycle";
             public static readonly string SettingsEnableTripleLotteryAnimationKey = "UI_SettingsEnableTripleLotteryAnimation";
             public static readonly string RecyclingFailedKey = "UI_RecyclingFailed";
             public static readonly string ItemIsNullKey = "UI_ItemIsNull";
@@ -111,7 +114,10 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableWeightedLotteryKey, "Enable Weighted Lottery" },
             { I18n.SettingsEnableHighQualitySoundKey, "Enable High Quality Item Sound" },
             { I18n.SettingsHighQualitySoundFilePathKey, "High Quality Item Sound File" },
-            { I18n.SettingsEnableStockShopActionsKey, "Enable Shop Actions" },
+            { I18n.SettingsEnableRefreshStockKey, "Enable Refresh Stock" },
+            { I18n.SettingsEnableStorePickKey, "Enable Store Pick" },
+            { I18n.SettingsEnableStreetPickKey, "Enable Street Pick" },
+            { I18n.SettingsEnableRecycleKey, "Enable Recycle" },
             { I18n.SettingsEnableTripleLotteryAnimationKey, "Enable Triple Lottery Animation" },
             { I18n.DoubleClickToTripleLotteryKey, "Double click to roll more times." },
             { I18n.RecyclingFailedKey, "Recycling failed." },
@@ -175,7 +181,10 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableWeightedLotteryKey, "启用权重抽奖" },
             { I18n.SettingsEnableHighQualitySoundKey, "启用高等级物品音效" },
             { I18n.SettingsHighQualitySoundFilePathKey, "高等级物品音效文件" },
-            { I18n.SettingsEnableStockShopActionsKey, "启用商店动作" },
+            { I18n.SettingsEnableRefreshStockKey, "启用刷新库存" },
+            { I18n.SettingsEnableStorePickKey, "启用商人抽奖" },
+            { I18n.SettingsEnableStreetPickKey, "启用街边抽奖" },
+            { I18n.SettingsEnableRecycleKey, "启用汰换合同" },
             { I18n.SettingsEnableTripleLotteryAnimationKey, "启用三连抽动画" },
             { I18n.RecyclingFailedKey, "回收失败。" },
             { I18n.ItemIsNullKey, "物品为空。" },

@@ -19,7 +19,10 @@ namespace DuckovLuckyBox.Core.Settings
         public bool EnableUseToCreateItemPatch = DefaultSettings.EnableUseToCreateItemPatch;
         public bool EnableWeightedLottery = DefaultSettings.EnableWeightedLottery;
         public bool EnableHighQualitySound = DefaultSettings.EnableHighQualitySound;
-        public bool EnableStockShopActions = DefaultSettings.EnableStockShopActions;
+        public bool EnableRefreshStock = DefaultSettings.EnableRefreshStock;
+        public bool EnableStorePick = DefaultSettings.EnableStorePick;
+        public bool EnableStreetPick = DefaultSettings.EnableStreetPick;
+        public bool EnableRecycle = DefaultSettings.EnableRecycle;
         public string HighQualitySoundFilePath = DefaultSettings.HighQualitySoundFilePath;
         public long RefreshStockPrice = DefaultSettings.RefreshStockPrice;
         public long StorePickPrice = DefaultSettings.StorePickPrice;
@@ -30,7 +33,7 @@ namespace DuckovLuckyBox.Core.Settings
 
     public class ConfigManager
     {
-        private const int CurrentConfigVersion = 4;
+        private const int CurrentConfigVersion = 5;
 
         // Create a timestamped backup of the current config file (if it exists).
         private void BackupConfigFile()
@@ -54,15 +57,14 @@ namespace DuckovLuckyBox.Core.Settings
         // Migrate a loaded ConfigData up to CurrentConfigVersion. Returns migrated config.
         private ConfigData MigrateConfig(ConfigData config)
         {
-            int ver = config.Version;
-            Log.Info($"Starting migration: config version {ver} -> {CurrentConfigVersion}");
+            Log.Info($"Starting migration: config version {config.Version} -> {CurrentConfigVersion}");
 
             try
             {
                 // Sequential migrations: apply each version upgrade step
-                while (ver < CurrentConfigVersion)
+                while (config.Version < CurrentConfigVersion)
                 {
-                    switch (ver)
+                    switch (config.Version)
                     {
                         case 0:
                         case 1:
@@ -70,19 +72,21 @@ namespace DuckovLuckyBox.Core.Settings
                         case 3:
                             // For v0 -> v1 migration we intentionally reset all settings to defaults.
                             Log.Info("Migrating config v0 -> v1/v2/v3/v4: resetting all settings to defaults.");
-
-                            var defaultConfig = new ConfigData
+                            // Return early with default config to indicate migration result
+                            return new ConfigData
                             {
                                 Version = CurrentConfigVersion
                             };
-
-                            // Return early with default config to indicate migration result
-                            return defaultConfig;
+                        case 4:
+                            // v4 -> v5: Added individual stock shop action settings
+                            // New fields have correct defaults, so no action needed
+                            Log.Info("Migrating config v4 -> v5: Added individual stock shop action settings.");
+                            config.Version = 5;
+                            break;
                         default:
                             // Unknown older version: set to current and stop
-                            ver = CurrentConfigVersion;
-                            config.Version = ver;
-                            Log.Error($"Unknown config version encountered during migration; setting to {ver}.");
+                            config.Version = CurrentConfigVersion;
+                            Log.Error($"Unknown config version encountered during migration; setting to {CurrentConfigVersion}.");
                             break;
                     }
                 }
@@ -292,6 +296,11 @@ namespace DuckovLuckyBox.Core.Settings
                 // File writing
                 if (jsonCreated && json != null)
                 {
+                    if (SettingManager.Instance.EnableDebug.GetAsBool())
+                    {
+                        Log.Debug($"Saving config JSON:\n{json}");
+                    }
+
                     try
                     {
                         File.WriteAllText(configFilePath, json);
@@ -322,7 +331,10 @@ namespace DuckovLuckyBox.Core.Settings
                 EnableUseToCreateItemPatch = settings.EnableUseToCreateItemPatch.GetAsBool(),
                 EnableWeightedLottery = settings.EnableWeightedLottery.GetAsBool(),
                 EnableHighQualitySound = settings.EnableHighQualitySound.GetAsBool(),
-                EnableStockShopActions = settings.EnableStockShopActions.GetAsBool(),
+                EnableRefreshStock = settings.EnableRefreshStock.GetAsBool(),
+                EnableStorePick = settings.EnableStorePick.GetAsBool(),
+                EnableStreetPick = settings.EnableStreetPick.GetAsBool(),
+                EnableRecycle = settings.EnableRecycle.GetAsBool(),
                 HighQualitySoundFilePath = settings.HighQualitySoundFilePath.GetAsString(),
                 RefreshStockPrice = settings.RefreshStockPrice.GetAsLong(),
                 StorePickPrice = settings.StorePickPrice.GetAsLong(),
@@ -348,7 +360,10 @@ namespace DuckovLuckyBox.Core.Settings
                 settings.EnableUseToCreateItemPatch.Value = config.EnableUseToCreateItemPatch;
                 settings.EnableWeightedLottery.Value = config.EnableWeightedLottery;
                 settings.EnableHighQualitySound.Value = config.EnableHighQualitySound;
-                settings.EnableStockShopActions.Value = config.EnableStockShopActions;
+                settings.EnableRefreshStock.Value = config.EnableRefreshStock;
+                settings.EnableStorePick.Value = config.EnableStorePick;
+                settings.EnableStreetPick.Value = config.EnableStreetPick;
+                settings.EnableRecycle.Value = config.EnableRecycle;
                 settings.HighQualitySoundFilePath.Value = config.HighQualitySoundFilePath ?? DefaultSettings.HighQualitySoundFilePath;
                 settings.RefreshStockPrice.Value = config.RefreshStockPrice;
                 settings.StorePickPrice.Value = config.StorePickPrice;
@@ -373,7 +388,6 @@ namespace DuckovLuckyBox.Core.Settings
             settings.EnableUseToCreateItemPatch.OnValueChanged += OnSettingChanged;
             settings.EnableWeightedLottery.OnValueChanged += OnSettingChanged;
             settings.EnableHighQualitySound.OnValueChanged += OnSettingChanged;
-            settings.EnableStockShopActions.OnValueChanged += OnSettingChanged;
             settings.HighQualitySoundFilePath.OnValueChanged += OnSettingChanged;
             settings.RefreshStockPrice.OnValueChanged += OnSettingChanged;
             settings.StorePickPrice.OnValueChanged += OnSettingChanged;
@@ -392,7 +406,6 @@ namespace DuckovLuckyBox.Core.Settings
             settings.EnableUseToCreateItemPatch.OnValueChanged -= OnSettingChanged!;
             settings.EnableWeightedLottery.OnValueChanged -= OnSettingChanged!;
             settings.EnableHighQualitySound.OnValueChanged -= OnSettingChanged!;
-            settings.EnableStockShopActions.OnValueChanged -= OnSettingChanged!;
             settings.HighQualitySoundFilePath.OnValueChanged -= OnSettingChanged!;
             settings.RefreshStockPrice.OnValueChanged -= OnSettingChanged!;
             settings.StorePickPrice.OnValueChanged -= OnSettingChanged!;

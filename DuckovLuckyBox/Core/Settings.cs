@@ -183,7 +183,10 @@ namespace DuckovLuckyBox.Core.Settings
         public const bool EnableTripleLotteryAnimation = true;
         public const bool EnableDestroyButton = Constants.ModId != Constants.AnimationOnlyModId;
         public const bool EnableMeltButton = Constants.ModId != Constants.AnimationOnlyModId;
-        public const bool EnableStockShopActions = Constants.ModId != Constants.AnimationOnlyModId;
+        public const bool EnableRefreshStock = Constants.ModId != Constants.AnimationOnlyModId;
+        public const bool EnableStorePick = Constants.ModId != Constants.AnimationOnlyModId;
+        public const bool EnableStreetPick = Constants.ModId != Constants.AnimationOnlyModId;
+        public const bool EnableRecycle = Constants.ModId != Constants.AnimationOnlyModId;
         public const bool EnableDebug = false;
         public const bool EnableUseToCreateItemPatch = true;
         public const bool EnableWeightedLottery = true;
@@ -285,14 +288,44 @@ namespace DuckovLuckyBox.Core.Settings
             DefaultValue = DefaultSettings.EnableHighQualitySound,
         };
 
-        public SettingItem EnableStockShopActions { get; set; } = new SettingItem
+        public SettingItem EnableRefreshStock { get; set; } = new SettingItem
         {
-            Key = "DuckovLuckyBox.Settings.EnableStockShopActions",
-            Label = Localizations.I18n.SettingsEnableStockShopActionsKey,
-            Description = "DuckovLuckyBox.Settings.EnableStockShopActions.Description",
+            Key = "DuckovLuckyBox.Settings.EnableRefreshStock",
+            Label = Localizations.I18n.SettingsEnableRefreshStockKey,
+            Description = "DuckovLuckyBox.Settings.EnableRefreshStock.Description",
             Type = Type.Toggle,
             Category = Category.General,
-            DefaultValue = DefaultSettings.EnableStockShopActions,
+            DefaultValue = DefaultSettings.EnableRefreshStock,
+        };
+
+        public SettingItem EnableStorePick { get; set; } = new SettingItem
+        {
+            Key = "DuckovLuckyBox.Settings.EnableStorePick",
+            Label = Localizations.I18n.SettingsEnableStorePickKey,
+            Description = "DuckovLuckyBox.Settings.EnableStorePick.Description",
+            Type = Type.Toggle,
+            Category = Category.General,
+            DefaultValue = DefaultSettings.EnableStorePick,
+        };
+
+        public SettingItem EnableStreetPick { get; set; } = new SettingItem
+        {
+            Key = "DuckovLuckyBox.Settings.EnableStreetPick",
+            Label = Localizations.I18n.SettingsEnableStreetPickKey,
+            Description = "DuckovLuckyBox.Settings.EnableStreetPick.Description",
+            Type = Type.Toggle,
+            Category = Category.General,
+            DefaultValue = DefaultSettings.EnableStreetPick,
+        };
+
+        public SettingItem EnableRecycle { get; set; } = new SettingItem
+        {
+            Key = "DuckovLuckyBox.Settings.EnableRecycle",
+            Label = Localizations.I18n.SettingsEnableRecycleKey,
+            Description = "DuckovLuckyBox.Settings.EnableRecycle.Description",
+            Type = Type.Toggle,
+            Category = Category.General,
+            DefaultValue = DefaultSettings.EnableRecycle,
         };
 
         public SettingItem HighQualitySoundFilePath { get; set; } = new SettingItem
@@ -372,7 +405,10 @@ namespace DuckovLuckyBox.Core.Settings
                 yield return EnableUseToCreateItemPatch;
                 yield return EnableWeightedLottery;
                 yield return EnableHighQualitySound;
-                yield return EnableStockShopActions;
+                yield return EnableRefreshStock;
+                yield return EnableStorePick;
+                yield return EnableStreetPick;
+                yield return EnableRecycle;
                 yield return HighQualitySoundFilePath;
                 yield return RefreshStockPrice;
                 yield return StorePickPrice;

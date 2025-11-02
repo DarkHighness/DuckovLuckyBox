@@ -223,8 +223,11 @@ namespace DuckovLuckyBox.UI
             sliderPrefab.gameObject.SetActive(false);
 
             // Dump Hierarchy for debugging
-            DebugUtils.DumpGameObjectHierarchy(dropdownPrefab.gameObject, 5, true, false, null);
-            DebugUtils.DumpGameObjectHierarchy(sliderPrefab.gameObject, 5, true, false, null);
+            if (SettingManager.Instance.EnableDebug.GetAsBool())
+            {
+                DebugUtils.DumpGameObjectHierarchy(dropdownPrefab.gameObject, 5, true, false, null);
+                DebugUtils.DumpGameObjectHierarchy(sliderPrefab.gameObject, 5, true, false, null);
+            }
 
             Log.Debug("GameSettingUI prefabs created successfully.");
 
