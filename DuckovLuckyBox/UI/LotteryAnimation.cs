@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -18,10 +17,55 @@ namespace DuckovLuckyBox.UI
     /// </summary>
     public class LotteryAnimation
     {
+        private sealed class SlotVisual
+        {
+            public SlotVisual(RectTransform root, RoundedRectGraphic frame, Image icon, Outline iconOutline)
+            {
+                Root = root;
+                FrameGraphic = frame;
+                Icon = icon;
+                IconOutline = iconOutline;
+            }
+
+            public RectTransform Root { get; }
+            public RoundedRectGraphic FrameGraphic { get; }
+            public Image Icon { get; }
+            public Outline IconOutline { get; }
+
+            public void ResetVisual()
+            {
+                if (Root != null)
+                {
+                    Root.localScale = Vector3.one;
+                    Root.anchoredPosition = Vector2.zero;
+                }
+
+                if (IconOutline != null)
+                {
+                    var color = IconOutline.effectColor;
+                    color.a = 0f;
+                    IconOutline.effectColor = color;
+                }
+            }
+
+            public void Dispose()
+            {
+                if (Root != null)
+                {
+                    UnityEngine.Object.Destroy(Root.gameObject);
+                }
+            }
+        }
+
         private sealed class LaneUI
         {
-            public LaneUI(string name, RectTransform root, RectTransform viewport, RectTransform itemsContainer, GameObject pointerRoot, Graphic pointerGraphic, Color pointerActiveColor, TextMeshProUGUI resultText, float laneHeight)
+            private readonly LotteryAnimation _owner;
+            private readonly List<SlotVisual> _activeSlots = new List<SlotVisual>();
+            private readonly Stack<SlotVisual> _slotPool = new Stack<SlotVisual>();
+
+            public LaneUI(LotteryAnimation owner, string name, RectTransform root, RectTransform viewport, RectTransform itemsContainer, GameObject pointerRoot, Graphic pointerGraphic, Color pointerActiveColor, TextMeshProUGUI resultText, float laneHeight)
             {
+                _owner = owner ?? throw new ArgumentNullException(nameof(owner));
                 if (string.IsNullOrEmpty(name))
                 {
                     throw new ArgumentException("Lane name cannot be null or empty.", nameof(name));
@@ -58,6 +102,51 @@ namespace DuckovLuckyBox.UI
 
             private Color PointerActiveColor { get; }
             private Color PointerInactiveColor { get; }
+
+            public SlotVisual RentSlotVisual()
+            {
+                SlotVisual visual;
+                if (_slotPool.Count > 0)
+                {
+                    visual = _slotPool.Pop();
+                }
+                else
+                {
+                    visual = _owner.CreateSlotVisual(this);
+                }
+
+                visual.ResetVisual();
+                visual.Root.SetParent(ItemsContainer, false);
+                visual.Root.gameObject.SetActive(true);
+                _activeSlots.Add(visual);
+                return visual;
+            }
+
+            public void ReleaseAllSlotVisuals()
+            {
+                for (int i = 0; i < _activeSlots.Count; i++)
+                {
+                    var visual = _activeSlots[i];
+                    visual.ResetVisual();
+                    if (visual.Root != null)
+                    {
+                        visual.Root.gameObject.SetActive(false);
+                    }
+                    _slotPool.Push(visual);
+                }
+
+                _activeSlots.Clear();
+            }
+
+            public void Dispose()
+            {
+                ReleaseAllSlotVisuals();
+
+                while (_slotPool.Count > 0)
+                {
+                    _slotPool.Pop().Dispose();
+                }
+            }
 
             public void ResetVisualState()
             {
@@ -190,10 +279,11 @@ namespace DuckovLuckyBox.UI
         private readonly List<LaneUI> _lanes = new List<LaneUI>();
         private int _currentLaneCount = 0;
 
-        private Sprite? _fallbackSprite;
-        private bool _isAnimating;
-        private bool _skipRequested;
-        private readonly Dictionary<RectTransform, CancellationTokenSource> _slotHighlightTokens = new Dictionary<RectTransform, CancellationTokenSource>();
+    private Sprite? _fallbackSprite;
+    private bool _isAnimating;
+    private bool _skipRequested;
+    private readonly Dictionary<RectTransform, SlotHighlightAnimation> _slotHighlightAnimations = new Dictionary<RectTransform, SlotHighlightAnimation>();
+    private readonly Stack<SlotHighlightAnimation> _slotHighlightPool = new Stack<SlotHighlightAnimation>();
 
         // Configuration constants
         private static readonly Vector2 IconSize = new Vector2(160f, 160f);
@@ -542,8 +632,11 @@ namespace DuckovLuckyBox.UI
                 return;
             }
 
+            StopAllSlotHighlightAnimations();
+
             foreach (var lane in _lanes)
             {
+                lane.Dispose();
                 if (lane.Root != null)
                 {
                     UnityEngine.Object.Destroy(lane.Root.gameObject);
@@ -649,7 +742,7 @@ namespace DuckovLuckyBox.UI
             resultText.alignment = TextAlignmentOptions.Center;
             resultText.raycastTarget = false;
 
-            return new LaneUI(laneName, laneRoot, viewport, itemsContainer, pointerContainer.gameObject, pointerGraphic, pointerActiveColor, resultText, laneHeight);
+            return new LaneUI(this, laneName, laneRoot, viewport, itemsContainer, pointerContainer.gameObject, pointerGraphic, pointerActiveColor, resultText, laneHeight);
         }
 
         private Graphic BuildPointerVisuals(RectTransform pointerContainer, float laneHeight, out Color pointerActiveColor)
@@ -982,43 +1075,49 @@ namespace DuckovLuckyBox.UI
 
         private Slot CreateSlot(LaneUI lane, int typeId, Sprite? sprite, string displayName, Color frameColor)
         {
-            var root = new GameObject($"LotterySlot_{typeId}", typeof(RectTransform));
-            var rect = root.GetComponent<RectTransform>();
-            rect.SetParent(lane.ItemsContainer, false);
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.sizeDelta = new Vector2(IconSize.x + SlotPadding, IconSize.y + SlotPadding);
+            var visual = lane.RentSlotVisual();
+            ConfigureSlotVisual(visual, typeId, sprite, displayName, frameColor);
+            return new Slot(visual.Root, visual.FrameGraphic, visual.Icon, visual.IconOutline, displayName);
+        }
+
+        private SlotVisual CreateSlotVisual(LaneUI lane)
+        {
+            var root = new GameObject("LotterySlot", typeof(RectTransform)).GetComponent<RectTransform>();
+            root.SetParent(lane.ItemsContainer, false);
+            root.anchorMin = new Vector2(0.5f, 0.5f);
+            root.anchorMax = new Vector2(0.5f, 0.5f);
+            root.pivot = new Vector2(0.5f, 0.5f);
+            root.sizeDelta = new Vector2(IconSize.x + SlotPadding, IconSize.y + SlotPadding);
 
             const float borderPadding = 16f;
             var backgroundObj = new GameObject("LotterySlotBackground", typeof(RectTransform));
             var bgRect = backgroundObj.GetComponent<RectTransform>();
-            bgRect.SetParent(rect, false);
+            bgRect.SetParent(root, false);
             bgRect.anchorMin = new Vector2(0.5f, 0.5f);
             bgRect.anchorMax = new Vector2(0.5f, 0.5f);
             bgRect.pivot = new Vector2(0.5f, 0.5f);
             bgRect.anchoredPosition = Vector2.zero;
-            bgRect.sizeDelta = rect.sizeDelta + new Vector2(borderPadding, borderPadding);
+            bgRect.sizeDelta = root.sizeDelta + new Vector2(borderPadding, borderPadding);
 
             var bgGraphic = backgroundObj.AddComponent<RoundedRectGraphic>();
             bgGraphic.raycastTarget = false;
-            bgGraphic.cornerRadius = Mathf.Min(rect.sizeDelta.x, rect.sizeDelta.y) * 0.12f;
+            bgGraphic.cornerRadius = Mathf.Min(root.sizeDelta.x, root.sizeDelta.y) * 0.12f;
             bgGraphic.cornerSegments = 6;
             bgGraphic.color = new Color(0f, 0f, 0f, 0.8f);
 
             var frameObj = new GameObject("LotterySlotFrame", typeof(RectTransform));
             var frameRect = frameObj.GetComponent<RectTransform>();
-            frameRect.SetParent(rect, false);
+            frameRect.SetParent(root, false);
             frameRect.anchorMin = new Vector2(0.5f, 0.5f);
             frameRect.anchorMax = new Vector2(0.5f, 0.5f);
             frameRect.pivot = new Vector2(0.5f, 0.5f);
             frameRect.anchoredPosition = Vector2.zero;
-            frameRect.sizeDelta = rect.sizeDelta;
+            frameRect.sizeDelta = root.sizeDelta;
 
             var frameGraphic = frameObj.AddComponent<RoundedRectGraphic>();
             frameGraphic.cornerRadius = Mathf.Min(frameRect.sizeDelta.x, frameRect.sizeDelta.y) * 0.1f;
             frameGraphic.cornerSegments = 6;
-            frameGraphic.color = new Color(frameColor.r, frameColor.g, frameColor.b, 1f);
+            frameGraphic.color = new Color(1f, 1f, 1f, 1f);
             frameGraphic.raycastTarget = false;
 
             var frameMask = frameObj.AddComponent<Mask>();
@@ -1034,19 +1133,48 @@ namespace DuckovLuckyBox.UI
             iconRect.sizeDelta = IconSize;
 
             var icon = iconObject.GetComponent<Image>();
-            icon.sprite = sprite ?? EnsureFallbackSprite();
             icon.color = Color.white;
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             icon.useSpriteMesh = true;
-            iconObject.name = $"LotterySlotIcon_{displayName}";
 
             var iconOutline = iconObject.AddComponent<Outline>();
             iconOutline.effectColor = new Color(1f, 1f, 1f, 0f);
             iconOutline.effectDistance = new Vector2(2f, -2f);
             iconOutline.useGraphicAlpha = false;
 
-            return new Slot(rect, frameGraphic, icon, iconOutline, displayName);
+            root.gameObject.SetActive(false);
+
+            return new SlotVisual(root, frameGraphic, icon, iconOutline);
+        }
+
+        private void ConfigureSlotVisual(SlotVisual visual, int typeId, Sprite? sprite, string displayName, Color frameColor)
+        {
+            if (visual == null) return;
+
+            if (visual.Root != null)
+            {
+                visual.Root.name = $"LotterySlot_{typeId}";
+            }
+
+            if (visual.FrameGraphic != null)
+            {
+                visual.FrameGraphic.color = new Color(frameColor.r, frameColor.g, frameColor.b, 1f);
+            }
+
+            if (visual.Icon != null)
+            {
+                visual.Icon.sprite = sprite ?? EnsureFallbackSprite();
+                visual.Icon.color = Color.white;
+                visual.Icon.gameObject.name = $"LotterySlotIcon_{displayName}";
+            }
+
+            if (visual.IconOutline != null)
+            {
+                var outlineColor = visual.IconOutline.effectColor;
+                outlineColor.a = 0f;
+                visual.IconOutline.effectColor = outlineColor;
+            }
         }
 
         private float[] GenerateVelocityCurve(float initialVelocityInSlots, float decelerationDuration, float velocityAtEndOfDeceleration, float totalCurveDuration)
@@ -1414,12 +1542,7 @@ namespace DuckovLuckyBox.UI
         private void ClearItems(LaneUI lane)
         {
             StopAllSlotHighlightAnimations();
-            if (lane.ItemsContainer == null) return;
-
-            for (int i = lane.ItemsContainer.childCount - 1; i >= 0; i--)
-            {
-                UnityEngine.Object.Destroy(lane.ItemsContainer.GetChild(i).gameObject);
-            }
+            lane.ReleaseAllSlotVisuals();
         }
 
         private async UniTask RevealResult(LaneUI lane, string finalDisplayName, int laneIndex, Action<int, string> updateLaneResult)
@@ -1499,82 +1622,132 @@ namespace DuckovLuckyBox.UI
 
         private void StartSlotHighlightAnimation(Slot slot, bool highlighted)
         {
-            if (slot.Rect == null) return;
-
-            if (_slotHighlightTokens.TryGetValue(slot.Rect, out var existing))
-            {
-                existing.Cancel();
-                existing.Dispose();
-                _slotHighlightTokens.Remove(slot.Rect);
-            }
-
-            var cts = new CancellationTokenSource();
-            _slotHighlightTokens[slot.Rect] = cts;
-            AnimateSlotHighlight(slot, highlighted, cts).Forget();
+            var animation = GetSlotHighlightAnimation(slot);
+            animation?.Play(highlighted);
         }
 
         private void StopSlotHighlightAnimation(Slot slot)
         {
             if (slot.Rect == null) return;
 
-            if (_slotHighlightTokens.TryGetValue(slot.Rect, out var existing))
+            if (_slotHighlightAnimations.TryGetValue(slot.Rect, out var animation))
             {
-                existing.Cancel();
-                existing.Dispose();
-                _slotHighlightTokens.Remove(slot.Rect);
+                animation.ForceReset();
             }
         }
 
         private void StopAllSlotHighlightAnimations()
         {
-            if (_slotHighlightTokens.Count == 0) return;
+            if (_slotHighlightAnimations.Count == 0) return;
 
-            foreach (var kvp in _slotHighlightTokens)
+            foreach (var kvp in _slotHighlightAnimations)
             {
-                kvp.Value.Cancel();
-                kvp.Value.Dispose();
+                var animation = kvp.Value;
+                animation.ForceReset();
+                animation.Release();
+                _slotHighlightPool.Push(animation);
             }
 
-            _slotHighlightTokens.Clear();
+            _slotHighlightAnimations.Clear();
         }
 
-        private async UniTask AnimateSlotHighlight(Slot slot, bool highlighted, CancellationTokenSource cts)
+        private SlotHighlightAnimation? GetSlotHighlightAnimation(Slot slot)
         {
             var rect = slot.Rect;
-            var outline = slot.IconOutline;
-
-            if (rect == null || outline == null)
+            if (rect == null)
             {
-                CleanupHighlightAnimation(rect, cts);
-                return;
+                return null;
             }
 
-            float targetScale = highlighted ? 1.05f : 1f;
-            float targetAlpha = highlighted ? 1f : 0f;
-            float duration = highlighted ? HighlightScaleUpDuration : HighlightScaleDownDuration;
-
-            float startScale = rect.localScale.x;
-            float startAlpha = outline.effectColor.a;
-            var targetColor = new Color(1f, 1f, 1f, targetAlpha);
-            var startColor = outline.effectColor;
-
-            if (Mathf.Approximately(duration, 0f))
+            if (_slotHighlightAnimations.TryGetValue(rect, out var animation))
             {
-                rect.localScale = Vector3.one * targetScale;
-                outline.effectColor = targetColor;
-                CleanupHighlightAnimation(rect, cts);
-                return;
+                animation.Bind(slot);
+                return animation;
             }
 
-            float elapsed = 0f;
-            try
+            animation = _slotHighlightPool.Count > 0 ? _slotHighlightPool.Pop() : new SlotHighlightAnimation();
+            animation.Bind(slot);
+            animation.ForceReset();
+            _slotHighlightAnimations[rect] = animation;
+            return animation;
+        }
+
+        private sealed class SlotHighlightAnimation
+        {
+            private RectTransform? _rect;
+            private Outline? _outline;
+            private int _version;
+
+            public void Bind(Slot slot)
             {
+                _rect = slot.Rect;
+                _outline = slot.IconOutline;
+            }
+
+            public void Play(bool highlighted)
+            {
+                if (_rect == null || _outline == null)
+                {
+                    _version++;
+                    return;
+                }
+
+                _version++;
+                int currentVersion = _version;
+
+                float targetScale = highlighted ? 1.05f : 1f;
+                float targetAlpha = highlighted ? 1f : 0f;
+                float duration = highlighted ? HighlightScaleUpDuration : HighlightScaleDownDuration;
+
+                float startScale = _rect.localScale.x;
+                float startAlpha = _outline.effectColor.a;
+                var startColor = _outline.effectColor;
+                var targetColor = new Color(1f, 1f, 1f, targetAlpha);
+
+                if (Mathf.Approximately(duration, 0f))
+                {
+                    _rect.localScale = Vector3.one * targetScale;
+                    _outline.effectColor = targetColor;
+                    return;
+                }
+
+                RunAnimation(currentVersion, duration, startScale, targetScale, startAlpha, targetAlpha, startColor, targetColor).Forget();
+            }
+
+            public void ForceReset()
+            {
+                _version++;
+
+                if (_rect != null)
+                {
+                    _rect.localScale = Vector3.one;
+                }
+
+                if (_outline != null)
+                {
+                    var color = _outline.effectColor;
+                    color.a = 0f;
+                    _outline.effectColor = color;
+                }
+            }
+
+            public void Release()
+            {
+                _version++;
+                _rect = null;
+                _outline = null;
+            }
+
+            private async UniTaskVoid RunAnimation(int version, float duration, float startScale, float targetScale, float startAlpha, float targetAlpha, Color startColor, Color targetColor)
+            {
+                float elapsed = 0f;
+
                 while (elapsed < duration)
                 {
                     await UniTask.Yield(PlayerLoopTiming.Update);
-                    if (cts.IsCancellationRequested)
+
+                    if (_version != version || _rect == null || _outline == null)
                     {
-                        CleanupHighlightAnimation(rect, cts);
                         return;
                     }
 
@@ -1583,37 +1756,22 @@ namespace DuckovLuckyBox.UI
                     float eased = 1f - Mathf.Pow(1f - t, 3f);
 
                     float scale = Mathf.Lerp(startScale, targetScale, eased);
-                    rect.localScale = Vector3.one * scale;
+                    _rect.localScale = Vector3.one * scale;
 
                     float alpha = Mathf.Lerp(startAlpha, targetAlpha, eased);
                     var color = Color.Lerp(startColor, targetColor, eased);
                     color.a = alpha;
-                    outline.effectColor = color;
+                    _outline.effectColor = color;
                 }
 
-                rect.localScale = Vector3.one * targetScale;
-                outline.effectColor = targetColor;
+                if (_version == version && _rect != null && _outline != null)
+                {
+                    _rect.localScale = Vector3.one * targetScale;
+                    var finalColor = targetColor;
+                    finalColor.a = targetAlpha;
+                    _outline.effectColor = finalColor;
+                }
             }
-            finally
-            {
-                CleanupHighlightAnimation(rect, cts);
-            }
-        }
-
-        private void CleanupHighlightAnimation(RectTransform? rect, CancellationTokenSource cts)
-        {
-            if (rect == null)
-            {
-                cts.Dispose();
-                return;
-            }
-
-            if (_slotHighlightTokens.TryGetValue(rect, out var existing) && existing == cts)
-            {
-                _slotHighlightTokens.Remove(rect);
-            }
-
-            cts.Dispose();
         }
 
         private readonly struct Slot
