@@ -15,6 +15,10 @@ namespace DuckovLuckyBox.Patches
 
             LotteryAnimation.Instance.Destroy();
             RecycleAnimation.Instance.Destroy();
+
+            // Reset failures
+            LotteryService.ResetHighLevelFailureCounter();
+            MeltService.ResetCumulativeNegativeWeight();
         }
     }
 }

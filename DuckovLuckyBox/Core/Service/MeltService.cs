@@ -62,6 +62,31 @@ namespace DuckovLuckyBox.Core
             Destroyed
         }
 
+        private static void AdjustCumulativeNegativeWeight(MeltLevelOut outcome)
+        {
+            if (outcome == MeltLevelOut.LevelUp)
+            {
+                cumulativeNegativeWeight = 0;
+                return;
+            }
+
+            if (outcome == MeltLevelOut.LevelDown || outcome == MeltLevelOut.SameLevel || outcome == MeltLevelOut.Destroyed)
+            {
+                int weight = outcome switch
+                {
+                    MeltLevelOut.SameLevel => SAME_LEVEL_WEIGHT,
+                    MeltLevelOut.LevelDown => LEVEL_DOWN_WEIGHT,
+                    _ => DESTROYED_WEIGHT
+                };
+                cumulativeNegativeWeight += weight;
+            }
+        }
+
+        public static void ResetCumulativeNegativeWeight()
+        {
+            cumulativeNegativeWeight = 0;
+        }
+
         private static bool DetermineMutation(ItemValueLevel currentLevel)
         {
             int randomValue = UnityEngine.Random.Range(0, 1000); // 0-999 (thousandths)
@@ -348,6 +373,9 @@ namespace DuckovLuckyBox.Core
                     item.StackCount--;
                 }
 
+                // Apply probability adjustments immediately based on outcome
+                AdjustCumulativeNegativeWeight(meltOutcome);
+
                 string message = string.Empty;
                 // Check if item was destroyed
                 if (meltOutcome == MeltLevelOut.Destroyed)
@@ -434,17 +462,6 @@ namespace DuckovLuckyBox.Core
                 Log.Debug($"Melt: Sent melted item to player (iteration {i + 1}/{stackCount})");
 
                 await UniTask.WaitForSeconds(MELT_OPERATION_DELAY); // Small delay to avoid overwhelming the inventory system
-
-                // Update cumulative negative weight
-                if (meltOutcome == MeltLevelOut.LevelDown || meltOutcome == MeltLevelOut.SameLevel || meltOutcome == MeltLevelOut.Destroyed)
-                {
-                    int weight = meltOutcome == MeltLevelOut.SameLevel ? SAME_LEVEL_WEIGHT : meltOutcome == MeltLevelOut.LevelDown ? LEVEL_DOWN_WEIGHT : DESTROYED_WEIGHT;
-                    cumulativeNegativeWeight += weight;
-                }
-                else
-                {
-                    cumulativeNegativeWeight = 0;
-                }
             }
 
             result.Success = true;

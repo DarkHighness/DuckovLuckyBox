@@ -101,6 +101,23 @@ namespace DuckovLuckyBox.Core
 
         // Counter for consecutive high level item failures
         private static int consecutiveHighLevelFailures = 0;
+
+        private static void UpdateHighLevelFailureCounter(ItemValueLevel qualityLevel)
+        {
+            if ((int)qualityLevel >= (int)HIGH_LEVEL_THRESHOLD)
+            {
+                consecutiveHighLevelFailures = 0;
+            }
+            else
+            {
+                consecutiveHighLevelFailures++;
+            }
+        }
+
+        public static void ResetHighLevelFailureCounter()
+        {
+            consecutiveHighLevelFailures = 0;
+        }
         /// <summary>
         /// Performs weighted random selection on a collection of items
         /// Used by animation and other UI components for weighted sampling
@@ -235,7 +252,11 @@ namespace DuckovLuckyBox.Core
 
                     // Sample an item from the selected quality level with repetition allowed
                     int itemIndex = UnityEngine.Random.Range(0, itemsAtLevel.Count);
-                    result.Add(itemsAtLevel[itemIndex]);
+                    int selectedItemId = itemsAtLevel[itemIndex];
+                    result.Add(selectedItemId);
+
+                    // Update high level failure tracking immediately per selection
+                    UpdateHighLevelFailureCounter(selectedQuality);
                 }
             }
             else
@@ -247,7 +268,13 @@ namespace DuckovLuckyBox.Core
                     Log.Error("No items available for lottery");
                     return result;
                 }
-                result = ProbabilityUtils.ReservoirSample(allItems, count, allowDuplicates: true);
+
+                for (int i = 0; i < count; i++)
+                {
+                    int itemIndex = UnityEngine.Random.Range(0, allItems.Count);
+                    int selectedItemId = allItems[itemIndex];
+                    result.Add(selectedItemId);
+                }
             }
 
             return result;
@@ -281,7 +308,7 @@ namespace DuckovLuckyBox.Core
 
             bool useWeightedSampling = SettingManager.Instance.EnableWeightedLottery.GetAsBool();
 
-            // Use reservoir sampling to select one item
+            // Use reservoir sampling to select items
             var sampledIds = ReservoirSampleByQuality(candidateIds, drawCount, useWeightedSampling);
             if (sampledIds.Count == 0)
             {
@@ -367,17 +394,6 @@ namespace DuckovLuckyBox.Core
 
                 sentToStorageFlags.Add(sentToStorage);
                 context?.OnLotterySuccess(item, sentToStorage);
-            }
-
-            // Update consecutive high level failure counter
-            bool hasHighLevelReward = awardedItems.Any(it => (int)QualityUtils.GetCachedItemValueLevel(it) >= (int)HIGH_LEVEL_THRESHOLD);
-            if (hasHighLevelReward)
-            {
-                consecutiveHighLevelFailures = 0; // Reset on high level item
-            }
-            else
-            {
-                consecutiveHighLevelFailures += awardedItems.Count; // Increment per non-high level reward
             }
 
             return (true, awardedItems, sentToStorageFlags);
