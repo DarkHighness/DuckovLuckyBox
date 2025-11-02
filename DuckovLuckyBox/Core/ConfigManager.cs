@@ -380,37 +380,19 @@ namespace DuckovLuckyBox.Core.Settings
         private void SubscribeToSettingChanges()
         {
             var settings = SettingManager.Instance;
-            settings.EnableAnimation.OnValueChanged += OnSettingChanged;
-            settings.EnableTripleLotteryAnimation.OnValueChanged += OnSettingChanged;
-            settings.EnableDestroyButton.OnValueChanged += OnSettingChanged;
-            settings.EnableMeltButton.OnValueChanged += OnSettingChanged;
-            settings.EnableDebug.OnValueChanged += OnSettingChanged;
-            settings.EnableUseToCreateItemPatch.OnValueChanged += OnSettingChanged;
-            settings.EnableWeightedLottery.OnValueChanged += OnSettingChanged;
-            settings.EnableHighQualitySound.OnValueChanged += OnSettingChanged;
-            settings.HighQualitySoundFilePath.OnValueChanged += OnSettingChanged;
-            settings.RefreshStockPrice.OnValueChanged += OnSettingChanged;
-            settings.StorePickPrice.OnValueChanged += OnSettingChanged;
-            settings.StreetPickPrice.OnValueChanged += OnSettingChanged;
-            settings.MeltBasePrice.OnValueChanged += OnSettingChanged;
+            foreach (var setting in settings.AllSettings)
+            {
+                setting.OnValueChanged += OnSettingChanged!;
+            }
         }
 
         private void UnsubscribeFromSettingChanges()
         {
             var settings = SettingManager.Instance;
-            settings.EnableAnimation.OnValueChanged -= OnSettingChanged!;
-            settings.EnableTripleLotteryAnimation.OnValueChanged -= OnSettingChanged!;
-            settings.EnableDestroyButton.OnValueChanged -= OnSettingChanged!;
-            settings.EnableMeltButton.OnValueChanged -= OnSettingChanged!;
-            settings.EnableDebug.OnValueChanged -= OnSettingChanged!;
-            settings.EnableUseToCreateItemPatch.OnValueChanged -= OnSettingChanged!;
-            settings.EnableWeightedLottery.OnValueChanged -= OnSettingChanged!;
-            settings.EnableHighQualitySound.OnValueChanged -= OnSettingChanged!;
-            settings.HighQualitySoundFilePath.OnValueChanged -= OnSettingChanged!;
-            settings.RefreshStockPrice.OnValueChanged -= OnSettingChanged!;
-            settings.StorePickPrice.OnValueChanged -= OnSettingChanged!;
-            settings.StreetPickPrice.OnValueChanged -= OnSettingChanged!;
-            settings.MeltBasePrice.OnValueChanged -= OnSettingChanged!;
+            foreach (var setting in settings.AllSettings)
+            {
+                setting.OnValueChanged -= OnSettingChanged!;
+            }
         }
 
         private void OnSettingChanged(object value)

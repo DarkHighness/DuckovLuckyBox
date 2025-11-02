@@ -36,12 +36,17 @@ namespace DuckovLuckyBox.Core.Settings
             get => _value;
             set
             {
+                Log.Debug($"Setting '{Key}' changing value to: {value}");
+
                 if (!_hasValue || !IsEqual(_value, value))
                 {
                     _value = TransformValueToType(value, Type);
                     _hasValue = true;
                     OnValueChanged?.Invoke(_value);
+                    return;
                 }
+
+                Log.Debug($"Setting '{Key}' value unchanged.");
             }
         }
 
