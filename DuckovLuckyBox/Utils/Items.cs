@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using DuckovLuckyBox.Core;
 using HarmonyLib;
@@ -413,6 +414,25 @@ namespace DuckovLuckyBox
                 _bulletItemCache ??= new ItemQueryCache("BulletItems", BulletItemPredicate, includeDynamicItems: true);
                 return _bulletItemCache;
             }
+        }
+
+        public static List<Item> FindAllUseToCreateItems()
+        {
+            return ItemAssetsCollection.Instance.entries.Where(entry =>
+            {
+                var item = entry.prefab;
+                var usageUtilities = item.UsageUtilities;
+                if (usageUtilities == null)
+                {
+                    return false;
+                }
+
+                var behaviors = usageUtilities.behaviors;
+                return behaviors.Exists(behavior =>
+                {
+                    return behavior is UseToCreateItem;
+                });
+            }).Select(entry => entry.prefab).ToList();
         }
 
         // Utility method

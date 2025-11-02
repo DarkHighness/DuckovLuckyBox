@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -36,17 +37,17 @@ namespace DuckovLuckyBox.Core.Settings
             get => _value;
             set
             {
-                Log.Debug($"Setting '{Key}' changing value to: {value}");
-
                 if (!_hasValue || !IsEqual(_value, value))
                 {
+                    Log.Debug($"Setting '{Key}' changing value from {_value} to: {value}");
+
                     _value = TransformValueToType(value, Type);
                     _hasValue = true;
                     OnValueChanged?.Invoke(_value);
                     return;
                 }
 
-                Log.Debug($"Setting '{Key}' value unchanged.");
+                Log.Debug($"Setting '{Key}' value unchanged. Current value: {_value}, New value: {value}");
             }
         }
 
@@ -72,25 +73,25 @@ namespace DuckovLuckyBox.Core.Settings
             if (a == null && b == null) return true;
             if (a == null || b == null) return false;
 
-            // Check for type equality, If types differ and they are IConvertible, try to convert and compare
-            if (a.GetType() != b.GetType())
+            switch (Type)
             {
-                try
-                {
-                    var convertedB = System.Convert.ChangeType(b, a.GetType());
-                    return a.Equals(convertedB);
-                }
-                catch
-                {
+                case Type.Number:
+                    // Convert both to float for comparison with epsilon to handle floating point precision
+                    float fa = System.Convert.ToSingle(a);
+                    float fb = System.Convert.ToSingle(b);
+                    return Mathf.Approximately(fa, fb);
+                case Type.Hotkey:
+                    if (a is Hotkey ha && b is Hotkey hb)
+                    {
+                        return ha.Key == hb.Key && ha.Ctrl == hb.Ctrl && ha.Shift == hb.Shift && ha.Alt == hb.Alt;
+                    }
                     return false;
-                }
+                default:
+                    // Convert to the same type for comparison
+                    var ta = TransformValueToType(a, Type);
+                    var tb = TransformValueToType(b, Type);
+                    return ta.Equals(tb);
             }
-
-            // Finally, use default equality check
-            if (a.Equals(b))
-                return true;
-
-            return false;
         }
 
         private object TransformValueToType(object value, Type type)
@@ -100,7 +101,14 @@ namespace DuckovLuckyBox.Core.Settings
                 case Type.Toggle:
                     return System.Convert.ToBoolean(value);
                 case Type.Number:
-                    return System.Convert.ToInt64(value);
+                    if (value is int || value is long)
+                    {
+                        return System.Convert.ToInt64(value);
+                    }
+                    else
+                    {
+                        return System.Convert.ToSingle(value);
+                    }
                 case Type.Text:
                     return System.Convert.ToString(value) ?? string.Empty;
                 default:
@@ -123,6 +131,19 @@ namespace DuckovLuckyBox.Core.Settings
         {
             if (Value is bool b)
                 return b;
+            if (Value is string s)
+            {
+                if (bool.TryParse(s, out bool result))
+                    return result;
+            }
+            if (Value is int i)
+                return i != 0;
+            if (Value is long l)
+                return l != 0L;
+            if (Value is float f)
+                return !Mathf.Approximately(f, 0f);
+            if (Value is double d)
+                return !Mathf.Approximately((float)d, 0f);
 
             throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to bool.");
         }
@@ -132,11 +153,9 @@ namespace DuckovLuckyBox.Core.Settings
             if (Value is float f)
                 return f;
             if (Value is double d)
-                return (float)d;
-            if (Value is int i)
-                return i;
-            if (Value is long l)
-                return l;
+                return System.Convert.ToSingle(d);
+            if (Value is int || Value is long)
+                return System.Convert.ToSingle(Value);
 
             throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to float.");
         }
@@ -153,6 +172,10 @@ namespace DuckovLuckyBox.Core.Settings
         {
             if (Value is int i)
                 return i;
+            if (Value is long l)
+                return (int)l;
+            if (Value is float || Value is double)
+                return System.Convert.ToInt32(Value);
 
             throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to int.");
         }
@@ -161,6 +184,10 @@ namespace DuckovLuckyBox.Core.Settings
         {
             if (Value is long l)
                 return l;
+            if (Value is int i)
+                return i;
+            if (Value is float || Value is double)
+                return System.Convert.ToInt64(Value);
 
             throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to long.");
         }
@@ -195,6 +222,9 @@ namespace DuckovLuckyBox.Core.Settings
         public const bool EnableDebug = false;
         public const bool EnableUseToCreateItemPatch = true;
         public const bool EnableWeightedLottery = true;
+
+        public const bool EnablePatchUseTime = true;
+        public const float PatchedUseTime = 0.3f;
 
         public const bool EnableHighQualitySound = true;
         public const string HighQualitySoundFilePath = "";
@@ -271,6 +301,29 @@ namespace DuckovLuckyBox.Core.Settings
             Type = Type.Toggle,
             Category = Category.General,
             DefaultValue = DefaultSettings.EnableUseToCreateItemPatch,
+        };
+
+        public SettingItem EnablePatchUseTime { get; set; } = new SettingItem
+        {
+            Key = "DuckovLuckyBox.Settings.EnablePatchUseTime",
+            Label = Localizations.I18n.SettingsEnablePatchUseTimeKey,
+            Description = Localizations.I18n.SettingsEnablePatchUseTimeDescriptionKey,
+            Type = Type.Toggle,
+            Category = Category.General,
+            DefaultValue = DefaultSettings.EnablePatchUseTime,
+        };
+
+        public SettingItem PatchedUseTime { get; set; } = new SettingItem
+        {
+            Key = "DuckovLuckyBox.Settings.PatchedUseTime",
+            Label = Localizations.I18n.SettingsPatchedUseTimeKey,
+            Description = Localizations.I18n.SettingsPatchedUseTimeDescriptionKey,
+            Type = Type.Number,
+            Category = Category.General,
+            DefaultValue = DefaultSettings.PatchedUseTime,
+            MinValue = 0f,
+            MaxValue = 6f,
+            Step = 0.1f,
         };
 
         public SettingItem EnableWeightedLottery { get; set; } = new SettingItem
@@ -408,6 +461,8 @@ namespace DuckovLuckyBox.Core.Settings
                 yield return EnableMeltButton;
                 yield return EnableDebug;
                 yield return EnableUseToCreateItemPatch;
+                yield return EnablePatchUseTime;
+                yield return PatchedUseTime;
                 yield return EnableWeightedLottery;
                 yield return EnableHighQualitySound;
                 yield return EnableRefreshStock;

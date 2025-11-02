@@ -18,6 +18,8 @@ namespace DuckovLuckyBox.Core.Settings
         public bool EnableDebug = DefaultSettings.EnableDebug;
         public bool EnableUseToCreateItemPatch = DefaultSettings.EnableUseToCreateItemPatch;
         public bool EnableWeightedLottery = DefaultSettings.EnableWeightedLottery;
+        public bool EnablePatchUseTime = DefaultSettings.EnablePatchUseTime;
+        public float PatchedUseTime = DefaultSettings.PatchedUseTime;
         public bool EnableHighQualitySound = DefaultSettings.EnableHighQualitySound;
         public bool EnableRefreshStock = DefaultSettings.EnableRefreshStock;
         public bool EnableStorePick = DefaultSettings.EnableStorePick;
@@ -330,6 +332,8 @@ namespace DuckovLuckyBox.Core.Settings
                 EnableDebug = settings.EnableDebug.GetAsBool(),
                 EnableUseToCreateItemPatch = settings.EnableUseToCreateItemPatch.GetAsBool(),
                 EnableWeightedLottery = settings.EnableWeightedLottery.GetAsBool(),
+                EnablePatchUseTime = settings.EnablePatchUseTime.GetAsBool(),
+                PatchedUseTime = settings.PatchedUseTime.GetAsFloat(),
                 EnableHighQualitySound = settings.EnableHighQualitySound.GetAsBool(),
                 EnableRefreshStock = settings.EnableRefreshStock.GetAsBool(),
                 EnableStorePick = settings.EnableStorePick.GetAsBool(),
@@ -359,6 +363,8 @@ namespace DuckovLuckyBox.Core.Settings
                 settings.EnableDebug.Value = config.EnableDebug;
                 settings.EnableUseToCreateItemPatch.Value = config.EnableUseToCreateItemPatch;
                 settings.EnableWeightedLottery.Value = config.EnableWeightedLottery;
+                settings.EnablePatchUseTime.Value = config.EnablePatchUseTime;
+                settings.PatchedUseTime.Value = config.PatchedUseTime;
                 settings.EnableHighQualitySound.Value = config.EnableHighQualitySound;
                 settings.EnableRefreshStock.Value = config.EnableRefreshStock;
                 settings.EnableStorePick.Value = config.EnableStorePick;

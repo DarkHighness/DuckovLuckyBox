@@ -19,6 +19,12 @@ namespace DuckovLuckyBox.Patches
             // Reset failures
             LotteryService.ResetHighLevelFailureCounter();
             MeltService.ResetCumulativeNegativeWeight();
+
+            // Do useTime patching if enabled
+            if (Core.Settings.SettingManager.Instance.EnablePatchUseTime.GetAsBool())
+            {
+                PatchItemUseTime.Instance.Patch();
+            }
         }
     }
 }

@@ -47,6 +47,10 @@ namespace DuckovLuckyBox.Core
             public static readonly string SettingsEnableStreetPickKey = "UI_SettingsEnableStreetPick";
             public static readonly string SettingsEnableRecycleKey = "UI_SettingsEnableRecycle";
             public static readonly string SettingsEnableTripleLotteryAnimationKey = "UI_SettingsEnableTripleLotteryAnimation";
+            public static readonly string SettingsEnablePatchUseTimeKey = "UI_SettingsEnablePatchUseTime";
+            public static readonly string SettingsPatchedUseTimeKey = "UI_SettingsPatchedUseTime";
+            public static readonly string SettingsEnablePatchUseTimeDescriptionKey = "UI_SettingsEnablePatchUseTimeDescription";
+            public static readonly string SettingsPatchedUseTimeDescriptionKey = "UI_SettingsPatchedUseTimeDescription";
             public static readonly string RecyclingFailedKey = "UI_RecyclingFailed";
             public static readonly string ItemIsNullKey = "UI_ItemIsNull";
             public static readonly string ContractInventoryNotAvailableKey = "UI_ContractInventoryNotAvailable";
@@ -119,6 +123,10 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableStreetPickKey, "Enable Street Pick" },
             { I18n.SettingsEnableRecycleKey, "Enable Recycle" },
             { I18n.SettingsEnableTripleLotteryAnimationKey, "Enable Triple Lottery Animation" },
+            { I18n.SettingsEnablePatchUseTimeKey, "Enable Patch Use Time" },
+            { I18n.SettingsPatchedUseTimeKey, "Patched Use Time" },
+            { I18n.SettingsEnablePatchUseTimeDescriptionKey, "Enable patching of item use time for use-to-create items" },
+            { I18n.SettingsPatchedUseTimeDescriptionKey, "The use time to set for patched items (in seconds)" },
             { I18n.DoubleClickToTripleLotteryKey, "Double click to roll more times." },
             { I18n.RecyclingFailedKey, "Recycling failed." },
             { I18n.ItemIsNullKey, "Item is null." },
@@ -186,6 +194,10 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableStreetPickKey, "启用街边抽奖" },
             { I18n.SettingsEnableRecycleKey, "启用汰换合同" },
             { I18n.SettingsEnableTripleLotteryAnimationKey, "启用三连抽动画" },
+            { I18n.SettingsEnablePatchUseTimeKey, "启用使用时间补丁" },
+            { I18n.SettingsPatchedUseTimeKey, "补丁使用时间" },
+            { I18n.SettingsEnablePatchUseTimeDescriptionKey, "启用对使用创建物品的使用时间的补丁" },
+            { I18n.SettingsPatchedUseTimeDescriptionKey, "为补丁物品设置的使用时间（以秒为单位）" },
             { I18n.RecyclingFailedKey, "回收失败。" },
             { I18n.ItemIsNullKey, "物品为空。" },
             { I18n.ContractInventoryNotAvailableKey, "合同库存不可用。" },
