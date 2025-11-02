@@ -135,7 +135,7 @@ namespace DuckovLuckyBox.UI
 
         private sealed class AnimationPlan
         {
-            public AnimationPlan(List<Slot> slots, int finalSlotIndex, float startOffset, float finalOffset, float[] velocityCurve, bool reverseDirection, float initialVelocityInSlots)
+            public AnimationPlan(List<Slot> slots, int finalSlotIndex, float startOffset, float finalOffset, float[] velocityCurve, bool reverseDirection, float initialVelocityInSlots, float[] positionSamples, float sampleInterval)
             {
                 Slots = slots;
                 FinalSlotIndex = finalSlotIndex;
@@ -144,6 +144,9 @@ namespace DuckovLuckyBox.UI
                 VelocityCurve = velocityCurve;
                 ReverseDirection = reverseDirection;
                 InitialVelocityInSlots = initialVelocityInSlots;
+                PositionSamples = positionSamples;
+                SampleInterval = sampleInterval;
+                TotalDuration = Mathf.Max(0f, (positionSamples.Length - 1) * sampleInterval);
             }
 
             public List<Slot> Slots { get; }
@@ -153,6 +156,9 @@ namespace DuckovLuckyBox.UI
             public float[] VelocityCurve { get; }
             public bool ReverseDirection { get; }
             public float InitialVelocityInSlots { get; }
+            public float[] PositionSamples { get; }
+            public float SampleInterval { get; }
+            public float TotalDuration { get; }
 
             public Slot FinalSlot
             {
@@ -201,6 +207,8 @@ namespace DuckovLuckyBox.UI
         private const float DecelerationDuration = 7.0f;
         private const float TotalCurveDuration = 8.5f;
         private const float InitialVelocityRandomRange = 10.0f;
+        private const float PositionSampleRate = 144f;
+        private const float TargetAnimationDuration = 7f;
 
         private const float GlowPulseSpeed = 3f;
         private const float HighlightIntensity = 1.5f;
@@ -805,7 +813,7 @@ namespace DuckovLuckyBox.UI
             int completeSlots = Mathf.FloorToInt(totalDistanceInPixels / slotWidth);
             float remainingPixelsInFinalSlot = totalDistanceInPixels - (completeSlots * slotWidth);
 
-            Log.Debug($"[Animation:{lane.Name}] Total distance: {totalDistanceInPixels}px = {completeSlots} complete slots + {remainingPixelsInFinalSlot}px");
+            Log.Debug($"[Animation:{lane.Name}] Planned travel distance {totalDistanceInPixels:F1}px (~{totalDistanceInPixels / slotWidth:F2} slots), remainder {remainingPixelsInFinalSlot:F1}px");
 
             int startSlotIndex = Mathf.Max(20, minSlotsForViewport);
             int finalSlotIndex = startSlotIndex + completeSlots;
@@ -854,20 +862,45 @@ namespace DuckovLuckyBox.UI
 
             var finalSlotCenterX = slots[finalSlotIndex].Rect.anchoredPosition.x;
             float slotHalfWidth = slotWidth * 0.5f;
-            float offsetWithinSlot = remainingPixelsInFinalSlot - slotHalfWidth;
-            if (reverseDirection)
-            {
-                offsetWithinSlot = -offsetWithinSlot;
-            }
+            float edgePadding = Mathf.Min(slotHalfWidth * 0.25f, 12f);
+            float offsetWithinSlot = UnityEngine.Random.Range(-slotHalfWidth + edgePadding, slotHalfWidth - edgePadding);
             float finalStopPositionX = finalSlotCenterX + offsetWithinSlot;
             float endOffset = -finalStopPositionX;
 
-            Log.Debug($"[Animation:{lane.Name}] Final slot center: {finalSlotCenterX}, Remaining in slot: {remainingPixelsInFinalSlot}px, Offset: {offsetWithinSlot}px, Stop: {finalStopPositionX}, endOffset: {endOffset}");
-
             var startItemPos = slots[startSlotIndex].Rect.anchoredPosition.x;
             float startOffset = -startItemPos;
+            float desiredTravel = Mathf.Abs(startOffset - endOffset);
 
-            plan = new AnimationPlan(slots, finalSlotIndex, startOffset, endOffset, velocityCurve, reverseDirection, initialVelocityInSlots);
+            float baseTravel = CalculateTotalDistanceInPixels(velocityCurve);
+            if (baseTravel <= 0.01f)
+            {
+                Log.Warning($"[Animation:{lane.Name}] Base travel distance too small to plan animation.");
+                return false;
+            }
+
+            float travelScale = desiredTravel > 0.01f ? desiredTravel / baseTravel : 0f;
+            if (travelScale <= 0f)
+            {
+                Log.Warning($"[Animation:{lane.Name}] Invalid travel scale computed.");
+                return false;
+            }
+
+            for (int i = 0; i < velocityCurve.Length; i++)
+            {
+                velocityCurve[i] *= travelScale;
+            }
+
+            var positionSamples = BuildPositionSamples(velocityCurve, startOffset, endOffset, TargetAnimationDuration, out float sampleInterval);
+            if (positionSamples.Length == 0)
+            {
+                Log.Warning($"[Animation:{lane.Name}] Failed to build position samples.");
+                return false;
+            }
+
+            float plannedTravel = Mathf.Abs(startOffset - endOffset);
+            Log.Debug($"[Animation:{lane.Name}] StartOffset: {startOffset:F1}, EndOffset: {endOffset:F1}, planned travel: {plannedTravel:F1}px, samples: {positionSamples.Length}");
+
+            plan = new AnimationPlan(slots, finalSlotIndex, startOffset, endOffset, velocityCurve, reverseDirection, initialVelocityInSlots, positionSamples, sampleInterval);
             return true;
         }
 
@@ -1064,23 +1097,149 @@ namespace DuckovLuckyBox.UI
             return distanceInSlots * SlotFullWidth;
         }
 
+        private float[] BuildPositionSamples(float[] velocityCurve, float startOffset, float endOffset, float targetDuration, out float sampleInterval)
+        {
+            float duration = targetDuration > 0f ? targetDuration : TargetAnimationDuration;
+            int sampleCount = Mathf.Max(2, Mathf.CeilToInt(duration * PositionSampleRate) + 1);
+            sampleInterval = duration / (sampleCount - 1);
+
+            float direction = Mathf.Approximately(endOffset, startOffset) ? 0f : Mathf.Sign(endOffset - startOffset);
+
+            if (velocityCurve == null || velocityCurve.Length == 0)
+            {
+                var fallback = new float[sampleCount];
+                for (int i = 0; i < sampleCount; i++)
+                {
+                    float t = sampleCount <= 1 ? 0f : (float)i / (sampleCount - 1);
+                    fallback[i] = Mathf.Lerp(startOffset, endOffset, t);
+                }
+                fallback[sampleCount - 1] = endOffset;
+                return fallback;
+            }
+
+            float stepDuration = 1f / AnimationStepsPerSecond;
+            float originalDuration = velocityCurve.Length * stepDuration;
+            if (originalDuration <= 0f)
+            {
+                var stationary = new float[sampleCount];
+                for (int i = 0; i < sampleCount; i++)
+                {
+                    stationary[i] = startOffset;
+                }
+                stationary[sampleCount - 1] = endOffset;
+                return stationary;
+            }
+
+            var timePositions = new float[velocityCurve.Length + 1];
+            var offsetPositions = new float[velocityCurve.Length + 1];
+            timePositions[0] = 0f;
+            offsetPositions[0] = startOffset;
+
+            float currentOffset = startOffset;
+            for (int i = 0; i < velocityCurve.Length; i++)
+            {
+                float deltaPixels = Mathf.Abs(velocityCurve[i]) * SlotFullWidth * stepDuration;
+                if (direction > 0f)
+                {
+                    currentOffset = Mathf.Min(currentOffset + deltaPixels, endOffset);
+                }
+                else if (direction < 0f)
+                {
+                    currentOffset = Mathf.Max(currentOffset - deltaPixels, endOffset);
+                }
+                timePositions[i + 1] = timePositions[i] + stepDuration;
+                offsetPositions[i + 1] = currentOffset;
+            }
+
+            offsetPositions[offsetPositions.Length - 1] = endOffset;
+
+            var samples = new float[sampleCount];
+            samples[0] = startOffset;
+
+            int segmentIndex = 1;
+            for (int i = 1; i < sampleCount; i++)
+            {
+                float targetTime = Mathf.Min(i * sampleInterval, duration);
+                float normalizedTime = duration <= 0f ? 1f : Mathf.Clamp01(targetTime / duration);
+                float sourceTime = normalizedTime * originalDuration;
+
+                while (segmentIndex < timePositions.Length - 1 && timePositions[segmentIndex] < sourceTime)
+                {
+                    segmentIndex++;
+                }
+
+                segmentIndex = Mathf.Clamp(segmentIndex, 1, timePositions.Length - 1);
+
+                float t0 = timePositions[segmentIndex - 1];
+                float t1 = timePositions[segmentIndex];
+                float p0 = offsetPositions[segmentIndex - 1];
+                float p1 = offsetPositions[segmentIndex];
+                float segmentT = Mathf.Approximately(t1, t0) ? 0f : Mathf.Clamp01((sourceTime - t0) / (t1 - t0));
+
+                float interpolated = Mathf.Lerp(p0, p1, segmentT);
+                if (direction > 0f)
+                {
+                    interpolated = Mathf.Min(interpolated, endOffset);
+                }
+                else if (direction < 0f)
+                {
+                    interpolated = Mathf.Max(interpolated, endOffset);
+                }
+
+                samples[i] = interpolated;
+            }
+
+            samples[samples.Length - 1] = endOffset;
+            return samples;
+        }
+
         private async UniTask PerformPhysicsBasedRoll(LaneUI lane, AnimationPlan plan, bool canHandleSkipInput, ChannelGroup sfxGroup, int laneIndex, Action<int, string> updateLaneResult)
         {
             if (lane.ItemsContainer == null) return;
 
-            var velocityCurve = plan.VelocityCurve;
+            var samples = plan.PositionSamples ?? Array.Empty<float>();
+            if (samples.Length == 0)
+            {
+                samples = new[] { plan.StartOffset, plan.FinalOffset };
+            }
 
-            float currentPositionInPixels = plan.StartOffset;
-            float targetPositionInPixels = plan.FinalOffset;
+            float sampleInterval = plan.SampleInterval <= 0f ? 1f / PositionSampleRate : plan.SampleInterval;
+            float totalDuration = Math.Max(plan.TotalDuration, (samples.Length - 1) * sampleInterval);
+
+            float currentPositionInPixels = samples[0];
             lane.ItemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
 
             int lastHighlightedIndex = -1;
+            int lastSampleIndex = -1;
             float elapsedTime = 0f;
 
-            float velocityDirection = targetPositionInPixels < currentPositionInPixels ? -1f : 1f;
-
             string directionLabel = plan.ReverseDirection ? "RightToLeft" : "LeftToRight";
-            Log.Debug($"[Animation:{lane.Name}] Start ({directionLabel}) - Current: {currentPositionInPixels}, Target: {targetPositionInPixels}, Distance: {(targetPositionInPixels - currentPositionInPixels) / SlotFullWidth} slots, InitialVel: {plan.InitialVelocityInSlots:F2} slots/s");
+            Log.Debug($"[Animation:{lane.Name}] Start ({directionLabel}) - Samples: {samples.Length}, Duration: {totalDuration:F2}s");
+
+            void UpdateHighlight(float offset)
+            {
+                int currentIndex = FindCenteredSlotIndex(plan, offset);
+                if (currentIndex == lastHighlightedIndex) return;
+
+                if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count)
+                {
+                    var prevSlot = plan.Slots[lastHighlightedIndex];
+                    prevSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 0f);
+                    prevSlot.Rect.localScale = Vector3.one;
+                }
+
+                if (currentIndex >= 0 && currentIndex < plan.Slots.Count)
+                {
+                    var currentSlot = plan.Slots[currentIndex];
+                    currentSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f);
+                    currentSlot.Rect.localScale = Vector3.one * 1.05f;
+                    updateLaneResult?.Invoke(laneIndex, currentSlot.DisplayName);
+                }
+
+                lastHighlightedIndex = currentIndex;
+            }
+
+            UpdateHighlight(currentPositionInPixels);
 
             while (true)
             {
@@ -1096,65 +1255,41 @@ namespace DuckovLuckyBox.UI
 
                 if (_skipRequested)
                 {
-                    currentPositionInPixels = targetPositionInPixels;
+                    currentPositionInPixels = samples[samples.Length - 1];
                     lane.ItemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
+                    UpdateHighlight(currentPositionInPixels);
                     break;
                 }
 
                 await UniTask.Yield(PlayerLoopTiming.Update);
                 float deltaTime = Time.deltaTime;
                 elapsedTime += deltaTime;
-
-                float distanceToTarget = Mathf.Abs(targetPositionInPixels - currentPositionInPixels);
-                Log.Debug($"[Animation:{lane.Name}] Elapsed: {elapsedTime:F2}s, Distance to target: {distanceToTarget:F1}px ({distanceToTarget / SlotFullWidth:F2} slots)");
-
-                int curveIndex = Mathf.FloorToInt(elapsedTime * AnimationStepsPerSecond);
-                curveIndex = Mathf.Clamp(curveIndex, 0, velocityCurve.Length - 1);
-                float currentVelocityInSlots = velocityCurve[curveIndex] * velocityDirection;
-
-                float velocityInPixels = currentVelocityInSlots * SlotFullWidth;
-                float movementInPixels = velocityInPixels * deltaTime;
-                float nextPositionInPixels = currentPositionInPixels + movementInPixels;
-
-                if ((velocityDirection == -1 && nextPositionInPixels <= targetPositionInPixels) ||
-                    (velocityDirection == 1 && nextPositionInPixels >= targetPositionInPixels))
-                {
-                    currentPositionInPixels = targetPositionInPixels;
-                    lane.ItemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
-                    Log.Debug($"[Animation:{lane.Name}] Reached target position at {elapsedTime:F2}s (next: {nextPositionInPixels:F1}, target: {targetPositionInPixels:F1})");
-                    break;
-                }
-
-                currentPositionInPixels = nextPositionInPixels;
+                elapsedTime = Mathf.Min(elapsedTime, totalDuration);
+                int sampleIndex = Mathf.Clamp(Mathf.FloorToInt(elapsedTime / sampleInterval), 0, samples.Length - 1);
+                currentPositionInPixels = samples[sampleIndex];
                 lane.ItemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
 
-                int currentIndex = FindCenteredSlotIndex(plan, currentPositionInPixels);
-                if (currentIndex != lastHighlightedIndex)
+                if (sampleIndex != lastSampleIndex)
                 {
-                    if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count)
-                    {
-                        var prevSlot = plan.Slots[lastHighlightedIndex];
-                        prevSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 0f);
-                        prevSlot.Rect.localScale = Vector3.one;
-                    }
-
-                    if (currentIndex >= 0 && currentIndex < plan.Slots.Count)
-                    {
-                        var currentSlot = plan.Slots[currentIndex];
-                        currentSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f);
-                        currentSlot.Rect.localScale = Vector3.one * 1.05f;
-                        updateLaneResult?.Invoke(laneIndex, currentSlot.DisplayName);
-                    }
-
-                    lastHighlightedIndex = currentIndex;
+                    UpdateHighlight(currentPositionInPixels);
+                    lastSampleIndex = sampleIndex;
                 }
 
                 if (elapsedTime >= MaxAnimationDurationInSeconds)
                 {
-                    Log.Warning($"[Animation:{lane.Name}] Force stopped after {elapsedTime:F2}s - target position not reached (pos: {currentPositionInPixels:F1}, target: {targetPositionInPixels:F1})");
+                    Log.Warning($"[Animation:{lane.Name}] Force stopped after {elapsedTime:F2}s - exceeded max duration.");
+                    break;
+                }
+
+                if (sampleIndex >= samples.Length - 1)
+                {
                     break;
                 }
             }
+
+            currentPositionInPixels = samples[samples.Length - 1];
+            lane.ItemsContainer.anchoredPosition = new Vector2(currentPositionInPixels, 0f);
+            UpdateHighlight(currentPositionInPixels);
 
             if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count && lastHighlightedIndex != plan.FinalSlotIndex)
             {
