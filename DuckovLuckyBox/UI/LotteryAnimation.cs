@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -192,6 +193,7 @@ namespace DuckovLuckyBox.UI
         private Sprite? _fallbackSprite;
         private bool _isAnimating;
         private bool _skipRequested;
+        private readonly Dictionary<RectTransform, CancellationTokenSource> _slotHighlightTokens = new Dictionary<RectTransform, CancellationTokenSource>();
 
         // Configuration constants
         private static readonly Vector2 IconSize = new Vector2(160f, 160f);
@@ -199,7 +201,6 @@ namespace DuckovLuckyBox.UI
         private const float SlotPadding = 24f;
         private static readonly float SlotFullWidth = IconSize.x + SlotPadding + ItemSpacing;
         private const int SlotsAfterFinal = 20;
-
         private const float BaseInitialVelocityInSlots = 50f;
         private const float MaxAnimationDurationInSeconds = 10f;
         private const int AnimationStepsPerSecond = 100;
@@ -221,7 +222,8 @@ namespace DuckovLuckyBox.UI
         private const float LaneVerticalSpacing = 48f;
         private const float MinLaneHeight = 140f;
         private const float MaxLaneHeight = 240f;
-
+        private const float HighlightScaleUpDuration = 0.1f;
+        private const float HighlightScaleDownDuration = 0.25f;
         private static readonly Color OverlayColor = new Color(0f, 0f, 0f, 0.7f);
         private static readonly Color FinalFrameColor = new Color(0.95f, 0.8f, 0.35f, 1f);
         private static readonly Color SlotFrameColor = new Color(1f, 1f, 1f, 0.25f);
@@ -1224,16 +1226,19 @@ namespace DuckovLuckyBox.UI
                 if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count)
                 {
                     var prevSlot = plan.Slots[lastHighlightedIndex];
-                    prevSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 0f);
-                    prevSlot.Rect.localScale = Vector3.one;
+                    StartSlotHighlightAnimation(prevSlot, false);
                 }
 
                 if (currentIndex >= 0 && currentIndex < plan.Slots.Count)
                 {
                     var currentSlot = plan.Slots[currentIndex];
-                    currentSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f);
-                    currentSlot.Rect.localScale = Vector3.one * 1.05f;
+                    StartSlotHighlightAnimation(currentSlot, true);
                     updateLaneResult?.Invoke(laneIndex, currentSlot.DisplayName);
+                }
+                else if (currentIndex < 0 && lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count)
+                {
+                    var prevSlot = plan.Slots[lastHighlightedIndex];
+                    StartSlotHighlightAnimation(prevSlot, false);
                 }
 
                 lastHighlightedIndex = currentIndex;
@@ -1294,13 +1299,11 @@ namespace DuckovLuckyBox.UI
             if (lastHighlightedIndex >= 0 && lastHighlightedIndex < plan.Slots.Count && lastHighlightedIndex != plan.FinalSlotIndex)
             {
                 var prevSlot = plan.Slots[lastHighlightedIndex];
-                prevSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 0f);
-                prevSlot.Rect.localScale = Vector3.one;
+                StartSlotHighlightAnimation(prevSlot, false);
             }
 
             var finalSlot = plan.FinalSlot;
-            finalSlot.IconOutline.effectColor = new Color(1f, 1f, 1f, 1f);
-            finalSlot.Rect.localScale = Vector3.one * 1.05f;
+            StartSlotHighlightAnimation(finalSlot, true);
 
             updateLaneResult?.Invoke(laneIndex, finalSlot.DisplayName);
         }
@@ -1331,6 +1334,8 @@ namespace DuckovLuckyBox.UI
             var slot = plan.FinalSlot;
             var frame = slot.Frame;
             var icon = slot.Icon;
+
+            StopSlotHighlightAnimation(slot);
 
             updateLaneResult?.Invoke(laneIndex, slot.DisplayName);
 
@@ -1408,6 +1413,7 @@ namespace DuckovLuckyBox.UI
 
         private void ClearItems(LaneUI lane)
         {
+            StopAllSlotHighlightAnimations();
             if (lane.ItemsContainer == null) return;
 
             for (int i = lane.ItemsContainer.childCount - 1; i >= 0; i--)
@@ -1459,6 +1465,7 @@ namespace DuckovLuckyBox.UI
         /// </summary>
         public void Destroy()
         {
+            StopAllSlotHighlightAnimations();
             foreach (var lane in _lanes)
             {
                 if (lane.Root != null)
@@ -1488,6 +1495,125 @@ namespace DuckovLuckyBox.UI
             _skipRequested = false;
             _isInitialized = false;
             _instance = null;
+        }
+
+        private void StartSlotHighlightAnimation(Slot slot, bool highlighted)
+        {
+            if (slot.Rect == null) return;
+
+            if (_slotHighlightTokens.TryGetValue(slot.Rect, out var existing))
+            {
+                existing.Cancel();
+                existing.Dispose();
+                _slotHighlightTokens.Remove(slot.Rect);
+            }
+
+            var cts = new CancellationTokenSource();
+            _slotHighlightTokens[slot.Rect] = cts;
+            AnimateSlotHighlight(slot, highlighted, cts).Forget();
+        }
+
+        private void StopSlotHighlightAnimation(Slot slot)
+        {
+            if (slot.Rect == null) return;
+
+            if (_slotHighlightTokens.TryGetValue(slot.Rect, out var existing))
+            {
+                existing.Cancel();
+                existing.Dispose();
+                _slotHighlightTokens.Remove(slot.Rect);
+            }
+        }
+
+        private void StopAllSlotHighlightAnimations()
+        {
+            if (_slotHighlightTokens.Count == 0) return;
+
+            foreach (var kvp in _slotHighlightTokens)
+            {
+                kvp.Value.Cancel();
+                kvp.Value.Dispose();
+            }
+
+            _slotHighlightTokens.Clear();
+        }
+
+        private async UniTask AnimateSlotHighlight(Slot slot, bool highlighted, CancellationTokenSource cts)
+        {
+            var rect = slot.Rect;
+            var outline = slot.IconOutline;
+
+            if (rect == null || outline == null)
+            {
+                CleanupHighlightAnimation(rect, cts);
+                return;
+            }
+
+            float targetScale = highlighted ? 1.05f : 1f;
+            float targetAlpha = highlighted ? 1f : 0f;
+            float duration = highlighted ? HighlightScaleUpDuration : HighlightScaleDownDuration;
+
+            float startScale = rect.localScale.x;
+            float startAlpha = outline.effectColor.a;
+            var targetColor = new Color(1f, 1f, 1f, targetAlpha);
+            var startColor = outline.effectColor;
+
+            if (Mathf.Approximately(duration, 0f))
+            {
+                rect.localScale = Vector3.one * targetScale;
+                outline.effectColor = targetColor;
+                CleanupHighlightAnimation(rect, cts);
+                return;
+            }
+
+            float elapsed = 0f;
+            try
+            {
+                while (elapsed < duration)
+                {
+                    await UniTask.Yield(PlayerLoopTiming.Update);
+                    if (cts.IsCancellationRequested)
+                    {
+                        CleanupHighlightAnimation(rect, cts);
+                        return;
+                    }
+
+                    elapsed += Time.deltaTime;
+                    float t = Mathf.Clamp01(elapsed / duration);
+                    float eased = 1f - Mathf.Pow(1f - t, 3f);
+
+                    float scale = Mathf.Lerp(startScale, targetScale, eased);
+                    rect.localScale = Vector3.one * scale;
+
+                    float alpha = Mathf.Lerp(startAlpha, targetAlpha, eased);
+                    var color = Color.Lerp(startColor, targetColor, eased);
+                    color.a = alpha;
+                    outline.effectColor = color;
+                }
+
+                rect.localScale = Vector3.one * targetScale;
+                outline.effectColor = targetColor;
+            }
+            finally
+            {
+                CleanupHighlightAnimation(rect, cts);
+            }
+        }
+
+        private void CleanupHighlightAnimation(RectTransform? rect, CancellationTokenSource cts)
+        {
+            if (rect == null)
+            {
+                cts.Dispose();
+                return;
+            }
+
+            if (_slotHighlightTokens.TryGetValue(rect, out var existing) && existing == cts)
+            {
+                _slotHighlightTokens.Remove(rect);
+            }
+
+            cts.Dispose();
         }
 
         private readonly struct Slot
