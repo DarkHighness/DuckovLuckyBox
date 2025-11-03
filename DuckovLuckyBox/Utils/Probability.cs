@@ -11,13 +11,13 @@ namespace DuckovLuckyBox
         // ===========================================
         // | Quality | Probability | Percentage |
         // |---------|-------------|------------|
-        // | White   | 160         | 16.0%      |
-        // | Green   | 230         | 23.0%      |
-        // | Blue    | 220         | 22.0%      |
-        // | Purple  | 110         | 11.0%      |
+        // | White   | 130         | 13.0%      |
+        // | Green   | 190         | 19.0%      |
+        // | Blue    | 280         | 28.0%      |
+        // | Purple  | 150         | 15.0%      |
         // | Orange  | 120         | 12.0%      |
-        // | Red     | 90          | 9.0%       |
-        // | LightRed| 70          | 7.0%       |
+        // | LightRed| 80          | 8.0%       |
+        // | Red     | 50          | 5.0%       |
         // ===========================================
 
         // Return the probability (thousandth) of getting an item of the specified ItemValueLevel
@@ -25,13 +25,13 @@ namespace DuckovLuckyBox
         {
             return level switch
             {
-                ItemValueLevel.White => 160,
-                ItemValueLevel.Green => 230,
-                ItemValueLevel.Blue => 220,
-                ItemValueLevel.Purple => 110,
+                ItemValueLevel.White => 130,
+                ItemValueLevel.Green => 190,
+                ItemValueLevel.Blue => 280,
+                ItemValueLevel.Purple => 150,
                 ItemValueLevel.Orange => 120,
-                ItemValueLevel.Red => 90,
-                ItemValueLevel.LightRed => 70,
+                ItemValueLevel.LightRed => 80,
+                ItemValueLevel.Red => 50,
                 _ => 0
             };
         }
