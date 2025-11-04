@@ -1,0 +1,10 @@
+[project]
+name = "duckovluckybox"
+version = "0.1.0"
+description = "A mod that adds lucky boxes to Escape from Duckov"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "jupyter>=1.1.1",
+    "pandas>=2.3.3",
+]

@@ -31,28 +31,39 @@ namespace DuckovLuckyBox
 
         public static readonly string[] RecyclableCategories =
         {
-        "Drink", // Addon
-        "Special",
-        "JLab",
-        "Key",
-        "Daily",
-        "Gem",
-        "Food",
-        "Headset",
-        "Accessory",
-        "Backpack",
-        "Weapon",
-        "MeleeWeapon",
-        "Helmat",
-        "Medic",
-        "FaceMask",
-        "Armor",
-        "Luxury",
-        "Injector",
-        "Electric",
-        "Totem",
-        "Tool",
-        "Bullet"
+                "Accessory",
+                "Armor",
+                "Backpack",
+                "Bait",
+                "Bullet",
+                "ComputerParts_GPU",
+                "Continer",
+                "Crop",
+                "Daily",
+                "Drink", // Addon
+                "Electric",
+                "Explosive",
+                "FaceMask",
+                "Fish",
+                "Food",
+                // "Formula",
+                "Gem",
+                "Headset",
+                "Helmat",
+                "Information",
+                "Injector",
+                "JLab",
+                "Key",
+                "Luxury",
+                "Medic",
+                "MeleeWeapon",
+                "Seed",
+                "Shit",
+                "Special",
+                // "SpecialKey",
+                "Tool",
+                "Totem",
+                "Weapon",
       };
 
         public static List<Entry> QueryGameItems(ItemPredicate predicate, bool includeDynamicItems = true)
@@ -157,6 +168,12 @@ namespace DuckovLuckyBox
 
             // 5. Exclude items that the description is not translated
             if (entry.Item.Description.StartsWith("*Item_"))
+            {
+                return false;
+            }
+
+            // 6. Exclude items that price is one
+            if (entry.MetaData.priceEach <= 1)
             {
                 return false;
             }

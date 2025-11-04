@@ -68,6 +68,7 @@ namespace DuckovLuckyBox
             // | LightRed| 300(30%)    | 300(30%)      | 300(25%) | 100(10%)    |
             // | Red     | 0(0%)       | 250(35%)      | 650(60%) | 100(10%)    |
             // ===========================================
+            // Currently, mutation probability is fixed at 20% of destroy probability for all levels.
 
             // Get melt probabilities for a given ItemValueLevel
             public static MeltProbability GetMeltProbabilityForLevel(ItemValueLevel level)
@@ -75,14 +76,14 @@ namespace DuckovLuckyBox
                 // The higher the level, the higher the chance to go down, the lower the chance to go up, etc.
                 return level switch
                 {
-                    ItemValueLevel.White => new MeltProbability(level, 800, 0, 150, 50, 300),
-                    ItemValueLevel.Green => new MeltProbability(level, 600, 50, 300, 50, 300),
-                    ItemValueLevel.Blue => new MeltProbability(level, 550, 50, 350, 50, 300),
-                    ItemValueLevel.Purple => new MeltProbability(level, 400, 200, 350, 50, 300),
-                    ItemValueLevel.Orange => new MeltProbability(level, 350, 250, 300, 100, 300),
-                    ItemValueLevel.LightRed => new MeltProbability(level, 300, 300, 300, 100, 300),
-                    ItemValueLevel.Red => new MeltProbability(level, 0, 250, 650, 100, 300),
-                    _ => new MeltProbability(level, 0, 0, 1000, 0, 300)
+                    ItemValueLevel.White => new MeltProbability(level, 800, 0, 150, 50, 200),
+                    ItemValueLevel.Green => new MeltProbability(level, 600, 50, 300, 50, 200),
+                    ItemValueLevel.Blue => new MeltProbability(level, 550, 50, 350, 50, 200),
+                    ItemValueLevel.Purple => new MeltProbability(level, 400, 200, 350, 50, 200),
+                    ItemValueLevel.Orange => new MeltProbability(level, 350, 250, 300, 100, 200),
+                    ItemValueLevel.LightRed => new MeltProbability(level, 300, 300, 300, 100, 200),
+                    ItemValueLevel.Red => new MeltProbability(level, 0, 250, 650, 100, 200),
+                    _ => new MeltProbability(level, 0, 0, 1000, 0, 200)
                 };
             }
         }
