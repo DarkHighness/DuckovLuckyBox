@@ -23,9 +23,6 @@ namespace DuckovLuckyBox.UI.Component
         private TMP_InputField? inputField = null;
         private bool isIntegral = false;
 
-        private Coroutine? debounceCoroutine = null;
-        private const float DebounceDelay = 0.5f;
-
         public bool Setup(SettingItem item, OptionsUIEntry_Slider baseComponent)
         {
             this.item = item;
@@ -62,12 +59,6 @@ namespace DuckovLuckyBox.UI.Component
 
             inputField?.onEndEdit.RemoveListener(OnInputFieldEndEdit);
             LocalizationManager.OnSetLanguage -= OnLanguageChanged;
-
-            if (debounceCoroutine != null)
-            {
-                StopCoroutine(debounceCoroutine);
-                debounceCoroutine = null;
-            }
         }
 
         private void OnLanguageChanged(SystemLanguage language)
@@ -90,16 +81,8 @@ namespace DuckovLuckyBox.UI.Component
             if (item != null)
             {
                 float steppedValue = ToSteppedValue(value);
-                if (Mathf.Approximately(steppedValue, item.GetAsFloat()))
-                {
-                    // Value hasn't changed after stepping, no need to debounce
-                    return;
-                }
-                if (debounceCoroutine != null)
-                {
-                    StopCoroutine(debounceCoroutine);
-                }
-                debounceCoroutine = StartCoroutine(DebounceSetValue(steppedValue));
+                item.Value = steppedValue;
+                RefreshValues();
             }
         }
 
@@ -141,17 +124,6 @@ namespace DuckovLuckyBox.UI.Component
                 string format = isIntegral ? "F0" : "F2";
                 inputField.SetTextWithoutNotify(steppedValue.ToString(format));
             }
-        }
-
-        private System.Collections.IEnumerator DebounceSetValue(float steppedValue)
-        {
-            yield return new UnityEngine.WaitForSeconds(DebounceDelay);
-            if (item != null)
-            {
-                item.Value = steppedValue;
-                RefreshValues();
-            }
-            debounceCoroutine = null;
         }
     }
 }
