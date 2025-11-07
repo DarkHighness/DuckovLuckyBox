@@ -25,7 +25,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
             if (target == null) return;
 
             // Get price from settings and try to pay
-            long price = SettingManager.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
+            long price = SettingManager.Instance.RefreshStockPrice.GetAsLong();
 
             // Skip payment if price is zero
             if (price > 0 && !EconomyManager.Pay(new Cost(price), true, true))

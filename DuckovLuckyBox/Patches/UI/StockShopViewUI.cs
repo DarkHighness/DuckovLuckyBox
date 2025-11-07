@@ -352,7 +352,7 @@ namespace DuckovLuckyBox.Core
         {
             if (!_actionTexts.TryGetValue(nameof(RefreshStockAction), out var refreshText)) return;
 
-            long refreshPrice = SettingManager.Instance.RefreshStockPrice.Value as long? ?? DefaultSettings.RefreshStockPrice;
+            long refreshPrice = SettingManager.Instance.RefreshStockPrice.GetAsLong();
             var freeText = Localizations.I18n.FreeKey.ToPlainText();
             var baseText = Localizations.I18n.RefreshStockKey.ToPlainText();
             var priceText = refreshPrice > 0 ? $" (${refreshPrice})" : $" ({freeText})";
@@ -364,7 +364,7 @@ namespace DuckovLuckyBox.Core
         {
             if (!_actionTexts.TryGetValue(nameof(StorePickAction), out var storePickText)) return;
 
-            long storePickPrice = SettingManager.Instance.StorePickPrice.Value as long? ?? DefaultSettings.StorePickPrice;
+            long storePickPrice = SettingManager.Instance.StorePickPrice.GetAsLong();
             var freeText = Localizations.I18n.FreeKey.ToPlainText();
             var baseText = Localizations.I18n.StorePickKey.ToPlainText();
             var priceText = storePickPrice > 0 ? $" (${storePickPrice})" : $" ({freeText})";
@@ -380,7 +380,7 @@ namespace DuckovLuckyBox.Core
         {
             if (!_actionTexts.TryGetValue(nameof(StreetPickAction), out var streetPickText)) return;
 
-            long streetPickPrice = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
+            long streetPickPrice = SettingManager.Instance.StreetPickPrice.GetAsLong();
             var freeText = Localizations.I18n.FreeKey.ToPlainText();
             var baseText = Localizations.I18n.StreetPickKey.ToPlainText();
             var priceText = streetPickPrice > 0 ? $" (${streetPickPrice})" : $" ({freeText})";

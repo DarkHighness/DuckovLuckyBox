@@ -362,7 +362,7 @@ namespace DuckovLuckyBox.UI
         /// </summary>
         public async UniTask PlayAsync(IEnumerable<int> candidateTypeIds, IReadOnlyList<LaneFinalData> finalLaneData)
         {
-            var enableAnimationValue = Core.Settings.SettingManager.Instance.EnableAnimation.Value;
+            var enableAnimationValue = Core.Settings.SettingManager.Instance.EnableAnimation.GetAsBool();
             if (enableAnimationValue is bool enabled && !enabled)
             {
                 return;

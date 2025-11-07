@@ -18,6 +18,15 @@ namespace DuckovLuckyBox.Core.Settings
         Text
     }
 
+    public enum StorageType
+    {
+        Bool,
+        Long,
+        Float,
+        String,
+        Hotkey
+    }
+
     public class SettingItem
     {
         public string Key { get; internal set; } = string.Empty;
@@ -25,6 +34,7 @@ namespace DuckovLuckyBox.Core.Settings
         public string Description { get; internal set; } = string.Empty;
         public Type Type { get; internal set; }
         public Category Category { get; internal set; }
+        public StorageType StorageType { get; internal set; } = StorageType.Bool; // Default storage type
         public event System.Action<object> OnValueChanged = delegate { };
 
         // For Number type settings
@@ -34,14 +44,13 @@ namespace DuckovLuckyBox.Core.Settings
 
         public object Value
         {
-            get => _value;
             set
             {
                 if (!_hasValue || !IsEqual(_value, value))
                 {
                     Log.Debug($"Setting '{Key}' changing value from {_value} to: {value}");
 
-                    _value = TransformValueToType(value, Type);
+                    _value = TransformValueToType(value, StorageType);
                     _hasValue = true;
                     OnValueChanged?.Invoke(_value);
                     return;
@@ -73,14 +82,22 @@ namespace DuckovLuckyBox.Core.Settings
             if (a == null && b == null) return true;
             if (a == null || b == null) return false;
 
-            switch (Type)
+            switch (StorageType)
             {
-                case Type.Number:
+                case StorageType.Float:
                     // Convert both to float for comparison with epsilon to handle floating point precision
                     float fa = System.Convert.ToSingle(a);
                     float fb = System.Convert.ToSingle(b);
                     return Mathf.Approximately(fa, fb);
-                case Type.Hotkey:
+                case StorageType.Long:
+                    long la = System.Convert.ToInt64(a);
+                    long lb = System.Convert.ToInt64(b);
+                    return la == lb;
+                case StorageType.Bool:
+                    return System.Convert.ToBoolean(a) == System.Convert.ToBoolean(b);
+                case StorageType.String:
+                    return System.Convert.ToString(a) == System.Convert.ToString(b);
+                case StorageType.Hotkey:
                     if (a is Hotkey ha && b is Hotkey hb)
                     {
                         return ha.Key == hb.Key && ha.Ctrl == hb.Ctrl && ha.Shift == hb.Shift && ha.Alt == hb.Alt;
@@ -88,29 +105,26 @@ namespace DuckovLuckyBox.Core.Settings
                     return false;
                 default:
                     // Convert to the same type for comparison
-                    var ta = TransformValueToType(a, Type);
-                    var tb = TransformValueToType(b, Type);
+                    var ta = TransformValueToType(a, StorageType);
+                    var tb = TransformValueToType(b, StorageType);
                     return ta.Equals(tb);
             }
         }
 
-        private object TransformValueToType(object value, Type type)
+        private object TransformValueToType(object value, StorageType storageType)
         {
-            switch (type)
+            switch (storageType)
             {
-                case Type.Toggle:
+                case StorageType.Bool:
                     return System.Convert.ToBoolean(value);
-                case Type.Number:
-                    if (value is int || value is long)
-                    {
-                        return System.Convert.ToInt64(value);
-                    }
-                    else
-                    {
-                        return System.Convert.ToSingle(value);
-                    }
-                case Type.Text:
+                case StorageType.Long:
+                    return System.Convert.ToInt64(value);
+                case StorageType.Float:
+                    return System.Convert.ToSingle(value);
+                case StorageType.String:
                     return System.Convert.ToString(value) ?? string.Empty;
+                case StorageType.Hotkey:
+                    return value; // Assuming Hotkey is already the correct type
                 default:
                     return value;
             }
@@ -119,85 +133,85 @@ namespace DuckovLuckyBox.Core.Settings
         // Utility methods
         public void ResetToDefault()
         {
-            Value = DefaultValue;
+            _value = _defaultValue;
         }
 
         public bool IsDefault()
         {
-            return EqualityComparer<object>.Default.Equals(Value, DefaultValue);
+            return EqualityComparer<object>.Default.Equals(_value, _defaultValue);
         }
 
         public bool GetAsBool()
         {
-            if (Value is bool b)
+            if (_value is bool b)
                 return b;
-            if (Value is string s)
+            if (_value is string s)
             {
                 if (bool.TryParse(s, out bool result))
                     return result;
             }
-            if (Value is int i)
+            if (_value is int i)
                 return i != 0;
-            if (Value is long l)
+            if (_value is long l)
                 return l != 0L;
-            if (Value is float f)
+            if (_value is float f)
                 return !Mathf.Approximately(f, 0f);
-            if (Value is double d)
+            if (_value is double d)
                 return !Mathf.Approximately((float)d, 0f);
 
-            throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to bool.");
+            throw new System.InvalidCastException($"Cannot cast setting value of type {_value.GetType()} to bool.");
         }
 
         public float GetAsFloat()
         {
-            if (Value is float f)
+            if (_value is float f)
                 return f;
-            if (Value is double d)
+            if (_value is double d)
                 return System.Convert.ToSingle(d);
-            if (Value is int || Value is long)
-                return System.Convert.ToSingle(Value);
+            if (_value is int || _value is long)
+                return System.Convert.ToSingle(_value);
 
-            throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to float.");
+            throw new System.InvalidCastException($"Cannot cast setting value of type {_value.GetType()} to float.");
         }
 
         public Hotkey GetAsHotkey()
         {
-            if (Value is Hotkey h)
+            if (_value is Hotkey h)
                 return h;
 
-            throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to Hotkey.");
+            throw new System.InvalidCastException($"Cannot cast setting value of type {_value.GetType()} to Hotkey.");
         }
 
         public int GetAsInt()
         {
-            if (Value is int i)
+            if (_value is int i)
                 return i;
-            if (Value is long l)
+            if (_value is long l)
                 return (int)l;
-            if (Value is float || Value is double)
-                return System.Convert.ToInt32(Value);
+            if (_value is float || _value is double)
+                return System.Convert.ToInt32(_value);
 
-            throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to int.");
+            throw new System.InvalidCastException($"Cannot cast setting value of type {_value.GetType()} to int.");
         }
 
         public long GetAsLong()
         {
-            if (Value is long l)
+            if (_value is long l)
                 return l;
-            if (Value is int i)
+            if (_value is int i)
                 return i;
-            if (Value is float || Value is double)
-                return System.Convert.ToInt64(Value);
+            if (_value is float || _value is double)
+                return System.Convert.ToInt64(_value);
 
-            throw new System.InvalidCastException($"Cannot cast setting value of type {Value.GetType()} to long.");
+            throw new System.InvalidCastException($"Cannot cast setting value of type {_value.GetType()} to long.");
         }
 
         public string GetAsString()
         {
-            if (Value is string s)
+            if (_value is string s)
                 return s;
 
-            throw new System.InvalidCastException($"Cannot cast setting value of type {Value?.GetType()} to string.");
+            throw new System.InvalidCastException($"Cannot cast setting value of type {_value.GetType()} to string.");
         }
 
         private object _value = null!;
@@ -250,6 +264,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableAnimation.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableAnimation,
         };
 
@@ -260,6 +275,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableTripleLotteryAnimation.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableTripleLotteryAnimation,
         };
 
@@ -270,6 +286,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableDestroyButton.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableDestroyButton,
         };
 
@@ -280,6 +297,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableMeltButton.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableMeltButton,
         };
 
@@ -290,6 +308,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableDebug.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableDebug,
         };
 
@@ -300,6 +319,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableUseToCreateItemPatch.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableUseToCreateItemPatch,
         };
 
@@ -310,6 +330,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = Localizations.I18n.SettingsEnablePatchUseTimeDescriptionKey,
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnablePatchUseTime,
         };
 
@@ -320,6 +341,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = Localizations.I18n.SettingsPatchedUseTimeDescriptionKey,
             Type = Type.Number,
             Category = Category.General,
+            StorageType = StorageType.Float,
             DefaultValue = DefaultSettings.PatchedUseTime,
             MinValue = 0f,
             MaxValue = 6f,
@@ -333,6 +355,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableWeightedLottery.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableWeightedLottery,
         };
 
@@ -343,6 +366,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableHighQualitySound.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableHighQualitySound,
         };
 
@@ -353,6 +377,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableRefreshStock.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableRefreshStock,
         };
 
@@ -363,6 +388,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableStorePick.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableStorePick,
         };
 
@@ -373,6 +399,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableStreetPick.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableStreetPick,
         };
 
@@ -383,6 +410,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.EnableRecycle.Description",
             Type = Type.Toggle,
             Category = Category.General,
+            StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableRecycle,
         };
 
@@ -393,6 +421,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "Custom sound file path for high-quality items (leave empty to use default)",
             Type = Type.Text,
             Category = Category.General,
+            StorageType = StorageType.String,
             DefaultValue = DefaultSettings.HighQualitySoundFilePath,
         };
 
@@ -403,6 +432,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.RefreshStockPrice.Description",
             Type = Type.Number,
             Category = Category.Pricing,
+            StorageType = StorageType.Long,
             DefaultValue = DefaultSettings.RefreshStockPrice,
             MinValue = DefaultSettings.PriceMinValue,
             MaxValue = DefaultSettings.PriceMaxValue,
@@ -416,6 +446,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.StorePickPrice.Description",
             Type = Type.Number,
             Category = Category.Pricing,
+            StorageType = StorageType.Long,
             DefaultValue = DefaultSettings.StorePickPrice,
             MinValue = DefaultSettings.PriceMinValue,
             MaxValue = DefaultSettings.PriceMaxValue,
@@ -429,6 +460,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.StreetPickPrice.Description",
             Type = Type.Number,
             Category = Category.Pricing,
+            StorageType = StorageType.Long,
             DefaultValue = DefaultSettings.StreetPickPrice,
             MinValue = DefaultSettings.PriceMinValue,
             MaxValue = DefaultSettings.PriceMaxValue,
@@ -442,6 +474,7 @@ namespace DuckovLuckyBox.Core.Settings
             Description = "DuckovLuckyBox.Settings.MeltBasePrice.Description",
             Type = Type.Number,
             Category = Category.Pricing,
+            StorageType = StorageType.Long,
             DefaultValue = DefaultSettings.MeltBasePrice,
             MinValue = 0f,
             MaxValue = 10000f,

@@ -158,7 +158,7 @@ namespace DuckovLuckyBox.Core
                 return;
             }
 
-            bool destroyButtonEnabled = (bool)SettingManager.Instance.EnableDestroyButton.Value;
+            bool destroyButtonEnabled = SettingManager.Instance.EnableDestroyButton.GetAsBool();
 
             // Get current target item
             var targetDisplayField = AccessTools.Field(typeof(ItemOperationMenu), "TargetDisplay");
@@ -184,7 +184,7 @@ namespace DuckovLuckyBox.Core
                 return;
             }
 
-            bool meltButtonEnabled = (bool)SettingManager.Instance.EnableMeltButton.Value;
+            bool meltButtonEnabled = SettingManager.Instance.EnableMeltButton.GetAsBool();
 
             // Get current target item
             var targetDisplayField = AccessTools.Field(typeof(ItemOperationMenu), "TargetDisplay");

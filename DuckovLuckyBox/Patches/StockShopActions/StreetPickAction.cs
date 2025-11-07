@@ -17,7 +17,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
         {
 
             // Get price from settings
-            long unitPrice = SettingManager.Instance.StreetPickPrice.Value as long? ?? DefaultSettings.StreetPickPrice;
+            long unitPrice = SettingManager.Instance.StreetPickPrice.GetAsLong();
 
             // Determine the lottery count that can be performed with the current balance
             int lotteryCount = 1;
@@ -34,7 +34,7 @@ namespace DuckovLuckyBox.Patches.StockShopActions
                 itemTypeIds: ItemUtils.LotteryItemCache.GetAllItemTypeIds(),
                 lotteryCount: lotteryCount,
                 unitPrice: unitPrice,
-                playAnimation: SettingManager.Instance.EnableAnimation.Value as bool? ?? DefaultSettings.EnableAnimation,
+                playAnimation: SettingManager.Instance.EnableAnimation.GetAsBool(),
                 context: context);
         }
     }
