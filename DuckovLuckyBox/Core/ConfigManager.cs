@@ -17,6 +17,7 @@ namespace DuckovLuckyBox.Core.Settings
         public bool EnableMeltButton = DefaultSettings.EnableMeltButton;
         public bool EnableDebug = DefaultSettings.EnableDebug;
         public bool EnableUseToCreateItemPatch = DefaultSettings.EnableUseToCreateItemPatch;
+        public bool EnableUseToCreateItemWeightedLottery = DefaultSettings.EnableUseToCreateItemWeightedLottery;
         public bool EnableWeightedLottery = DefaultSettings.EnableWeightedLottery;
         public bool EnablePatchUseTime = DefaultSettings.EnablePatchUseTime;
         public float PatchedUseTime = DefaultSettings.PatchedUseTime;
@@ -331,6 +332,7 @@ namespace DuckovLuckyBox.Core.Settings
                 EnableMeltButton = settings.EnableMeltButton.GetAsBool(),
                 EnableDebug = settings.EnableDebug.GetAsBool(),
                 EnableUseToCreateItemPatch = settings.EnableUseToCreateItemPatch.GetAsBool(),
+                EnableUseToCreateItemWeightedLottery = settings.EnableUseToCreateItemWeightedLottery.GetAsBool(),
                 EnableWeightedLottery = settings.EnableWeightedLottery.GetAsBool(),
                 EnablePatchUseTime = settings.EnablePatchUseTime.GetAsBool(),
                 PatchedUseTime = settings.PatchedUseTime.GetAsFloat(),
@@ -362,6 +364,7 @@ namespace DuckovLuckyBox.Core.Settings
                 settings.EnableMeltButton.Value = config.EnableMeltButton;
                 settings.EnableDebug.Value = config.EnableDebug;
                 settings.EnableUseToCreateItemPatch.Value = config.EnableUseToCreateItemPatch;
+                settings.EnableUseToCreateItemWeightedLottery.Value = config.EnableUseToCreateItemWeightedLottery;
                 settings.EnableWeightedLottery.Value = config.EnableWeightedLottery;
                 settings.EnablePatchUseTime.Value = config.EnablePatchUseTime;
                 settings.PatchedUseTime.Value = config.PatchedUseTime;

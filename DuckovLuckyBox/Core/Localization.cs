@@ -39,6 +39,7 @@ namespace DuckovLuckyBox.Core
             public static readonly string SettingsEnableMeltButtonKey = $"{Constants.ModId}/UI/SettingsEnableLotteryButton";
             public static readonly string SettingsEnableDebugKey = $"{Constants.ModId}/UI/SettingsEnableDebug";
             public static readonly string SettingsEnableUseToCreateItemPatchKey = $"{Constants.ModId}/UI/SettingsEnableUseToCreateItemPatch";
+            public static readonly string SettingsEnableUseToCreateItemWeightedLotteryKey = $"{Constants.ModId}/UI/SettingsEnableUseToCreateItemWeightedLottery";
             public static readonly string SettingsEnableWeightedLotteryKey = $"{Constants.ModId}/UI/SettingsEnableWeightedLottery";
             public static readonly string SettingsEnableHighQualitySoundKey = $"{Constants.ModId}/UI/SettingsEnableHighQualitySound";
             public static readonly string SettingsHighQualitySoundFilePathKey = $"{Constants.ModId}/UI/SettingsHighQualitySoundFile";
@@ -115,6 +116,7 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableMeltButtonKey, "Enable melt action" },
             { I18n.SettingsEnableDebugKey, "Enable debug mode" },
             { I18n.SettingsEnableUseToCreateItemPatchKey, "Enable in-game lottery patch" },
+            { I18n.SettingsEnableUseToCreateItemWeightedLotteryKey, "Use Game-default weight for item lottery" },
             { I18n.SettingsEnableWeightedLotteryKey, "Enable weighted lottery" },
             { I18n.SettingsEnableHighQualitySoundKey, "Enable high-quality item sound" },
             { I18n.SettingsHighQualitySoundFilePathKey, "High-quality item sound file" },
@@ -185,6 +187,7 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableMeltButtonKey, "启用熔炼动作" },
             { I18n.SettingsEnableDebugKey, "启用调试模式" },
             { I18n.SettingsEnableUseToCreateItemPatchKey, "启用道具抽奖动画补丁" },
+            { I18n.SettingsEnableUseToCreateItemWeightedLotteryKey, "道具抽奖采用原版权重" },
             { I18n.SettingsEnableWeightedLotteryKey, "启用权重抽奖" },
             { I18n.SettingsEnableHighQualitySoundKey, "启用高价值物品音效" },
             { I18n.SettingsHighQualitySoundFilePathKey, "高价值音效文件" },
@@ -255,6 +258,7 @@ namespace DuckovLuckyBox.Core
             { I18n.SettingsEnableMeltButtonKey, "啟用熔煉動作" },
             { I18n.SettingsEnableDebugKey, "啟用偵錯模式" },
             { I18n.SettingsEnableUseToCreateItemPatchKey, "啟用道具抽獎動畫補丁" },
+            { I18n.SettingsEnableUseToCreateItemWeightedLotteryKey, "使用遊戲預設權重進行道具抽獎" },
             { I18n.SettingsEnableWeightedLotteryKey, "啟用權重抽獎" },
             { I18n.SettingsEnableHighQualitySoundKey, "啟用高品質物品音效" },
             { I18n.SettingsHighQualitySoundFilePathKey, "高品質音效檔案" },

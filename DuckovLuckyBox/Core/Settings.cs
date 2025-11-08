@@ -235,6 +235,7 @@ namespace DuckovLuckyBox.Core.Settings
         public const bool EnableRecycle = Constants.ModId != Constants.AnimationOnlyModId;
         public const bool EnableDebug = false;
         public const bool EnableUseToCreateItemPatch = true;
+        public const bool EnableUseToCreateItemWeightedLottery = true;
         public const bool EnableWeightedLottery = true;
 
         public const bool EnablePatchUseTime = true;
@@ -321,6 +322,17 @@ namespace DuckovLuckyBox.Core.Settings
             Category = Category.General,
             StorageType = StorageType.Bool,
             DefaultValue = DefaultSettings.EnableUseToCreateItemPatch,
+        };
+
+        public SettingItem EnableUseToCreateItemWeightedLottery { get; set; } = new SettingItem
+        {
+            Key = "DuckovLuckyBox.Settings.EnableUseToCreateItemWeightedLottery",
+            Label = Localizations.I18n.SettingsEnableUseToCreateItemWeightedLotteryKey,
+            Description = "DuckovLuckyBox.Settings.EnableUseToCreateItemWeightedLottery.Description",
+            Type = Type.Toggle,
+            Category = Category.General,
+            StorageType = StorageType.Bool,
+            DefaultValue = DefaultSettings.EnableUseToCreateItemWeightedLottery,
         };
 
         public SettingItem EnablePatchUseTime { get; set; } = new SettingItem
@@ -497,6 +509,7 @@ namespace DuckovLuckyBox.Core.Settings
                 yield return EnablePatchUseTime;
                 yield return PatchedUseTime;
                 yield return EnableWeightedLottery;
+                yield return EnableUseToCreateItemWeightedLottery;
                 yield return EnableHighQualitySound;
                 yield return EnableRefreshStock;
                 yield return EnableStorePick;
