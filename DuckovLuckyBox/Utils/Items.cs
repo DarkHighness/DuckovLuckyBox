@@ -75,6 +75,12 @@ namespace DuckovLuckyBox
                 Log.Info($"[ItemUtils.QueryGameItems] Found item database with {itemDatabase.Count} entries");
                 foreach (var item in itemDatabase)
                 {
+                    if (item.prefab == null)
+                    {
+                        Log.Warning("[ItemUtils.QueryGameItems] Skipping database entry with null prefab");
+                        continue;
+                    }
+                    
                     var entry = new Entry(item.prefab, item.metaData);
                     if (predicate(entry))
                     {
@@ -99,13 +105,13 @@ namespace DuckovLuckyBox
                         foreach (var kvp in dynamicItems)
                         {
                             var dynamicEntry = kvp.Value;
-                            if (dynamicEntry != null)
+                            if (dynamicEntry != null && dynamicEntry.prefab != null)
                             {
                                 var dynamicItem = dynamicEntry.prefab;
-                                var dynamicMetaData = dynamicEntry.MetaData;
 
                                 if (dynamicItem != null)
                                 {
+                                    var dynamicMetaData = dynamicEntry.MetaData;
                                     var entry = new Entry(dynamicItem, dynamicMetaData);
                                     if (predicate(entry))
                                     {
@@ -142,79 +148,100 @@ namespace DuckovLuckyBox
 
         public static ItemPredicate LotteryItemPredicate = (entry) =>
         {
-            // 1: Exclude items that the quality is below 0
+            //空值保护（防御性编程）
+            if (entry?.Item == null || entry?.MetaData == null)
+            {
+                Log.Warning($"Invalid entry encountered: Item={entry?.Item}, MetaData={entry?.MetaData}");
+                return false;
+            }
+        
+        
+            // 1: Exclude items that the quality is below 0   品质 < 0 排除
             if (entry.Item.Quality < 0)
             {
                 return false;
             }
-
-            // 2: Exclude items that are Quest items
+        
+            // 2: Exclude items that are Quest items    Quest 类物品排除
             if (entry.MetaData.Catagory == "Quest")
             {
                 return false;
             }
-
-            // 3. Exclude items that icon is the default "cross" icon
+        
+            // 3. Exclude items that icon is the default "cross" icon   默认 cross 图标排除（安全，先判空）
             if (entry.Item.Icon == null || entry.Item.Icon.name == "cross")
             {
                 return false;
             }
-
-            // 4. Exclude items that not translated
-            if (entry.Item.DisplayName.StartsWith("*Item_"))
+        
+            // 4. Exclude items that not translated 显示名称为空的排除（加上空检查）
+            if (string.IsNullOrEmpty(entry.Item.Description) || entry.Item.DisplayName.StartsWith("*Item_"))
             {
                 return false;
             }
-
-            // 5. Exclude items that the description is not translated
-            if (entry.Item.Description.StartsWith("*Item_"))
+        
+            // 5. Exclude items that the description is not translated 描述为空的排除（加上空检查）
+            if (string.IsNullOrEmpty(entry.Item.Description) || entry.Item.Description.StartsWith("*Item_"))
             {
                 return false;
             }
-
+        
             // 6. Exclude items that price is one
             if (entry.MetaData.priceEach <= 1)
             {
                 return false;
             }
-
+        
             return true;
         };
 
         public static ItemPredicate RecycleItemPredicate = (entry) =>
         {
+            //空值保护（防御性编程）
+            if (entry?.Item == null || entry?.MetaData == null)
+            {
+                Log.Warning($"Invalid entry encountered: Item={entry?.Item}, MetaData={entry?.MetaData}");
+                return false;
+            }
+        
             // 1. If the item is not lottery item, exclude it
             if (!LotteryItemPredicate(entry))
             {
                 return false;
             }
-
+        
             // 2. If the item is the Cash, exclude it
             if (entry.Item.TypeID == 451) // Cash TypeID
             {
                 return false;
             }
-
+        
             return true;
         };
-
+        
         public static ItemPredicate BulletItemPredicate = (entry) =>
         {
+            //空值保护（防御性编程）
+            if (entry?.Item == null || entry?.MetaData == null)
+            {
+                Log.Warning($"Invalid entry encountered: Item={entry?.Item}, MetaData={entry?.MetaData}");
+                return false;
+            }
+        
             // 1. If the item is not lottery item, exclude it
             if (!LotteryItemPredicate(entry))
             {
                 return false;
             }
-
+        
             // 2. If the item is not a bullet, exclude it
             if (entry.MetaData.Catagory != "Bullet")
             {
                 return false;
             }
-
+        
             return true;
         };
-
         public class ItemQueryCache
         {
             private List<Entry> _items;
